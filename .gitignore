@@ -1,6 +1,7 @@
 bin/
 obj/
-
+documentation/开发/
 .vscode/
 .trae/
 .agents/
+deps/
