@@ -111,7 +111,6 @@ public partial class PracLab : BasePlugin
         ("ancient", "de_ancient"),
         ("vertigo", "de_vertigo"),
         ("anubis",  "de_anubis"),
-        ("overpass","de_overpass"),
         ("dust2",   "de_dust2"),
         ("train",   "de_train"),
         ("cache",   "de_cache"),
