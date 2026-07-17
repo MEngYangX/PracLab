@@ -1,1 +1,264 @@
+name: Build and Release
 
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "documentation/**"
+  workflow_dispatch:
+
+jobs:
+  build-csharp:
+    name: Build C# Plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0'
+
+      - name: Get Versions
+        run: |
+          PRACLAB_VERSION=$(grep -oP 'ModuleVersion\s*=>\s*"\K[^"]*' PracLab.cs)
+          echo "PRACLAB_VERSION=$PRACLAB_VERSION" >> $GITHUB_ENV
+          CSSHARP_VERSION=$(grep -oP 'CounterStrikeSharp\.API"\s+Version="\K[^"]*' PracLab.csproj)
+          echo "CSSHARP_VERSION=$CSSHARP_VERSION" >> $GITHUB_ENV
+          echo "PracLab version: $PRACLAB_VERSION, CSSharp version: $CSSHARP_VERSION"
+
+      - name: Build C# Plugin (standalone)
+        run: |
+          dotnet publish PracLab.csproj -c Release -o package/addons/counterstrikesharp/plugins/PracLab
+          cp -r cfg package
+          cd package && zip -q -r ../PracLab-${{ env.PRACLAB_VERSION }}.zip * && cd ..
+
+      - name: Build C# + CSSharp (Linux)
+        run: |
+          rm -rf package && mkdir -p package
+          cp -r cfg package
+          cd package
+          curl -s https://api.github.com/repos/roflmuffin/CounterStrikeSharp/releases/tags/v${{ env.CSSHARP_VERSION }} |
+            grep "/counterstrikesharp-with-runtime-linux-${{ env.CSSHARP_VERSION }}" |
+            cut -d : -f 2,3 |
+            tr -d \" |
+            head -n 1 |
+            wget -O cssharp-linux.zip -qi -
+          unzip -o cssharp-linux.zip -d .
+          rm cssharp-linux.zip
+          cd ..
+          dotnet publish PracLab.csproj -c Release -o package/addons/counterstrikesharp/plugins/PracLab
+          cd package && zip -q -r ../PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip * && cd ..
+
+      - name: Build C# + CSSharp (Windows)
+        run: |
+          rm -rf package && mkdir -p package
+          cp -r cfg package
+          cd package
+          curl -s https://api.github.com/repos/roflmuffin/CounterStrikeSharp/releases/tags/v${{ env.CSSHARP_VERSION }} |
+            grep "/counterstrikesharp-with-runtime-windows-${{ env.CSSHARP_VERSION }}" |
+            cut -d : -f 2,3 |
+            tr -d \" |
+            head -n 1 |
+            wget -O cssharp-windows.zip -qi -
+          unzip -o cssharp-windows.zip -d .
+          rm cssharp-windows.zip
+          cd ..
+          dotnet publish PracLab.csproj -c Release -o package/addons/counterstrikesharp/plugins/PracLab
+          cd package && zip -q -r ../PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip * && cd ..
+
+      - name: Upload C# Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: csharp-packages
+          path: |
+            PracLab-${{ env.PRACLAB_VERSION }}.zip
+            PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip
+            PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip
+
+  build-cpp-linux:
+    name: Build C++ Replay Engine (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build build-essential
+
+      - name: Clone HL2SDK CS2
+        run: git clone --depth 1 --branch cs2 https://github.com/alliedmodders/hl2sdk.git deps/hl2sdk-cs2
+
+      - name: Clone Metamod:Source
+        run: git clone --depth 1 https://github.com/alliedmodders/metamod-source.git deps/metamod-source
+
+      - name: Download protoc 3.21.8
+        run: |
+          wget -q https://github.com/protocolbuffers/protobuf/releases/download/v21.8/protoc-21.8-linux-x86_64.zip
+          unzip -q protoc-21.8-linux-x86_64.zip -d deps/protoc-3.21.8
+          chmod +x deps/protoc-3.21.8/bin/protoc
+
+      - name: Configure and Build
+        run: |
+          export HL2SDKCS2=$GITHUB_WORKSPACE/deps/hl2sdk-cs2
+          export MMSOURCE_DEV=$GITHUB_WORKSPACE/deps/metamod-source
+          export CSGO_PROTO=$GITHUB_WORKSPACE/deps/hl2sdk-cs2/common
+          export PROTOC=$GITHUB_WORKSPACE/deps/protoc-3.21.8/bin/protoc
+          cd replay-engine
+          cmake -B out/build/x64-Release -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build out/build/x64-Release --config Release
+
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpp-linux
+          path: replay-engine/out/build/x64-Release/package/
+
+  build-cpp-windows:
+    name: Build C++ Replay Engine (Windows)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Clone HL2SDK CS2
+        run: git clone --depth 1 --branch cs2 https://github.com/alliedmodders/hl2sdk.git deps/hl2sdk-cs2
+
+      - name: Clone Metamod:Source
+        run: git clone --depth 1 https://github.com/alliedmodders/metamod-source.git deps/metamod-source
+
+      - name: Download protoc 3.21.8
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/protocolbuffers/protobuf/releases/download/v21.8/protoc-21.8-win64.zip" -OutFile protoc.zip
+          Expand-Archive protoc.zip -DestinationPath deps/protoc-3.21.8
+          Remove-Item protoc.zip
+
+      - name: Configure and Build
+        shell: pwsh
+        run: |
+          $env:HL2SDKCS2 = "$env:GITHUB_WORKSPACE\deps\hl2sdk-cs2"
+          $env:MMSOURCE_DEV = "$env:GITHUB_WORKSPACE\deps\metamod-source"
+          $env:CSGO_PROTO = "$env:GITHUB_WORKSPACE\deps\hl2sdk-cs2\common"
+          $env:PROTOC = "$env:GITHUB_WORKSPACE\deps\protoc-3.21.8\bin\protoc.exe"
+          cd replay-engine
+          cmake -B out/build/x64-Release -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build out/build/x64-Release --config Release
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpp-windows
+          path: replay-engine/out/build/x64-Release/package/
+
+  release:
+    name: Create Release
+    needs: [build-csharp, build-cpp-linux, build-cpp-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Version
+        run: |
+          PRACLAB_VERSION=$(grep -oP 'ModuleVersion\s*=>\s*"\K[^"]*' PracLab.cs)
+          echo "PRACLAB_VERSION=$PRACLAB_VERSION" >> $GITHUB_ENV
+
+      - name: Download C# Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: csharp-packages
+          path: release/
+
+      - name: Download C++ Linux Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cpp-linux
+          path: cpp-linux/
+
+      - name: Download C++ Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cpp-windows
+          path: cpp-windows/
+
+      - name: Combine C++ Package
+        run: |
+          mkdir -p cpp-package/addons/PracLabReplayEngine/bin/win64
+          mkdir -p cpp-package/addons/PracLabReplayEngine/bin/linuxsteamrt64
+          mkdir -p cpp-package/addons/metamod
+
+          # Copy binaries
+          cp cpp-windows/addons/PracLabReplayEngine/bin/win64/PracLabReplayEngine.dll cpp-package/addons/PracLabReplayEngine/bin/win64/
+          cp cpp-linux/addons/PracLabReplayEngine/bin/linuxsteamrt64/PracLabReplayEngine.so cpp-package/addons/PracLabReplayEngine/bin/linuxsteamrt64/
+
+          # Copy gamedata.json
+          cp cpp-windows/addons/PracLabReplayEngine/gamedata.json cpp-package/addons/PracLabReplayEngine/
+
+          # Copy both VDF files from repo source
+          cp replay-engine/configs/addons/metamod/PracLabReplayEngine.vdf cpp-package/addons/metamod/
+          cp replay-engine/configs/addons/metamod/PracLabReplayEngine.linux.vdf cpp-package/addons/metamod/
+
+          cd cpp-package && zip -q -r ../PracLabReplayEngine-${{ env.PRACLAB_VERSION }}.zip * && cd ..
+
+      - name: Prepare Release Notes
+        run: |
+          # Extract changelog section for this version
+          awk -v ver="${{ env.PRACLAB_VERSION }}" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "[" ver "]")) found=1
+              next
+            }
+            found { print }
+          ' CHANGELOG.md > release_notes.md
+
+          # Fallback if changelog extraction is empty
+          if [ ! -s release_notes.md ]; then
+            echo "请查看 [CHANGELOG.md](https://github.com/MEngYangX/PracLab/blob/main/CHANGELOG.md) 获取更新详情。" > release_notes.md
+            echo "" >> release_notes.md
+            echo "See [CHANGELOG.md](https://github.com/MEngYangX/PracLab/blob/main/CHANGELOG.md) for release notes." >> release_notes.md
+          fi
+
+          # Append installation links and assets description
+          cat >> release_notes.md << 'HEREDOC_END'
+
+## 安装 / Installation
+
+- 中文：https://mengyangx.github.io/PracLab/zh/安装/
+- English：https://mengyangx.github.io/PracLab/en/installation/
+
+## Assets 说明 / Assets
+
+| 文件 / File | 说明 / Description |
+| --- | --- |
+| `PracLab-${{ env.PRACLAB_VERSION }}.zip` | C# 插件（仅 PracLab，需已安装 CSSharp）/ C# plugin only (requires CSSharp pre-installed) |
+| `PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip` | C# 插件 + CSSharp Linux 运行时 / C# plugin + CSSharp Linux runtime |
+| `PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip` | C# 插件 + CSSharp Windows 运行时 / C# plugin + CSSharp Windows runtime |
+| `PracLabReplayEngine-${{ env.PRACLAB_VERSION }}.zip` | C++ 回放引擎（L2，可选）/ C++ replay engine (L2, optional) |
+HEREDOC_END
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: PracLab ${{ env.PRACLAB_VERSION }}
+          tag_name: ${{ env.PRACLAB_VERSION }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            release/PracLab-${{ env.PRACLAB_VERSION }}.zip
+            release/PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip
+            release/PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip
+            PracLabReplayEngine-${{ env.PRACLAB_VERSION }}.zip
