@@ -1041,42 +1041,46 @@ public partial class PracLab
             }
         }
 
-        // 解析录制 ID（可选，未指定则使用最近一条 Idle 状态的录制）
-        RecordingEntry? entry = null;
+        // 解析录制 ID（可选）：
+        //   .replay <Id> — 回放指定 ID 的录制
+        //   .replay       — 并行回放所有 Idle 状态的录制（为每条录制创建一个 bot）
         var parts = args.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length >= 1 && int.TryParse(parts[0], out var id))
+        int specifiedId = 0;
+        bool hasId = parts.Length >= 1 && int.TryParse(parts[0], out specifiedId);
+
+        List<RecordingEntry> entriesToReplay;
+        if (hasId)
         {
-            entry = _recordings.FirstOrDefault(e => e.Id == id);
+            var entry = _recordings.FirstOrDefault(e => e.Id == specifiedId);
+            if (entry == null)
+            {
+                player.PrintToChat(Localizer.ForPlayer(player, "replay.no_record"));
+                return;
+            }
+            if (entry.Status == RecordingStatus.Playing)
+            {
+                player.PrintToChat(Localizer.ForPlayer(player, "replay.already_playing", entry.Id));
+                return;
+            }
+            if (!File.Exists(entry.FilePath))
+            {
+                player.PrintToChat(Localizer.ForPlayer(player, "replay.file_not_found", entry.Id));
+                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error Recording file not found: {entry.FilePath}");
+                return;
+            }
+            entriesToReplay = new List<RecordingEntry> { entry };
         }
         else
         {
-            for (int i = _recordings.Count - 1; i >= 0; i--)
+            // 无参数：并行回放所有 Idle 状态且文件存在的录制
+            entriesToReplay = _recordings
+                .Where(e => e.Status == RecordingStatus.Idle && File.Exists(e.FilePath))
+                .ToList();
+            if (entriesToReplay.Count == 0)
             {
-                if (_recordings[i].Status == RecordingStatus.Idle)
-                {
-                    entry = _recordings[i];
-                    break;
-                }
+                player.PrintToChat(Localizer.ForPlayer(player, "replay.no_record"));
+                return;
             }
-        }
-
-        if (entry == null)
-        {
-            player.PrintToChat(Localizer.ForPlayer(player, "replay.no_record"));
-            return;
-        }
-
-        if (entry.Status == RecordingStatus.Playing)
-        {
-            player.PrintToChat(Localizer.ForPlayer(player, "replay.already_playing", entry.Id));
-            return;
-        }
-
-        if (!File.Exists(entry.FilePath))
-        {
-            player.PrintToChat(Localizer.ForPlayer(player, "replay.file_not_found", entry.Id));
-            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error Recording file not found: {entry.FilePath}");
-            return;
         }
 
         // 记录创建前的 Bot UserId 集合，用于识别新创建的 Bot
@@ -1106,43 +1110,57 @@ public partial class PracLab
                 existingBotCount++;
         }
         existingBotCount = Math.Max(0, existingBotCount - cleanupCount);
-        var requiredQuota = existingBotCount + 1;
+        var replayCount = entriesToReplay.Count;
+        var requiredQuota = existingBotCount + replayCount;
         Server.ExecuteCommand(targetTeam == CsTeam.Terrorist ? "bot_join_team T" : "bot_join_team CT");
         Server.ExecuteCommand("bot_quota_mode normal");
         Server.ExecuteCommand($"bot_quota {requiredQuota}");
-        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay: set bot_quota={requiredQuota} (existing={existingBotCount}+1), mode=normal, team={targetTeam} (engine-managed, no bot_add)");
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay: set bot_quota={requiredQuota} (existing={existingBotCount}+{replayCount}), mode=normal, team={targetTeam} (engine-managed, no bot_add)");
 
         var initiatorUserId = player.UserId ?? -1;
         var caller = player;
-        var entryId = entry.Id;
+        var entryIds = entriesToReplay.Select(e => e.Id).ToList();
 
-        // 延迟 0.3s 等待引擎通过 quota 机制创建 Bot
-        // 注意：之前用 bot_add_t + 0.1s 会创建 2 个 bot（quota + bot_add）；
-        // 现在只用 quota，需要给引擎更多时间创建 bot
+        // 延迟 0.3s 等待引擎通过 quota 机制创建 Bot（多 bot 时引擎需要足够时间）
         AddTimer(0.3f, () =>
         {
             try
             {
-                var botPlayer = FindNewlyCreatedBot(existingBotUserIds, targetTeam);
-                if (botPlayer == null || botPlayer.PlayerPawn.Value == null)
+                // 查找所有新创建的 bot（按需要的数量）
+                var newBots = FindAllNewlyCreatedBots(existingBotUserIds, targetTeam, replayCount);
+                if (newBots.Count == 0)
                 {
                     caller.PrintToChat(Localizer.ForPlayer(caller, "bot.spawn_failed", targetTeam));
                     Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error Replay bot spawn failed for team {targetTeam}");
                     return;
                 }
 
-                // 解除 Bot 冻结状态：回放需要 Bot AI 运行以生成 user command，
+                // 解除所有 Bot 冻结状态：回放需要 Bot AI 运行以生成 user command，
                 // ProcessMovement 才会被调用（C++ hook 在 ProcessMovement pre/post 注入录制数据）
                 Server.ExecuteCommand("bot_stop 0");
                 Server.ExecuteCommand("bot_freeze 0");
                 Server.ExecuteCommand("bot_zombie 0");
-                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay: bot found slot={botPlayer.Slot} name={botPlayer.PlayerName}, unfreezing");
 
-                LoadAndStartReplay(botPlayer, entryId, initiatorUserId, caller);
+                // 按 1:1 匹配 bot 和录制条目，逐个启动回放
+                int matched = Math.Min(newBots.Count, entryIds.Count);
+                for (int i = 0; i < matched; i++)
+                {
+                    var botPlayer = newBots[i];
+                    var entryId = entryIds[i];
+                    Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay: bot found slot={botPlayer.Slot} name={botPlayer.PlayerName}, unfreezing");
+                    LoadAndStartReplay(botPlayer, entryId, initiatorUserId, caller);
+                }
+
+                // 部分 bot 生成失败时提示玩家
+                if (newBots.Count < entryIds.Count)
+                {
+                    caller.PrintToChat(Localizer.ForPlayer(caller, "replay.batch_partial", newBots.Count, entryIds.Count));
+                    Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning Only {newBots.Count}/{entryIds.Count} bots spawned, {entryIds.Count - newBots.Count} entries skipped");
+                }
             }
             catch (Exception ex)
             {
-                caller.PrintToChat(Localizer.ForPlayer(caller, "replay.start_failed", entryId));
+                caller.PrintToChat(Localizer.ForPlayer(caller, "replay.start_failed", entryIds.Count > 0 ? entryIds[0] : 0));
                 Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error HandleReplay spawn timer failed - {ex.Message}");
             }
         });
@@ -1208,6 +1226,46 @@ public partial class PracLab
         }
 
         return newBot;
+    }
+
+    /// <summary>
+    /// 在指定队伍中查找所有新创建的 Bot（不在 existingBotUserIds 集合中的 Bot）。
+    /// 用于 .replay 无参数批量回放场景：一次创建多个 bot，需要全部收集。
+    /// </summary>
+    /// <param name="existingBotUserIds">创建前已存在的 Bot UserId 集合。</param>
+    /// <param name="expectedTeam">期望的 Bot 队伍。</param>
+    /// <param name="expectedCount">期望找到的 Bot 数量（找到此数量后停止遍历）。</param>
+    /// <returns>新创建的 Bot 控制器列表（可能少于 expectedCount）。</returns>
+    private List<CCSPlayerController> FindAllNewlyCreatedBots(HashSet<int> existingBotUserIds, CsTeam expectedTeam, int expectedCount)
+    {
+        var result = new List<CCSPlayerController>();
+        var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+
+        foreach (var p in playerEntities)
+        {
+            if (!p.IsValid || !p.IsBot || p.IsHLTV) continue;
+            if (!p.UserId.HasValue) continue;
+
+            var userId = p.UserId.Value;
+            if (existingBotUserIds.Contains(userId)) continue;
+            if (_pracBots.ContainsKey(userId)) continue;
+
+            var actualTeam = (CsTeam)p.TeamNum;
+            if (actualTeam != expectedTeam && actualTeam != CsTeam.None)
+            {
+                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay bot {p.PlayerName} wrong team {actualTeam}, expected {expectedTeam}, force switching");
+                try { p.ChangeTeam(expectedTeam); }
+                catch (Exception ex) { Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error ChangeTeam failed - {ex.Message}"); }
+            }
+
+            result.Add(p);
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay bot found: {p.PlayerName} UserId={userId} team={p.TeamNum}");
+
+            if (result.Count >= expectedCount)
+                break;
+        }
+
+        return result;
     }
 
     /// <summary>
