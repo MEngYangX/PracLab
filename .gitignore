@@ -1,5 +1,8 @@
 bin/
 obj/
+publish/
+replay-engine/out/
+replay-engine/.vs/
 documentation/开发/
 .vscode/
 .trae/
