@@ -109,6 +109,7 @@ jobs:
           export CSGO_PROTO=$GITHUB_WORKSPACE/deps/hl2sdk-cs2/common
           export PROTOC=$GITHUB_WORKSPACE/deps/protoc-3.21.8/bin/protoc
           cd replay-engine
+          rm -rf out
           cmake -B out/build/x64-Release -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build out/build/x64-Release --config Release
 
@@ -149,6 +150,7 @@ jobs:
           $env:CSGO_PROTO = "$env:GITHUB_WORKSPACE\deps\hl2sdk-cs2\common"
           $env:PROTOC = "$env:GITHUB_WORKSPACE\deps\protoc-3.21.8\bin\protoc.exe"
           cd replay-engine
+          if (Test-Path out) { Remove-Item -Recurse -Force out }
           cmake -B out/build/x64-Release -S . -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build out/build/x64-Release --config Release
 
