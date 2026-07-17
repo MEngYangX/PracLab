@@ -1,9 +1,0 @@
-{
-	"InstallScripts" : 
-	[
-		"D:/PracLab/replay-engine/out/build/x64-Release/cmake_install.cmake",
-		"D:/PracLab/replay-engine/out/build/x64-Release/_deps/funchook-build/cmake_install.cmake",
-		"D:/PracLab/replay-engine/out/build/x64-Release/_deps/nlohmann_json-build/cmake_install.cmake"
-	],
-	"Parallel" : false
-}
