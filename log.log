@@ -1,958 +1,118 @@
+[PracLab] HandlePrac: executing...
+[PracLab] 13:12:45 Command MEng姊︽磱馃 triggered practice mode load
+[PracLab] 13:12:45 Command practice mode loaded
+execing PracLab/prac.cfg
+"MEng姊︽磱馃<0><[U:1:1582559511]><TERRORIST>" OnPreResetRound => CTMDBG, team 2  will switch 0 171.73
+Using spawn points configuration 0xE7A0C8A2
+171.734375 Long frame (FreezePeriod): 15.74ms elapsed, 15.11ms sim time, 1 ticks, 10991..10991.
 BeginMatch
 [PracLab] ShowAllSpawnBeams: executing...
 [PracLab] RemoveSpawnBeams: executing...
-[PracLab] 23:26:47 SpawnMarker all beams removed
-[PracLab] 23:26:47 Spawn CounterTerrorist found 5 competitive spawn points (minPriority=0, total=15)
-[PracLab] 23:26:47 Spawn Terrorist found 15 competitive spawn points (minPriority=0, total=15)
-[PracLab] 23:26:47 SpawnMarker shown 5 CT + 15 T spawn beams (green)
-[PracLab] 23:26:47 SpawnMarker OnTick listener registered
-644.375000 UNEXPECTED LONG FRAME DETECTED: 25.10ms elapsed, 23.75ms sim time, 1 ticks, 41240..41240.  (Last amnesty was 'client_disconnected', 0.74s ago)
+[PracLab] 13:12:47 SpawnMarker all beams and texts removed
+[PracLab] 13:12:47 Spawn CounterTerrorist found 5 competitive spawn points (minPriority=0, total=15)
+[PracLab-DBG] A:entity-create text=True handle=3028791161856
+[PracLab-DBG] B:props-after-set msg=1 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=182.24991,2439.0117,-108 absRot=0,0,0 target=182.24991,2439.0117,-108
+[PracLab-DBG] D:post-spawn msg=1 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=182.24991,2439.0117,-108 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028791158784
+[PracLab-DBG] B:props-after-set msg=2 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=160.12274,2369.6763,-108 absRot=0,0,0 target=160.12274,2369.6763,-108
+[PracLab-DBG] D:post-spawn msg=2 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=160.12274,2369.6763,-108 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028791155712
+[PracLab-DBG] B:props-after-set msg=3 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=258.1594,2480.5537,-108 absRot=0,0,0 target=258.1594,2480.5537,-108
+[PracLab-DBG] D:post-spawn msg=3 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=258.1594,2480.5537,-108 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358753280
+[PracLab-DBG] B:props-after-set msg=4 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=334.36874,2433.7336,-108 absRot=0,0,0 target=334.36874,2433.7336,-108
+[PracLab-DBG] D:post-spawn msg=4 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=334.36874,2433.7336,-108 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358750208
+[PracLab-DBG] B:props-after-set msg=5 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=351.39212,2352.9424,-108 absRot=0,0,0 target=351.39212,2352.9424,-108
+[PracLab-DBG] D:post-spawn msg=5 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=351.39212,2352.9424,-108 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab] 13:12:47 Spawn Terrorist found 15 competitive spawn points (minPriority=0, total=15)
+[PracLab-DBG] A:entity-create text=True handle=3028358744064
+[PracLab-DBG] B:props-after-set msg=1 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-822.3652,-795.6421,152.709 absRot=0,0,0 target=-822.3652,-795.6421,152.709
+[PracLab-DBG] D:post-spawn msg=1 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-822.3652,-795.6421,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358747136
+[PracLab-DBG] B:props-after-set msg=2 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-857.50653,-738.3613,152.709 absRot=0,0,0 target=-857.50653,-738.3613,152.709
+[PracLab-DBG] D:post-spawn msg=2 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-857.50653,-738.3613,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358740992
+[PracLab-DBG] B:props-after-set msg=3 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-760.66296,-836.174,152.709 absRot=0,0,0 target=-760.66296,-836.174,152.709
+[PracLab-DBG] D:post-spawn msg=3 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-760.66296,-836.174,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358774784
+[PracLab-DBG] B:props-after-set msg=4 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-696.8446,-806.6237,152.709 absRot=0,0,0 target=-696.8446,-806.6237,152.709
+[PracLab-DBG] D:post-spawn msg=4 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-696.8446,-806.6237,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358725632
+[PracLab-DBG] B:props-after-set msg=5 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-657.27136,-755.87964,152.709 absRot=0,0,0 target=-657.27136,-755.87964,152.709
+[PracLab-DBG] D:post-spawn msg=5 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-657.27136,-755.87964,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358731776
+[PracLab-DBG] B:props-after-set msg=6 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-1141,-808,152.709 absRot=0,0,0 target=-1141,-808,152.709
+[PracLab-DBG] D:post-spawn msg=6 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-1141,-808,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358734848
+[PracLab-DBG] B:props-after-set msg=7 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-1181,-754,152.709 absRot=0,0,0 target=-1181,-754,152.709
+[PracLab-DBG] D:post-spawn msg=7 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-1181,-754,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358759424
+[PracLab-DBG] B:props-after-set msg=8 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-1076,-843,152.709 absRot=0,0,0 target=-1076,-843,152.709
+[PracLab-DBG] D:post-spawn msg=8 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-1076,-843,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358762496
+[PracLab-DBG] B:props-after-set msg=9 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-1015,-808,152.709 absRot=0,0,0 target=-1015,-808,152.709
+[PracLab-DBG] D:post-spawn msg=9 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-1015,-808,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358768640
+[PracLab-DBG] B:props-after-set msg=10 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-980,-754,152.709 absRot=0,0,0 target=-980,-754,152.709
+[PracLab-DBG] D:post-spawn msg=10 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-980,-754,152.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358771712
+[PracLab-DBG] B:props-after-set msg=11 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-493,-808,136.709 absRot=0,0,0 target=-493,-808,136.709
+[PracLab-DBG] D:post-spawn msg=11 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-493,-808,136.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358765568
+[PracLab-DBG] B:props-after-set msg=12 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-533,-754,136.709 absRot=0,0,0 target=-533,-754,136.709
+[PracLab-DBG] D:post-spawn msg=12 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-533,-754,136.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358787072
+[PracLab-DBG] B:props-after-set msg=13 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-428,-843,136.709 absRot=0,0,0 target=-428,-843,136.709
+[PracLab-DBG] D:post-spawn msg=13 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-428,-843,136.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358780928
+[PracLab-DBG] B:props-after-set msg=14 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-367,-808,136.709 absRot=0,0,0 target=-367,-808,136.709
+[PracLab-DBG] D:post-spawn msg=14 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-367,-808,136.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab-DBG] A:entity-create text=True handle=3028358784000
+[PracLab-DBG] B:props-after-set msg=15 fontSize=14 worldUnitsPerPx=3 fontName= fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE color=Color [A=255, R=50, G=205, B=50]
+[PracLab-DBG] C:teleport-check absOrigin=-332,-754,136.709 absRot=0,0,0 target=-332,-754,136.709
+[PracLab-DBG] D:post-spawn msg=15 fontSize=14 fullbright=True enabled=True justifyH=POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER reorient=POINT_WORLD_TEXT_REORIENT_NONE absOrigin=-332,-754,136.709 valid=True
+[PracLab-DBG] E:accept-input OK
+[PracLab] 13:12:47 SpawnMarker shown 5 CT + 15 T spawn beams with index text (green)
+[PracLab] 13:12:47 SpawnMarker OnTick listener registered
+172.390625 UNEXPECTED LONG FRAME DETECTED: 54.02ms elapsed, 53.39ms sim time, 1 ticks, 11033..11033.  (Last amnesty was 'FreezePeriod', 0.15s ago)
 Framerate spike report
-FrameTotal:   26.11ms, tolerance:    2.51ms
-
-excl ms   excl %   incl ms   group
---------  -------  --------  --------------
- 23.07ms   88.36%   24.18ms  Server Simulation
-  0.83ms    3.19%   25.80ms  Unaccounted
-  0.61ms    2.34%    0.61ms  Client Input/Output
-  0.30ms    1.16%    0.30ms  Server LateWake
-  0.24ms    0.93%    0.36ms  Server Animation
-  0.23ms    0.88%    0.37ms  UserCommands
-  0.17ms    0.64%    0.17ms  Server PackEntities
-  0.12ms    0.46%    0.12ms  Animation
-  0.10ms    0.39%    0.10ms  Client Rendering
-  0.08ms    0.31%    0.39ms  Server Send Networking
-  0.08ms    0.30%    0.08ms  Server CheckTransmit
-
-[PracLab] HandleRecord: executing...
-[PracLab] 23:26:53 Scanned player weapons: [weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab] 23:26:53 Record started for player MEng姊︽磱馃 slot=2 weapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab] 23:26:53 Replay OnTick listener registered
-[PracLab] 23:27:01 Grenade MEng姊︽磱馃 threw weapon_molotov velocity=(564.4,801.0,19.6) class=molotov_projectile
-[PracLab] 23:27:03 Grenade MEng姊︽磱馃 threw weapon_hegrenade velocity=(745.0,638.5,-6.5) class=hegrenade_projectile
-[PracLab] StopAndSaveRecording: executing... slot=2
-[PracLab] 23:27:05 Record saved: id=1 name=MEng姊︽磱馃_20260716_232705 ticks=728 subs=20 file=rec_MEng姊︽磱馃_20260716_232705.json
-661.750000 UNEXPECTED LONG FRAME DETECTED: 51.71ms elapsed, 50.99ms sim time, 1 ticks, 42352..42352.
-Framerate spike report
-FrameTotal:   52.05ms, tolerance:    5.17ms
-
-excl ms   excl %   incl ms   group
---------  -------  --------  --------------
- 50.39ms   96.81%   51.29ms  Server Simulation
-  0.40ms    0.77%   52.04ms  Unaccounted
-  0.31ms    0.59%    0.31ms  Client Input/Output
-  0.21ms    0.41%    0.25ms  Server Animation
-  0.16ms    0.31%    0.24ms  UserCommands
-  0.13ms    0.24%    0.13ms  Server PackEntities
-  0.11ms    0.21%    0.62ms  Server Game
-  0.06ms    0.11%    0.06ms  Animation
-  0.06ms    0.11%    0.06ms  Server CheckTransmit
-  0.03ms    0.06%    0.04ms  Server Physics
-  0.03ms    0.06%    0.03ms  NavMesh
-
-Certificate expires in 47h49m at 1784387824 (current time 1784215625), will renew in 45h49m
-[PracLab] HandleReplay: executing...
-[PracLab-DBG] 23:27:09 HandleReplay ENTRY: existingPlayingCount=0 totalRecordings=1
-[PracLab] 23:27:09 Replay: set bot_quota=1 (existing=0+1), mode=normal, team=Terrorist (engine-managed, no bot_add)
-ClientPutInServer create new player controller [Enforcer]
-[Enforcer] cl_interp_ratio='', LerpTime=0
-"Enforcer<6><BOT><Unassigned>" ChangeTeam() CTMDBG , team 0, req team 2 willSwitch 0, 665.81
-[PracLab] 23:27:09 Replay bot found: Enforcer UserId=6 team=2
-[PracLab] 23:27:09 Replay: bot found slot=6 name=Enforcer, unfreezing
-[PracLab] LoadAndStartReplay: executing... bot=Enforcer entryId=1
-[PracLab-DBG] 23:27:09 GiveBotWeapons BEFORE: bot=Enforcer slot=6 activeWeapon=weapon_ak47 weaponsToGive=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab-DBG] 23:27:09 GiveBotWeapons AFTER REMOVE: activeWeapon=<no-active-weapon>
-[PracLab-DBG] 23:27:09 GiveBotWeapons AFTER GIVE: activeWeapon=weapon_ak47 allWeapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab] 23:27:09 Bot weapons given: bot=Enforcer slot=6 weapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab] 23:27:09 Replay started: id=1 bot=Enforcer slot=6 ticks=728 subs=20
-[PracLab] 23:27:09 === Diagnostics(before replay (baseline)) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=93786 lastSlot=6
-[PracLab]   FinishMove:      calls=91719
-[PracLab]   PhysicsSimulate: calls=81980 lastSlot=6
-[PracLab]   ReplayPre:       calls=1745 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1032
-[PracLab]   ReplayCommit:    calls=1032 pawnNull=0
-[PracLab]   lastReplaySlot=5 lastReplayCursor=343
-[PracLab]   CCSBot::Update:  calls=19814
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=91944
-[PracLab]   CCSBot::UpdateLookAngles: calls=39628
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (187.71, -447.60, 0.42)
-[PracLab]   ReadBackOrigin:(187.71, -447.60, 0.42)
-[PracLab]   pawnIdentity=3376445528 pawnMoveType=2
-[PracLab-DBG] 23:27:09 ReplayActiveWeapon AT START (0s): bot=Enforcer slot=6 activeWeapon=weapon_ak47
-[PracLab-DBG] 23:27:09 WeaponSwitchCheck AT START (0s): recordedDef=46 botActiveDef=-1 mismatch=False slot=6
-666.093750 UNEXPECTED LONG FRAME DETECTED: 63.90ms elapsed, 63.00ms sim time, 1 ticks, 42630..42630.  (Last amnesty was 'FrameRateSpikeDump', 3.58s ago)
-Framerate spike report
-FrameTotal:   64.27ms, tolerance:    6.39ms
-
-excl ms   excl %   incl ms   group
---------  -------  --------  --------------
- 62.17ms   96.73%   63.44ms  Server Simulation
-  0.34ms    0.54%    0.34ms  Client Input/Output
-  0.31ms    0.48%   64.15ms  Unaccounted
-  0.28ms    0.43%    0.32ms  Server Animation
-  0.23ms    0.35%    0.31ms  UserCommands
-  0.20ms    0.32%    0.20ms  Server PackEntities
-  0.16ms    0.25%    0.18ms  Server Physics
-  0.12ms    0.19%    0.12ms  Server LateWake
-  0.07ms    0.11%    0.07ms  Animation
-  0.06ms    0.10%    0.72ms  Server Game
-  0.06ms    0.10%    0.06ms  Sound
-
-[PracLab] 23:27:10 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=93869 lastSlot=6
-[PracLab]   FinishMove:      calls=91781
-[PracLab]   PhysicsSimulate: calls=82042 lastSlot=6
-[PracLab]   ReplayPre:       calls=1776 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1063
-[PracLab]   ReplayCommit:    calls=1063 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=30
-[PracLab]   CCSBot::Update:  calls=19830
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92006
-[PracLab]   CCSBot::UpdateLookAngles: calls=39659
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:10 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=93969 lastSlot=6
-[PracLab]   FinishMove:      calls=91845
-[PracLab]   PhysicsSimulate: calls=82106 lastSlot=6
-[PracLab]   ReplayPre:       calls=1808 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1095
-[PracLab]   ReplayCommit:    calls=1095 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=62
-[PracLab]   CCSBot::Update:  calls=19846
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92070
-[PracLab]   CCSBot::UpdateLookAngles: calls=39691
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab-DBG] 23:27:10 ReplayActiveWeapon AFTER 1s: bot=Enforcer slot=6 activeWeapon=weapon_molotov allWeapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab-DBG] 23:27:10 WeaponSwitchCheck AFTER 1s: recordedDef=46 botActiveDef=46 mismatch=False slot=6
-[PracLab] 23:27:11 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94053 lastSlot=6
-[PracLab]   FinishMove:      calls=91909
-[PracLab]   PhysicsSimulate: calls=82170 lastSlot=6
-[PracLab]   ReplayPre:       calls=1840 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1127
-[PracLab]   ReplayCommit:    calls=1127 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=94
-[PracLab]   CCSBot::Update:  calls=19862
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92134
-[PracLab]   CCSBot::UpdateLookAngles: calls=39723
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:11 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94118 lastSlot=6
-[PracLab]   FinishMove:      calls=91973
-[PracLab]   PhysicsSimulate: calls=82234 lastSlot=6
-[PracLab]   ReplayPre:       calls=1872 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1159
-[PracLab]   ReplayCommit:    calls=1159 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=126
-[PracLab]   CCSBot::Update:  calls=19878
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92198
-[PracLab]   CCSBot::UpdateLookAngles: calls=39755
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:12 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94182 lastSlot=6
-[PracLab]   FinishMove:      calls=92037
-[PracLab]   PhysicsSimulate: calls=82298 lastSlot=6
-[PracLab]   ReplayPre:       calls=1904 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1191
-[PracLab]   ReplayCommit:    calls=1191 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=158
-[PracLab]   CCSBot::Update:  calls=19894
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92262
-[PracLab]   CCSBot::UpdateLookAngles: calls=39787
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:12 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94246 lastSlot=6
-[PracLab]   FinishMove:      calls=92101
-[PracLab]   PhysicsSimulate: calls=82362 lastSlot=6
-[PracLab]   ReplayPre:       calls=1936 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1223
-[PracLab]   ReplayCommit:    calls=1223 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=190
-[PracLab]   CCSBot::Update:  calls=19910
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92326
-[PracLab]   CCSBot::UpdateLookAngles: calls=39819
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab-DBG] 23:27:12 ReplayActiveWeapon AFTER 3s: bot=Enforcer slot=6 activeWeapon=weapon_molotov allWeapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab-DBG] 23:27:12 WeaponSwitchCheck AFTER 3s: recordedDef=46 botActiveDef=46 mismatch=False slot=6
-[PracLab] 23:27:13 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94310 lastSlot=6
-[PracLab]   FinishMove:      calls=92165
-[PracLab]   PhysicsSimulate: calls=82426 lastSlot=6
-[PracLab]   ReplayPre:       calls=1968 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1255
-[PracLab]   ReplayCommit:    calls=1255 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=222
-[PracLab]   CCSBot::Update:  calls=19926
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92390
-[PracLab]   CCSBot::UpdateLookAngles: calls=39851
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:13 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94374 lastSlot=6
-[PracLab]   FinishMove:      calls=92229
-[PracLab]   PhysicsSimulate: calls=82490 lastSlot=6
-[PracLab]   ReplayPre:       calls=2000 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1287
-[PracLab]   ReplayCommit:    calls=1287 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=254
-[PracLab]   CCSBot::Update:  calls=19942
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92454
-[PracLab]   CCSBot::UpdateLookAngles: calls=39883
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:14 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94438 lastSlot=6
-[PracLab]   FinishMove:      calls=92293
-[PracLab]   PhysicsSimulate: calls=82554 lastSlot=6
-[PracLab]   ReplayPre:       calls=2032 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1319
-[PracLab]   ReplayCommit:    calls=1319 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=286
-[PracLab]   CCSBot::Update:  calls=19958
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92518
-[PracLab]   CCSBot::UpdateLookAngles: calls=39915
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:14 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94502 lastSlot=6
-[PracLab]   FinishMove:      calls=92357
-[PracLab]   PhysicsSimulate: calls=82618 lastSlot=6
-[PracLab]   ReplayPre:       calls=2064 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1351
-[PracLab]   ReplayCommit:    calls=1351 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=318
-[PracLab]   CCSBot::Update:  calls=19974
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92582
-[PracLab]   CCSBot::UpdateLookAngles: calls=39947
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:15 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94566 lastSlot=6
-[PracLab]   FinishMove:      calls=92421
-[PracLab]   PhysicsSimulate: calls=82682 lastSlot=6
-[PracLab]   ReplayPre:       calls=2096 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1383
-[PracLab]   ReplayCommit:    calls=1383 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=350
-[PracLab]   CCSBot::Update:  calls=19990
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92646
-[PracLab]   CCSBot::UpdateLookAngles: calls=39979
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:15 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94630 lastSlot=6
-[PracLab]   FinishMove:      calls=92485
-[PracLab]   PhysicsSimulate: calls=82746 lastSlot=6
-[PracLab]   ReplayPre:       calls=2128 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1415
-[PracLab]   ReplayCommit:    calls=1415 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=382
-[PracLab]   CCSBot::Update:  calls=20006
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92710
-[PracLab]   CCSBot::UpdateLookAngles: calls=40011
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:16 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94699 lastSlot=6
-[PracLab]   FinishMove:      calls=92549
-[PracLab]   PhysicsSimulate: calls=82810 lastSlot=6
-[PracLab]   ReplayPre:       calls=2165 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1447
-[PracLab]   ReplayCommit:    calls=1447 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=414
-[PracLab]   CCSBot::Update:  calls=20022
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92774
-[PracLab]   CCSBot::UpdateLookAngles: calls=40043
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-266.98, -718.67, 72.00)
-[PracLab]   ReadBackOrigin:(-266.98, -718.67, 72.00)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:16 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94797 lastSlot=6
-[PracLab]   FinishMove:      calls=92613
-[PracLab]   PhysicsSimulate: calls=82874 lastSlot=6
-[PracLab]   ReplayPre:       calls=2231 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1479
-[PracLab]   ReplayCommit:    calls=1479 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=446
-[PracLab]   CCSBot::Update:  calls=20038
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92838
-[PracLab]   CCSBot::UpdateLookAngles: calls=40075
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-176.48, -737.33, 42.11)
-[PracLab]   ReadBackOrigin:(-176.48, -737.33, 42.11)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:17 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94867 lastSlot=6
-[PracLab]   FinishMove:      calls=92677
-[PracLab]   PhysicsSimulate: calls=82938 lastSlot=6
-[PracLab]   ReplayPre:       calls=2269 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1511
-[PracLab]   ReplayCommit:    calls=1511 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=478
-[PracLab]   CCSBot::Update:  calls=20054
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92902
-[PracLab]   CCSBot::UpdateLookAngles: calls=40107
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (-54.32, -735.02, 13.78)
-[PracLab]   ReadBackOrigin:(-54.32, -735.02, 13.78)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:17 Grenade Enforcer threw weapon_molotov velocity=(577.5,787.8,19.6) class=molotov_projectile
-[PracLab] 23:27:17 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=94956 lastSlot=6
-[PracLab]   FinishMove:      calls=92741
-[PracLab]   PhysicsSimulate: calls=83002 lastSlot=6
-[PracLab]   ReplayPre:       calls=2326 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1543
-[PracLab]   ReplayCommit:    calls=1543 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=510
-[PracLab]   CCSBot::Update:  calls=20070
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=92966
-[PracLab]   CCSBot::UpdateLookAngles: calls=40139
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (37.70, -665.09, 4.77)
-[PracLab]   ReadBackOrigin:(37.70, -665.09, 4.77)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:18 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=95028 lastSlot=6
-[PracLab]   FinishMove:      calls=92805
-[PracLab]   PhysicsSimulate: calls=83066 lastSlot=6
-[PracLab]   ReplayPre:       calls=2366 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1575
-[PracLab]   ReplayCommit:    calls=1575 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=542
-[PracLab]   CCSBot::Update:  calls=20086
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=93030
-[PracLab]   CCSBot::UpdateLookAngles: calls=40171
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (103.66, -563.56, 1.16)
-[PracLab]   ReadBackOrigin:(103.66, -563.56, 1.16)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:18 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=95127 lastSlot=6
-[PracLab]   FinishMove:      calls=92869
-[PracLab]   PhysicsSimulate: calls=83130 lastSlot=6
-[PracLab]   ReplayPre:       calls=2433 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1607
-[PracLab]   ReplayCommit:    calls=1607 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=574
-[PracLab]   CCSBot::Update:  calls=20102
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=93094
-[PracLab]   CCSBot::UpdateLookAngles: calls=40203
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (132.21, -448.11, 1.91)
-[PracLab]   ReadBackOrigin:(132.21, -448.11, 1.91)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:18 Grenade Enforcer threw weapon_hegrenade velocity=(737.4,637.3,-5.8) class=hegrenade_projectile
-[PracLab] 23:27:19 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=95218 lastSlot=6
-[PracLab]   FinishMove:      calls=92933
-[PracLab]   PhysicsSimulate: calls=83194 lastSlot=6
-[PracLab]   ReplayPre:       calls=2492 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1639
-[PracLab]   ReplayCommit:    calls=1639 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=606
-[PracLab]   CCSBot::Update:  calls=20118
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=93158
-[PracLab]   CCSBot::UpdateLookAngles: calls=40235
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (214.07, -371.24, 0.21)
-[PracLab]   ReadBackOrigin:(214.07, -371.24, 0.21)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:19 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=95308 lastSlot=6
-[PracLab]   FinishMove:      calls=92997
-[PracLab]   PhysicsSimulate: calls=83258 lastSlot=6
-[PracLab]   ReplayPre:       calls=2550 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1671
-[PracLab]   ReplayCommit:    calls=1671 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=638
-[PracLab]   CCSBot::Update:  calls=20134
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=93222
-[PracLab]   CCSBot::UpdateLookAngles: calls=40267
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (205.90, -378.25, 0.28)
-[PracLab]   ReadBackOrigin:(205.90, -378.25, 0.28)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:20 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=95384 lastSlot=6
-[PracLab]   FinishMove:      calls=93061
-[PracLab]   PhysicsSimulate: calls=83322 lastSlot=6
-[PracLab]   ReplayPre:       calls=2594 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1703
-[PracLab]   ReplayCommit:    calls=1703 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=670
-[PracLab]   CCSBot::Update:  calls=20150
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=93286
-[PracLab]   CCSBot::UpdateLookAngles: calls=40299
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (202.31, -381.37, 0.31)
-[PracLab]   ReadBackOrigin:(202.31, -381.37, 0.31)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:20 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=95448 lastSlot=6
-[PracLab]   FinishMove:      calls=93125
-[PracLab]   PhysicsSimulate: calls=83386 lastSlot=6
-[PracLab]   ReplayPre:       calls=2626 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1735
-[PracLab]   ReplayCommit:    calls=1735 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=702
-[PracLab]   CCSBot::Update:  calls=20166
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=93350
-[PracLab]   CCSBot::UpdateLookAngles: calls=40331
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (202.31, -381.37, 0.31)
-[PracLab]   ReadBackOrigin:(202.31, -381.37, 0.31)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] 23:27:21 Replay: frozen bot slot=6 (AI disabled, bot stays still)
-[PracLab] 23:27:21 Replay ended: id=1 name=MEng姊︽磱馃_20260716_232705
-[PracLab] 23:27:21 === Diagnostics(after replay ended) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=95498 lastSlot=6
-[PracLab]   FinishMove:      calls=93175
-[PracLab]   PhysicsSimulate: calls=83436 lastSlot=6
-[PracLab]   ReplayPre:       calls=2651 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1760
-[PracLab]   ReplayCommit:    calls=1760 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=727
-[PracLab]   CCSBot::Update:  calls=20178
-[PracLab]   CCSBot::Upkeep:  calls=385
-[PracLab]   PlayerRunCommand:calls=93400
-[PracLab]   CCSBot::UpdateLookAngles: calls=40356
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=810
-[PracLab]   WrittenOrigin: (202.31, -381.37, 0.31)
-[PracLab]   ReadBackOrigin:(202.31, -381.37, 0.31)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab] HandleReplay: executing...
-[PracLab-DBG] 23:27:26 HandleReplay ENTRY: existingPlayingCount=0 totalRecordings=1
-[PracLab] 23:27:26 Replay: cleaning up 1 existing replay bot(s) before starting new replay
-[PracLab] 23:27:26 Replay: cleaning up entry id=1 status=Idle botSlot=6
-[PracLab] 23:27:26 Replay: unfrozen bot slot=6 (wasPlaying=False)
-[PracLab] 23:27:26 Replay stopped: id=1 name=MEng姊︽磱馃_20260716_232705 botSlot=6
-[PracLab] 23:27:26 Replay: set bot_quota=1 (existing=0+1), mode=normal, team=Terrorist (engine-managed, no bot_add)
-[PracLab] 23:27:26 Replay kicked bot UserId=6
-Enforcer kicked by Console (NETWORK_DISCONNECT_KICKED)
-ClientPutInServer create new player controller [Rezan]
-[Rezan] cl_interp_ratio='', LerpTime=0
-"Rezan<7><BOT><Unassigned>" ChangeTeam() CTMDBG , team 0, req team 2 willSwitch 0, 683.14
-[PracLab] 23:27:26 Replay bot found: Rezan UserId=7 team=2
-[PracLab] 23:27:26 Replay: bot found slot=7 name=Rezan, unfreezing
-[PracLab] LoadAndStartReplay: executing... bot=Rezan entryId=1
-[PracLab-DBG] 23:27:26 GiveBotWeapons BEFORE: bot=Rezan slot=7 activeWeapon=weapon_ak47 weaponsToGive=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab-DBG] 23:27:26 GiveBotWeapons AFTER REMOVE: activeWeapon=<no-active-weapon>
-[PracLab-DBG] 23:27:26 GiveBotWeapons AFTER GIVE: activeWeapon=weapon_ak47 allWeapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab] 23:27:26 Bot weapons given: bot=Rezan slot=7 weapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab] 23:27:26 Replay started: id=1 bot=Rezan slot=7 ticks=728 subs=20
-[PracLab] 23:27:26 === Diagnostics(before replay (baseline)) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96325 lastSlot=7
-[PracLab]   FinishMove:      calls=93937
-[PracLab]   PhysicsSimulate: calls=84198 lastSlot=7
-[PracLab]   ReplayPre:       calls=2651 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1760
-[PracLab]   ReplayCommit:    calls=1760 pawnNull=0
-[PracLab]   lastReplaySlot=6 lastReplayCursor=727
-[PracLab]   CCSBot::Update:  calls=20368
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94162
-[PracLab]   CCSBot::UpdateLookAngles: calls=40736
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (202.31, -381.37, 0.31)
-[PracLab]   ReadBackOrigin:(202.31, -381.37, 0.31)
-[PracLab]   pawnIdentity=3376435896 pawnMoveType=2
-[PracLab-DBG] 23:27:26 ReplayActiveWeapon AT START (0s): bot=Rezan slot=7 activeWeapon=weapon_ak47
-[PracLab-DBG] 23:27:26 WeaponSwitchCheck AT START (0s): recordedDef=46 botActiveDef=-1 mismatch=False slot=7
-[PracLab] 23:27:27 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96339 lastSlot=7
-[PracLab]   FinishMove:      calls=93951
-[PracLab]   PhysicsSimulate: calls=84212 lastSlot=7
-[PracLab]   ReplayPre:       calls=2658 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1767
-[PracLab]   ReplayCommit:    calls=1767 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=6
-[PracLab]   CCSBot::Update:  calls=20372
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94176
-[PracLab]   CCSBot::UpdateLookAngles: calls=40743
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:27 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96407 lastSlot=7
-[PracLab]   FinishMove:      calls=94015
-[PracLab]   PhysicsSimulate: calls=84276 lastSlot=7
-[PracLab]   ReplayPre:       calls=2690 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1799
-[PracLab]   ReplayCommit:    calls=1799 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=38
-[PracLab]   CCSBot::Update:  calls=20388
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94240
-[PracLab]   CCSBot::UpdateLookAngles: calls=40775
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab-DBG] 23:27:27 ReplayActiveWeapon AFTER 1s: bot=Rezan slot=7 activeWeapon=weapon_molotov allWeapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab-DBG] 23:27:27 WeaponSwitchCheck AFTER 1s: recordedDef=46 botActiveDef=46 mismatch=False slot=7
-[PracLab] 23:27:28 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96507 lastSlot=7
-[PracLab]   FinishMove:      calls=94079
-[PracLab]   PhysicsSimulate: calls=84340 lastSlot=7
-[PracLab]   ReplayPre:       calls=2722 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1831
-[PracLab]   ReplayCommit:    calls=1831 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=70
-[PracLab]   CCSBot::Update:  calls=20404
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94304
-[PracLab]   CCSBot::UpdateLookAngles: calls=40807
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:28 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96604 lastSlot=7
-[PracLab]   FinishMove:      calls=94143
-[PracLab]   PhysicsSimulate: calls=84404 lastSlot=7
-[PracLab]   ReplayPre:       calls=2754 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1863
-[PracLab]   ReplayCommit:    calls=1863 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=102
-[PracLab]   CCSBot::Update:  calls=20420
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94368
-[PracLab]   CCSBot::UpdateLookAngles: calls=40839
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:29 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96688 lastSlot=7
-[PracLab]   FinishMove:      calls=94207
-[PracLab]   PhysicsSimulate: calls=84468 lastSlot=7
-[PracLab]   ReplayPre:       calls=2786 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1895
-[PracLab]   ReplayCommit:    calls=1895 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=134
-[PracLab]   CCSBot::Update:  calls=20436
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94432
-[PracLab]   CCSBot::UpdateLookAngles: calls=40871
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:29 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96762 lastSlot=7
-[PracLab]   FinishMove:      calls=94271
-[PracLab]   PhysicsSimulate: calls=84532 lastSlot=7
-[PracLab]   ReplayPre:       calls=2818 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1927
-[PracLab]   ReplayCommit:    calls=1927 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=166
-[PracLab]   CCSBot::Update:  calls=20452
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94496
-[PracLab]   CCSBot::UpdateLookAngles: calls=40903
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab-DBG] 23:27:29 ReplayActiveWeapon AFTER 3s: bot=Rezan slot=7 activeWeapon=weapon_molotov allWeapons=[weapon_knife, weapon_glock, weapon_ak47, weapon_molotov, weapon_hegrenade, weapon_smokegrenade, weapon_flashbang, weapon_decoy, weapon_c4]
-[PracLab-DBG] 23:27:29 WeaponSwitchCheck AFTER 3s: recordedDef=46 botActiveDef=46 mismatch=False slot=7
-[PracLab] 23:27:30 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96827 lastSlot=7
-[PracLab]   FinishMove:      calls=94335
-[PracLab]   PhysicsSimulate: calls=84596 lastSlot=7
-[PracLab]   ReplayPre:       calls=2850 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1959
-[PracLab]   ReplayCommit:    calls=1959 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=198
-[PracLab]   CCSBot::Update:  calls=20468
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94560
-[PracLab]   CCSBot::UpdateLookAngles: calls=40935
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:30 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96894 lastSlot=7
-[PracLab]   FinishMove:      calls=94399
-[PracLab]   PhysicsSimulate: calls=84660 lastSlot=7
-[PracLab]   ReplayPre:       calls=2882 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=1991
-[PracLab]   ReplayCommit:    calls=1991 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=230
-[PracLab]   CCSBot::Update:  calls=20484
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94624
-[PracLab]   CCSBot::UpdateLookAngles: calls=40967
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:31 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=96992 lastSlot=7
-[PracLab]   FinishMove:      calls=94463
-[PracLab]   PhysicsSimulate: calls=84724 lastSlot=7
-[PracLab]   ReplayPre:       calls=2914 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2023
-[PracLab]   ReplayCommit:    calls=2023 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=262
-[PracLab]   CCSBot::Update:  calls=20500
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94688
-[PracLab]   CCSBot::UpdateLookAngles: calls=40999
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:31 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97063 lastSlot=7
-[PracLab]   FinishMove:      calls=94527
-[PracLab]   PhysicsSimulate: calls=84788 lastSlot=7
-[PracLab]   ReplayPre:       calls=2946 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2055
-[PracLab]   ReplayCommit:    calls=2055 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=294
-[PracLab]   CCSBot::Update:  calls=20516
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94752
-[PracLab]   CCSBot::UpdateLookAngles: calls=41031
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:32 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97148 lastSlot=7
-[PracLab]   FinishMove:      calls=94591
-[PracLab]   PhysicsSimulate: calls=84852 lastSlot=7
-[PracLab]   ReplayPre:       calls=2978 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2087
-[PracLab]   ReplayCommit:    calls=2087 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=326
-[PracLab]   CCSBot::Update:  calls=20532
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94816
-[PracLab]   CCSBot::UpdateLookAngles: calls=41063
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:32 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97222 lastSlot=7
-[PracLab]   FinishMove:      calls=94655
-[PracLab]   PhysicsSimulate: calls=84916 lastSlot=7
-[PracLab]   ReplayPre:       calls=3010 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2119
-[PracLab]   ReplayCommit:    calls=2119 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=358
-[PracLab]   CCSBot::Update:  calls=20548
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94880
-[PracLab]   CCSBot::UpdateLookAngles: calls=41095
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:33 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97299 lastSlot=7
-[PracLab]   FinishMove:      calls=94719
-[PracLab]   PhysicsSimulate: calls=84980 lastSlot=7
-[PracLab]   ReplayPre:       calls=3042 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2151
-[PracLab]   ReplayCommit:    calls=2151 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=390
-[PracLab]   CCSBot::Update:  calls=20564
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=94944
-[PracLab]   CCSBot::UpdateLookAngles: calls=41127
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-268.73, -716.72, 72.45)
-[PracLab]   ReadBackOrigin:(-268.73, -716.72, 72.45)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:33 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97410 lastSlot=7
-[PracLab]   FinishMove:      calls=94783
-[PracLab]   PhysicsSimulate: calls=85044 lastSlot=7
-[PracLab]   ReplayPre:       calls=3087 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2183
-[PracLab]   ReplayCommit:    calls=2183 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=422
-[PracLab]   CCSBot::Update:  calls=20580
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95008
-[PracLab]   CCSBot::UpdateLookAngles: calls=41159
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-253.62, -725.13, 66.90)
-[PracLab]   ReadBackOrigin:(-253.62, -725.13, 66.90)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:34 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97533 lastSlot=7
-[PracLab]   FinishMove:      calls=94847
-[PracLab]   PhysicsSimulate: calls=85108 lastSlot=7
-[PracLab]   ReplayPre:       calls=3151 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2215
-[PracLab]   ReplayCommit:    calls=2215 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=454
-[PracLab]   CCSBot::Update:  calls=20596
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95072
-[PracLab]   CCSBot::UpdateLookAngles: calls=41191
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-146.01, -739.02, 33.58)
-[PracLab]   ReadBackOrigin:(-146.01, -739.02, 33.58)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:34 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97606 lastSlot=7
-[PracLab]   FinishMove:      calls=94911
-[PracLab]   PhysicsSimulate: calls=85172 lastSlot=7
-[PracLab]   ReplayPre:       calls=3189 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2247
-[PracLab]   ReplayCommit:    calls=2247 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=486
-[PracLab]   CCSBot::Update:  calls=20612
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95136
-[PracLab]   CCSBot::UpdateLookAngles: calls=41223
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (-25.85, -727.48, 10.83)
-[PracLab]   ReadBackOrigin:(-25.85, -727.48, 10.83)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:34 Grenade Rezan threw weapon_molotov velocity=(577.5,787.8,19.6) class=molotov_projectile
-[PracLab] 23:27:35 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97690 lastSlot=7
-[PracLab]   FinishMove:      calls=94975
-[PracLab]   PhysicsSimulate: calls=85236 lastSlot=7
-[PracLab]   ReplayPre:       calls=3240 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2279
-[PracLab]   ReplayCommit:    calls=2279 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=518
-[PracLab]   CCSBot::Update:  calls=20628
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95200
-[PracLab]   CCSBot::UpdateLookAngles: calls=41255
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (55.69, -640.31, 4.76)
-[PracLab]   ReadBackOrigin:(55.69, -640.31, 4.76)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:35 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97785 lastSlot=7
-[PracLab]   FinishMove:      calls=95039
-[PracLab]   PhysicsSimulate: calls=85300 lastSlot=7
-[PracLab]   ReplayPre:       calls=3288 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2311
-[PracLab]   ReplayCommit:    calls=2311 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=550
-[PracLab]   CCSBot::Update:  calls=20644
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95264
-[PracLab]   CCSBot::UpdateLookAngles: calls=41287
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (109.01, -534.16, 0.80)
-[PracLab]   ReadBackOrigin:(109.01, -534.16, 0.80)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:36 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=97909 lastSlot=7
-[PracLab]   FinishMove:      calls=95103
-[PracLab]   PhysicsSimulate: calls=85364 lastSlot=7
-[PracLab]   ReplayPre:       calls=3356 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2343
-[PracLab]   ReplayCommit:    calls=2343 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=582
-[PracLab]   CCSBot::Update:  calls=20660
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95328
-[PracLab]   CCSBot::UpdateLookAngles: calls=41319
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (149.79, -428.40, 1.41)
-[PracLab]   ReadBackOrigin:(149.79, -428.40, 1.41)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:36 Grenade Rezan threw weapon_hegrenade velocity=(737.4,637.3,-5.8) class=hegrenade_projectile
-[PracLab] 23:27:36 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=98011 lastSlot=7
-[PracLab]   FinishMove:      calls=95167
-[PracLab]   PhysicsSimulate: calls=85428 lastSlot=7
-[PracLab]   ReplayPre:       calls=3415 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2375
-[PracLab]   ReplayCommit:    calls=2375 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=614
-[PracLab]   CCSBot::Update:  calls=20676
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95392
-[PracLab]   CCSBot::UpdateLookAngles: calls=41351
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (215.93, -369.55, 0.20)
-[PracLab]   ReadBackOrigin:(215.93, -369.55, 0.20)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:37 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=98118 lastSlot=7
-[PracLab]   FinishMove:      calls=95231
-[PracLab]   PhysicsSimulate: calls=85492 lastSlot=7
-[PracLab]   ReplayPre:       calls=3472 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2407
-[PracLab]   ReplayCommit:    calls=2407 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=646
-[PracLab]   CCSBot::Update:  calls=20692
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95456
-[PracLab]   CCSBot::UpdateLookAngles: calls=41383
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (202.42, -381.27, 0.31)
-[PracLab]   ReadBackOrigin:(202.42, -381.27, 0.31)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:37 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=98192 lastSlot=7
-[PracLab]   FinishMove:      calls=95295
-[PracLab]   PhysicsSimulate: calls=85556 lastSlot=7
-[PracLab]   ReplayPre:       calls=3508 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2439
-[PracLab]   ReplayCommit:    calls=2439 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=678
-[PracLab]   CCSBot::Update:  calls=20708
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95520
-[PracLab]   CCSBot::UpdateLookAngles: calls=41415
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (202.31, -381.37, 0.31)
-[PracLab]   ReadBackOrigin:(202.31, -381.37, 0.31)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:38 === Diagnostics(during replay) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=98256 lastSlot=7
-[PracLab]   FinishMove:      calls=95359
-[PracLab]   PhysicsSimulate: calls=85620 lastSlot=7
-[PracLab]   ReplayPre:       calls=3540 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2471
-[PracLab]   ReplayCommit:    calls=2471 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=710
-[PracLab]   CCSBot::Update:  calls=20724
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95584
-[PracLab]   CCSBot::UpdateLookAngles: calls=41447
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (202.31, -381.37, 0.31)
-[PracLab]   ReadBackOrigin:(202.31, -381.37, 0.31)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
-[PracLab] 23:27:38 Replay: frozen bot slot=7 (AI disabled, bot stays still)
-[PracLab] 23:27:38 Replay ended: id=1 name=MEng姊︽磱馃_20260716_232705
-[PracLab] 23:27:38 === Diagnostics(after replay ended) ===
-[PracLab]   physicsActive=1 subtickActive=1
-[PracLab]   ProcessMovement: calls=98290 lastSlot=7
-[PracLab]   FinishMove:      calls=95393
-[PracLab]   PhysicsSimulate: calls=85654 lastSlot=7
-[PracLab]   ReplayPre:       calls=3557 pawnNull=0
-[PracLab]   ReplayFinishMove:calls=2488
-[PracLab]   ReplayCommit:    calls=2488 pawnNull=0
-[PracLab]   lastReplaySlot=7 lastReplayCursor=727
-[PracLab]   CCSBot::Update:  calls=20732
-[PracLab]   CCSBot::Upkeep:  calls=394
-[PracLab]   PlayerRunCommand:calls=95618
-[PracLab]   CCSBot::UpdateLookAngles: calls=41464
-[PracLab]   CCSPlayerPawn::SetEyeAngles: calls=833
-[PracLab]   WrittenOrigin: (202.31, -381.37, 0.31)
-[PracLab]   ReadBackOrigin:(202.31, -381.37, 0.31)
-[PracLab]   pawnIdentity=3376440936 pawnMoveType=2
+FrameTotal:   54.36ms, tolerance:    5.40ms

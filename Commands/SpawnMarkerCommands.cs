@@ -40,6 +40,41 @@ public partial class PracLab
     private const float PlayerEyeHeight = 64.0f;
 
     /// <summary>
+    /// 序号文本相对方框平面的 Z 偏移（避免与 beam 线段 Z-fighting）。
+    /// 用户要求"高度与方框平齐"，2.0 游戏单位接近贴地且消除闪烁。
+    /// </summary>
+    private const float SpawnTextZOffset = 2.0f;
+
+    /// <summary>
+    /// 每张地图每队序号文本的 yaw 旋转角度（度）。
+    /// 不同地图出生点朝向坐标系不同，point_worldtext 默认 QAngle(0,0,0) 平铺朝上，
+    /// 但不同地图/队伍的"朝上方向"在水平面上投影不一致，需为每张地图每队单独配置文本朝向。
+    /// 约定：负值=向左（逆时针），正值=向右（顺时针），从正上方俯视。
+    /// 未配置的地图默认 0 度（不旋转）。
+    /// </summary>
+    private static readonly Dictionary<string, Dictionary<CsTeam, float>> SpawnTextYawByMap = new()
+    {
+        ["de_cache"] = new() { [CsTeam.Terrorist] = 90f, [CsTeam.CounterTerrorist] = 180f },
+        ["de_train"] = new() { [CsTeam.Terrorist] = -90f, [CsTeam.CounterTerrorist] = 0f },
+        ["de_anubis"] = new() { [CsTeam.Terrorist] = 0f, [CsTeam.CounterTerrorist] = 180f },
+        ["de_vertigo"] = new() { [CsTeam.Terrorist] = 90f, [CsTeam.CounterTerrorist] = 180f },
+        ["de_ancient"] = new() { [CsTeam.Terrorist] = 0f, [CsTeam.CounterTerrorist] = 180f },
+        ["de_nuke"] = new() { [CsTeam.Terrorist] = -90f, [CsTeam.CounterTerrorist] = 90f },
+        ["de_mirage"] = new() { [CsTeam.Terrorist] = 90f, [CsTeam.CounterTerrorist] = -90f },
+        ["de_inferno"] = new() { [CsTeam.Terrorist] = -90f, [CsTeam.CounterTerrorist] = 90f },
+    };
+
+    /// <summary>
+    /// 每张地图额外的 Z 抬高量（方框与文本同步偏移），单位：游戏单位。
+    /// de_ancient 出生点 Z 坐标偏低，方框与文本埋入地面，需额外抬高。
+    /// 未配置的地图默认 0（不抬高）。
+    /// </summary>
+    private static readonly Dictionary<string, float> SpawnExtraZOffsetByMap = new()
+    {
+        ["de_ancient"] = 16.0f,
+    };
+
+    /// <summary>
     /// 方框映射：spawnId("x_y_z") -> 出生点信息（位置/角度/队伍/索引）。
     /// 用于 E 键瞄准检测时反查目标出生点。
     /// </summary>
@@ -49,6 +84,11 @@ public partial class PracLab
     /// 已创建的 beam 实体列表，用于精确清理（避免 FindAllEntitiesByDesignerName 误伤其他 beam）。
     /// </summary>
     private readonly List<CBeam> _spawnBeamEntities = new();
+
+    /// <summary>
+    /// 已创建的序号文本实体列表，用于精确清理。
+    /// </summary>
+    private readonly List<CPointWorldText> _spawnTextEntities = new();
 
     /// <summary>
     /// 玩家 E 键冷却时间戳（按 UserId 索引）。
@@ -102,7 +142,7 @@ public partial class PracLab
                     ShowSpawnBeam(tSpawns[i], Color.LimeGreen, CsTeam.Terrorist, i);
             }
 
-            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} SpawnMarker shown {ctSpawns.Count} CT + {tSpawns.Count} T spawn beams (green)");
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} SpawnMarker shown {ctSpawns.Count} CT + {tSpawns.Count} T spawn beams with index text (green)");
         }
         catch (Exception ex)
         {
@@ -123,11 +163,15 @@ public partial class PracLab
         var pos = spawn.AbsOrigin!;
         var ang = spawn.AbsRotation ?? new QAngle(0, 0, 0);
 
+        // 部分地图（如 de_ancient）出生点 Z 偏低，方框与文本埋入地面，按地图配置额外抬高
+        string mapName = Server.MapName ?? string.Empty;
+        float extraZ = SpawnExtraZOffsetByMap.TryGetValue(mapName, out var offset) ? offset : 0.0f;
+
         float x = pos.X;
         float y = pos.Y;
-        float z = pos.Z;
+        float z = pos.Z + extraZ;
 
-        // 生成唯一标识符（坐标字符串）
+        // 生成唯一标识符（坐标字符串），用于 E 键瞄准反查
         string spawnId = $"{x}_{y}_{z}";
         _spawnMarkers[spawnId] = new SpawnMarkerInfo(pos, ang, team, index);
 
@@ -142,6 +186,10 @@ public partial class PracLab
         CreateBeamLine(p2, p4, color);
         CreateBeamLine(p4, p3, color);
         CreateBeamLine(p3, p1, color);
+
+        // 在方框中心显示序号（index 从 0 开始，显示时 +1），传入抬高后的中心点
+        var centerPos = new Vector(x, y, z);
+        CreateSpawnText(centerPos, color, index + 1, team);
     }
 
     /// <summary>
@@ -177,6 +225,66 @@ public partial class PracLab
     }
 
     /// <summary>
+    /// 在出生点方框中心创建序号文本实体（point_worldtext）。
+    /// 文本平铺在地面上（pitch=0°，文字面朝上），yaw 按 SpawnTextYawByMap 配置旋转。
+    /// </summary>
+    /// <param name="position">出生点世界坐标（方框中心，已应用额外 Z 偏移）。</param>
+    /// <param name="color">文本颜色（与方框一致）。</param>
+    /// <param name="displayNumber">显示的序号（从 1 开始）。</param>
+    /// <param name="team">所属队伍，用于查询该地图此队伍的 yaw 旋转配置。</param>
+    private void CreateSpawnText(Vector position, Color color, int displayNumber, CsTeam team)
+    {
+        var text = Utilities.CreateEntityByName<CPointWorldText>("point_worldtext");
+        if (text == null || !text.IsValid)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning CreateSpawnText failed to create point_worldtext entity");
+            return;
+        }
+
+        // 文本内容：纯数字
+        text.MessageText = displayNumber.ToString();
+        text.Color = color;
+        // FontSize=42 + WorldUnitsPerPx=1：渲染大小约 42 世界单位，分辨率比 FontSize=14+WorldUnitsPerPx=3 高 3 倍
+        text.FontSize = 42.0f;
+        text.Fullbright = true;   // 必须 true，否则颜色被世界光照过滤
+        text.Enabled = true;
+        text.FontName = "Noto Sans";  // CS2 UI 常用字体，比默认字体更清晰
+
+        // 关键：WorldUnitsPerPx 控制渲染大小，默认为 0 导致文本不可见
+        // 1.0 = 每像素 1 世界单位，配合 FontSize=42 保持大小且提高分辨率
+        text.WorldUnitsPerPx = 1.0f;
+
+        // 水平居中对齐
+        text.JustifyHorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_CENTER;
+
+        // 垂直居中对齐（默认可能为 BOTTOM 导致文本偏向正北）
+        text.JustifyVertical = PointWorldTextJustifyVertical_t.POINT_WORLD_TEXT_JUSTIFY_VERTICAL_CENTER;
+
+        // 固定朝向：不跟随玩家旋转，按地图/队伍配置的 yaw 固定旋转
+        text.ReorientMode = PointWorldTextReorientMode_t.POINT_WORLD_TEXT_REORIENT_NONE;
+
+        // 从地图-队伍配置中读取 yaw 旋转角度；未配置的地图默认 0 度
+        string mapName = Server.MapName ?? string.Empty;
+        float yaw = 0.0f;
+        if (SpawnTextYawByMap.TryGetValue(mapName, out var teamYaw) &&
+            teamYaw.TryGetValue(team, out var configuredYaw))
+        {
+            yaw = configuredYaw;
+        }
+
+        // 位置：方框中心 + Z 偏移；角度：QAngle(0, yaw, 0) 绕 Z 轴旋转文本朝向
+        var textPos = new Vector(position.X, position.Y, position.Z + SpawnTextZOffset);
+        text.Teleport(textPos, new QAngle(0, yaw, 0), new Vector(0, 0, 0));
+
+        text.DispatchSpawn();
+
+        // 双保险：spawn 后触发 SetMessage 输入，确保文本立即刷新
+        text.AcceptInput("SetMessage", text, text, displayNumber.ToString());
+
+        _spawnTextEntities.Add(text);
+    }
+
+    /// <summary>
     /// 清除所有出生点方框 beam 实体并清空映射。
     /// 使用 _spawnBeamEntities 精确清理，避免误伤其他插件创建的 beam。
     /// </summary>
@@ -194,10 +302,22 @@ public partial class PracLab
             catch { /* 单个 beam 移除失败不应中断清理 */ }
         }
 
+        // 清理序号文本实体
+        foreach (var text in _spawnTextEntities)
+        {
+            try
+            {
+                if (text != null && text.IsValid)
+                    text.Remove();
+            }
+            catch { /* 单个文本实体移除失败不应中断清理 */ }
+        }
+
         _spawnBeamEntities.Clear();
+        _spawnTextEntities.Clear();
         _spawnMarkers.Clear();
 
-        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} SpawnMarker all beams removed");
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} SpawnMarker all beams and texts removed");
     }
 
     /// <summary>
