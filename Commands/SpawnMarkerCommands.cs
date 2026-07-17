@@ -242,9 +242,9 @@ public partial class PracLab
                     if (TeleportPlayerTo(player, target.Value.Position, target.Value.Angle))
                     {
                         // 聊天栏提示（复用现有 spawn.teleported 本地化键）
-                        player.PrintToChat(Localizer.ForPlayer(player, "spawn.teleported", target.Value.Index + 1));
-
                         var teamName = target.Value.Team == CsTeam.CounterTerrorist ? "CT" : "T";
+                        player.PrintToChat(Localizer.ForPlayer(player, "spawn.teleported", teamName, target.Value.Index + 1));
+
                         Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} SpawnMarker {player.PlayerName} teleported to {teamName} spawn {target.Value.Index + 1} via E key");
                     }
                 }

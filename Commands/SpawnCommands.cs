@@ -151,7 +151,8 @@ public partial class PracLab
         var spawn = spawns[n - 1];
         if (TeleportPlayerTo(player, spawn.AbsOrigin, spawn.AbsRotation))
         {
-            player.PrintToChat(Localizer.ForPlayer(player, "spawn.teleported", n));
+            var teamName = team == CsTeam.CounterTerrorist ? "CT" : "T";
+            player.PrintToChat(Localizer.ForPlayer(player, "spawn.teleported", teamName, n));
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Spawn {player.PlayerName} teleported to {team} spawn point {n}");
         }
     }
@@ -206,7 +207,8 @@ public partial class PracLab
 
         if (TeleportPlayerTo(player, target.AbsOrigin, target.AbsRotation))
         {
-            player.PrintToChat(Localizer.ForPlayer(player, nearest ? "spawn.nearest" : "spawn.farthest"));
+            var teamName = team == CsTeam.CounterTerrorist ? "CT" : "T";
+            player.PrintToChat(Localizer.ForPlayer(player, nearest ? "spawn.nearest" : "spawn.farthest", teamName));
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Spawn {player.PlayerName} teleported to {team} {(nearest ? "nearest" : "farthest")} spawn point");
         }
     }
