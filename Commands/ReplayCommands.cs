@@ -219,6 +219,12 @@ public partial class PracLab
     private int _recordingPlayerSlot = -1;
 
     /// <summary>
+    /// 待开始录制的玩家槽位（-1 = 无）。
+    /// .record 命令后设置，等待玩家移动或按 F 键后才真正开始录制。
+    /// </summary>
+    private int _pendingRecordSlot = -1;
+
+    /// <summary>
     /// 录制开始时扫描的玩家武器名列表。
     /// 回放时复制给 bot，确保 bot 有相同的武器装备来复刻动作。
     /// </summary>
@@ -470,8 +476,8 @@ public partial class PracLab
 
     /// <summary>
     /// .record — 开始录制当前玩家的移动轨迹和动作。
-    /// 流程：3 秒倒计时 → PRL_StartRecord(slot)。
-    /// 倒计时期间若玩家断开连接或已有其他录制进行中，则取消。
+    /// 流程：设置 pending 状态 → 等待玩家移动或按 F 键 → PRL_StartRecord(slot)。
+    /// 玩家移动或按 F 键后由 CheckPendingRecordStart 在 OnTick 中触发真正录制。
     /// 同一时刻仅允许一个玩家录制，避免 C++ 侧多 slot 并发录制干扰。
     /// </summary>
     /// <param name="player">调用者玩家。</param>
@@ -482,11 +488,11 @@ public partial class PracLab
 
         if (!EnsureReplayEngine(player)) return;
 
-        // 检查是否已有录制进行中
-        if (_recordingPlayerSlot >= 0)
+        // 检查是否已有录制进行中或等待开始
+        if (_recordingPlayerSlot >= 0 || _pendingRecordSlot >= 0)
         {
             player.PrintToChat(Localizer.ForPlayer(player, "record.already_recording"));
-            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning Record already in progress slot={_recordingPlayerSlot}");
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning Record already in progress slot={_recordingPlayerSlot} pending={_pendingRecordSlot}");
             return;
         }
 
@@ -498,47 +504,75 @@ public partial class PracLab
             return;
         }
 
-        var slot = player.Slot;
+        // 设置 pending 状态，等待玩家移动或按 F 键后开始录制
+        _pendingRecordSlot = player.Slot;
+        player.PrintToChat(Localizer.ForPlayer(player, "record.waiting_to_start"));
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Record pending for player {player.PlayerName} slot={player.Slot}, waiting for movement or F key");
+
+        // 注册 OnTick 监听器（仅注册一次），检测移动/F键启动录制和 F键停止录制
+        RegisterReplayTickListener();
+    }
+
+    /// <summary>
+    /// 检测待录制玩家是否移动或按下 F 键，触发真正录制开始。
+    /// 由 OnTick 调用，当 _pendingRecordSlot >= 0 时每 tick 检查。
+    /// 触发条件：玩家按下移动键（W/A/S/D）或 F 键（Inspect）。
+    /// 若玩家断开连接则取消 pending 状态。
+    /// </summary>
+    private void CheckPendingRecordStart()
+    {
+        var slot = _pendingRecordSlot;
+        CCSPlayerController? pendingPlayer = null;
+
+        foreach (var p in Utilities.GetPlayers())
+        {
+            if (p == null || !p.IsValid || p.IsBot || p.IsHLTV) continue;
+            if (p.Slot != slot) continue;
+            pendingPlayer = p;
+            break;
+        }
+
+        // 玩家断开连接：取消 pending
+        if (pendingPlayer == null || pendingPlayer.UserId == null)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning Pending record player slot={slot} disconnected, cancelling");
+            _pendingRecordSlot = -1;
+            return;
+        }
+
+        // 检测移动键（W/A/S/D）或 F 键（Inspect）
+        var buttons = pendingPlayer.Buttons;
+        bool hasMovement = (buttons & (PlayerButtons.Forward | PlayerButtons.Back | PlayerButtons.Moveleft | PlayerButtons.Moveright)) != 0;
+        bool hasInspect = (buttons & PlayerButtons.Inspect) != 0;
+
+        if (!hasMovement && !hasInspect) return;
+
+        // 若通过 F 键触发，设置冷却防止开始录制后立刻被 F 键停止
+        if (hasInspect && pendingPlayer.UserId.HasValue)
+        {
+            _recordFKeyCooldown[pendingPlayer.UserId.Value] = DateTime.Now;
+        }
+
+        // 清除 pending 状态，开始真正录制
+        _pendingRecordSlot = -1;
         var playerSlot = slot;
 
-        // 3-2-1 倒计时，每秒提示
-        player.PrintToChat(Localizer.ForPlayer(player, "record.countdown", 3));
-        AddTimer(1.0f, () =>
+        var result = PRL_StartRecord(playerSlot);
+        if (result == 1)
         {
-            if (!player.IsValid || _recordingPlayerSlot >= 0) return;
-            player.PrintToChat(Localizer.ForPlayer(player, "record.countdown", 2));
-        });
-        AddTimer(2.0f, () =>
+            _recordingPlayerSlot = playerSlot;
+
+            // 扫描玩家当前武器装备，保存到 _recordingPlayerWeapons
+            _recordingPlayerWeapons = ScanPlayerWeapons(pendingPlayer);
+
+            pendingPlayer.PrintToChat(Localizer.ForPlayer(pendingPlayer, "record.started"));
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Record started for player {pendingPlayer.PlayerName} slot={playerSlot} weapons=[{string.Join(", ", _recordingPlayerWeapons)}]");
+        }
+        else
         {
-            if (!player.IsValid || _recordingPlayerSlot >= 0) return;
-            player.PrintToChat(Localizer.ForPlayer(player, "record.countdown", 1));
-        });
-        AddTimer(3.0f, () =>
-        {
-            if (!player.IsValid || _recordingPlayerSlot >= 0) return;
-
-            // 调用 C++ 开始录制（清空旧缓冲区并设置录制标志）
-            var result = PRL_StartRecord(playerSlot);
-            if (result == 1)
-            {
-                _recordingPlayerSlot = playerSlot;
-
-                // 扫描玩家当前武器装备，保存到 _recordingPlayerWeapons
-                // 回放时将这些武器复制给 bot，确保 bot 能复刻武器相关动作
-                _recordingPlayerWeapons = ScanPlayerWeapons(player);
-
-                player.PrintToChat(Localizer.ForPlayer(player, "record.started"));
-                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Record started for player {player.PlayerName} slot={playerSlot} weapons=[{string.Join(", ", _recordingPlayerWeapons)}]");
-
-                // 注册 F 键检测监听器（仅注册一次）
-                RegisterReplayTickListener();
-            }
-            else
-            {
-                player.PrintToChat(Localizer.ForPlayer(player, "record.start_failed"));
-                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error PRL_StartRecord failed slot={playerSlot} result={result}");
-            }
-        });
+            pendingPlayer.PrintToChat(Localizer.ForPlayer(pendingPlayer, "record.start_failed"));
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error PRL_StartRecord failed slot={playerSlot} result={result}");
+        }
     }
 
     /// <summary>
@@ -555,6 +589,12 @@ public partial class PracLab
         {
             try
             {
+                // ---- 0. 待录制：检测移动/F键启动录制 ----
+                if (_pendingRecordSlot >= 0)
+                {
+                    CheckPendingRecordStart();
+                }
+
                 // ---- 1. 录制中：检测 F 键和玩家断开 ----
                 if (_recordingPlayerSlot >= 0)
                 {
@@ -758,6 +798,20 @@ public partial class PracLab
         Server.PrintToConsole("[PracLab] HandleStopRecord: executing...");
 
         if (!EnsureReplayEngine(player)) return;
+
+        // 处理 pending 状态：取消等待开始
+        if (_pendingRecordSlot >= 0)
+        {
+            if (player.Slot != _pendingRecordSlot)
+            {
+                player.PrintToChat(Localizer.ForPlayer(player, "record.not_recording"));
+                return;
+            }
+            _pendingRecordSlot = -1;
+            player.PrintToChat(Localizer.ForPlayer(player, "record.cancelled"));
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Record pending cancelled by player {player.PlayerName} slot={player.Slot}");
+            return;
+        }
 
         if (_recordingPlayerSlot < 0)
         {
@@ -1640,6 +1694,13 @@ public partial class PracLab
         if (_recordingPlayerSlot >= 0)
         {
             StopAndSaveRecording(_recordingPlayerSlot, player);
+        }
+
+        // 取消 pending 状态（如果玩家正在等待开始录制）
+        if (_pendingRecordSlot >= 0)
+        {
+            _pendingRecordSlot = -1;
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Record pending cancelled by clearrecordall");
         }
 
         // 删除所有录制文件

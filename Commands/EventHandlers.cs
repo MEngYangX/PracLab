@@ -66,6 +66,7 @@ public partial class PracLab
             _recordings.Clear();
             _nextRecordingId = 1;
             _recordingPlayerSlot = -1;
+            _pendingRecordSlot = -1;
             _recordFKeyCooldown.Clear();
 
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Core map changed to {mapName}, all states reset");
