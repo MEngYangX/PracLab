@@ -118,7 +118,7 @@ public partial class PracLab : BasePlugin
 
     public override string ModuleName => "PracLab Plugin";
 
-    public override string ModuleVersion => "0.3.0";
+    public override string ModuleVersion => "0.1.0";
 
     /// <summary>
     /// 插件加载入口。加载配置、设置默认语言、注册聊天监听器、构建路由表、注册事件监听器。
