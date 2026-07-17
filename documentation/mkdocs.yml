@@ -1,0 +1,58 @@
+site_name: PracLab
+site_url: https://your-username.github.io/PracLab/
+repo_url: https://github.com/your-username/PracLab
+repo_name: your-username/PracLab
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+      primary: teal
+      accent: purple
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+      primary: teal
+      accent: lime
+  features:
+    - header.autohide
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.progress
+
+nav:
+  - 中文:
+      - 主页: zh/index.md
+      - 开始:
+          - 安装: zh/安装.md
+          - 配置: zh/配置.md
+      - 命令参考: zh/命令.md
+      - 开发者: zh/开发者.md
+  - English:
+      - Home: en/index.md
+      - Setup:
+          - Installation: en/installation.md
+          - Configuration: en/configuration.md
+      - Commands: en/commands.md
+      - Developers: en/developers.md
+
+extra:
+  alternate:
+    - name: 中文
+      link: /PracLab/zh/
+      lang: zh
+    - name: English
+      link: /PracLab/en/
+      lang: en
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
