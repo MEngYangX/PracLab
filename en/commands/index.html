@@ -1,0 +1,1744 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://your-username.github.io/PracLab/en/commands/">
+      
+      
+        <link rel="prev" href="../configuration/">
+      
+      
+        <link rel="next" href="../developers/">
+      
+      
+        
+          <link rel="alternate" href="/PracLab/zh/" hreflang="zh">
+        
+          <link rel="alternate" href="/PracLab/en/" hreflang="en">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Commands - PracLab</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chat-commands" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PracLab" class="md-header__button md-logo" aria-label="PracLab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PracLab
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Commands
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="lime"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/PracLab/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/PracLab/en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/your-username/PracLab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    your-username/PracLab
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PracLab" class="md-nav__button md-logo" aria-label="PracLab" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PracLab
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/your-username/PracLab" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    your-username/PracLab
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../zh/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    中文
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    中文
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开始
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开始
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zh/%E5%AE%89%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zh/%E9%85%8D%E7%BD%AE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    配置
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zh/%E5%91%BD%E4%BB%A4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命令参考
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../zh/%E5%BC%80%E5%8F%91%E8%80%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发者
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    English
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    English
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#command-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Command Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#practice-mode-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practice Mode Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Map Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bot-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bot Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utility-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utility &amp; Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-god-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time &amp; God Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spawn-point-teleport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spawn Point Teleport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spawn-point-boxes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spawn Point Boxes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#team-switching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team Switching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grenade-rethrow-position-recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grenade Rethrow &amp; Position Recall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dryrun-round-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dryrun &amp; Round Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replay-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replay System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convar-toggles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConVar Toggles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Help
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../developers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#command-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Command Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#practice-mode-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practice Mode Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Map Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bot-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bot Management
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#utility-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Utility &amp; Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-god-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time &amp; God Mode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spawn-point-teleport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spawn Point Teleport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spawn-point-boxes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spawn Point Boxes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#team-switching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Team Switching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grenade-rethrow-position-recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grenade Rethrow &amp; Position Recall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dryrun-round-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dryrun &amp; Round Control
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replay-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replay System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#convar-toggles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConVar Toggles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Help
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="chat-commands">Chat Commands<a class="headerlink" href="#chat-commands" title="Permanent link">&para;</a></h1>
+<p>PracLab intercepts global chat (<code>say</code>) and team chat (<code>say_team</code>) to recognize player commands. All commands support both of the following prefix forms, case-insensitive:</p>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.</code></td>
+<td><code>.prac</code></td>
+</tr>
+<tr>
+<td><code>!</code></td>
+<td><code>!prac</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="command-overview">Command Overview<a class="headerlink" href="#command-overview" title="Permanent link">&para;</a></h2>
+<h3 id="practice-mode-control">Practice Mode Control<a class="headerlink" href="#practice-mode-control" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.prac</code></td>
+<td>—</td>
+<td>Load practice config and enable practice mode</td>
+</tr>
+</tbody>
+</table>
+<h3 id="map-management">Map Management<a class="headerlink" href="#map-management" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.map</code></td>
+<td>—</td>
+<td>Show the list of available maps (visible to sender only)</td>
+</tr>
+<tr>
+<td><code>.inferno</code></td>
+<td>—</td>
+<td>Switch to de_inferno</td>
+</tr>
+<tr>
+<td><code>.mirage</code></td>
+<td>—</td>
+<td>Switch to de_mirage</td>
+</tr>
+<tr>
+<td><code>.nuke</code></td>
+<td>—</td>
+<td>Switch to de_nuke</td>
+</tr>
+<tr>
+<td><code>.ancient</code></td>
+<td>—</td>
+<td>Switch to de_ancient</td>
+</tr>
+<tr>
+<td><code>.vertigo</code></td>
+<td>—</td>
+<td>Switch to de_vertigo</td>
+</tr>
+<tr>
+<td><code>.anubis</code></td>
+<td>—</td>
+<td>Switch to de_anubis</td>
+</tr>
+<tr>
+<td><code>.dust2</code></td>
+<td>—</td>
+<td>Switch to de_dust2</td>
+</tr>
+<tr>
+<td><code>.train</code></td>
+<td>—</td>
+<td>Switch to de_train</td>
+</tr>
+<tr>
+<td><code>.cache</code></td>
+<td>—</td>
+<td>Switch to de_cache</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bot-management">Bot Management<a class="headerlink" href="#bot-management" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.bot</code></td>
+<td>—</td>
+<td>Spawn a bot at the player position</td>
+</tr>
+<tr>
+<td><code>.crouchbot</code></td>
+<td><code>.cbot</code></td>
+<td>Spawn a crouching bot at the player position</td>
+</tr>
+<tr>
+<td><code>.kickall</code></td>
+<td>—</td>
+<td>Remove all bots</td>
+</tr>
+<tr>
+<td><code>.kick</code></td>
+<td>—</td>
+<td>Remove the bot the player is aiming at</td>
+</tr>
+</tbody>
+</table>
+<h3 id="utility-environment">Utility &amp; Environment<a class="headerlink" href="#utility-environment" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.clear</code></td>
+<td>—</td>
+<td>Remove all grenades/projectiles</td>
+</tr>
+<tr>
+<td><code>.break</code></td>
+<td><code>.br</code></td>
+<td>Break all breakable entities</td>
+</tr>
+</tbody>
+</table>
+<h3 id="time-god-mode">Time &amp; God Mode<a class="headerlink" href="#time-god-mode" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.fastforward</code></td>
+<td><code>.ff</code></td>
+<td>Start 10× server time fast-forward for 20 seconds, then auto-revert</td>
+</tr>
+<tr>
+<td><code>.noflash</code></td>
+<td>—</td>
+<td>Toggle flashbang immunity for the player (event-driven, other players unaffected)</td>
+</tr>
+<tr>
+<td><code>.god</code></td>
+<td>—</td>
+<td>Toggle god mode for the player</td>
+</tr>
+</tbody>
+</table>
+<h3 id="spawn-point-teleport">Spawn Point Teleport<a class="headerlink" href="#spawn-point-teleport" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.spawn &lt;N&gt;</code></td>
+<td><code>.s</code></td>
+<td>Teleport to the N-th spawn of the same team (default N=1)</td>
+</tr>
+<tr>
+<td><code>.ctspawn &lt;N&gt;</code></td>
+<td><code>.cts</code></td>
+<td>Teleport to the N-th CT spawn</td>
+</tr>
+<tr>
+<td><code>.tspawn &lt;N&gt;</code></td>
+<td><code>.ts</code></td>
+<td>Teleport to the N-th T spawn</td>
+</tr>
+<tr>
+<td><code>.bestspawn</code></td>
+<td><code>.bs</code></td>
+<td>Teleport to the nearest own-team spawn</td>
+</tr>
+<tr>
+<td><code>.worstspawn</code></td>
+<td><code>.ws</code></td>
+<td>Teleport to the farthest own-team spawn</td>
+</tr>
+<tr>
+<td><code>.bestctspawn</code></td>
+<td><code>.bcts</code></td>
+<td>Teleport to the nearest CT spawn</td>
+</tr>
+<tr>
+<td><code>.worstctspawn</code></td>
+<td><code>.wcts</code></td>
+<td>Teleport to the farthest CT spawn</td>
+</tr>
+<tr>
+<td><code>.besttspawn</code></td>
+<td><code>.bts</code></td>
+<td>Teleport to the nearest T spawn</td>
+</tr>
+<tr>
+<td><code>.worsttspawn</code></td>
+<td><code>.wts</code></td>
+<td>Teleport to the farthest T spawn</td>
+</tr>
+</tbody>
+</table>
+<h3 id="spawn-point-boxes">Spawn Point Boxes<a class="headerlink" href="#spawn-point-boxes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.showspawns</code></td>
+<td>—</td>
+<td>Re-display both teams' spawn boxes (auto-shown when prac mode is enabled)</td>
+</tr>
+<tr>
+<td><code>.hidespawns</code></td>
+<td>—</td>
+<td>Hide spawn boxes</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>E-key teleport</strong>: Aim at a box and press the use key (default E) to teleport to that spawn; the chat shows "Teleported to spawn N". CT and T boxes are both green; the box center shows an index number (rotated per-map config). In prac mode there is no team restriction — players may aim at any box to teleport. Boxes only show competitive-mode spawns (consistent with the <code>.spawn</code> family commands).</p>
+</blockquote>
+<h3 id="team-switching">Team Switching<a class="headerlink" href="#team-switching" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.watch</code></td>
+<td><code>.fas</code></td>
+<td>Force all other players into spectator mode, leaving only the command issuer active</td>
+</tr>
+</tbody>
+</table>
+<h3 id="grenade-rethrow-position-recall">Grenade Rethrow &amp; Position Recall<a class="headerlink" href="#grenade-rethrow-position-recall" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.rethrow</code></td>
+<td><code>.rt</code></td>
+<td>Rethrow the player's last thrown grenade</td>
+</tr>
+<tr>
+<td><code>.rethrowsmoke</code></td>
+<td><code>.rethrows</code></td>
+<td>Rethrow only the last smoke grenade</td>
+</tr>
+<tr>
+<td><code>.rethrownade</code></td>
+<td><code>.rethrown</code></td>
+<td>Rethrow only the last HE grenade</td>
+</tr>
+<tr>
+<td><code>.rethrowflash</code></td>
+<td><code>.rethrowf</code></td>
+<td>Rethrow only the last flashbang</td>
+</tr>
+<tr>
+<td><code>.rethrowmolotov</code></td>
+<td><code>.rethrowm</code></td>
+<td>Rethrow only the last molotov/incgrenade</td>
+</tr>
+<tr>
+<td><code>.rethrowdecoy</code></td>
+<td><code>.rethrowd</code></td>
+<td>Rethrow only the last decoy</td>
+</tr>
+<tr>
+<td><code>.last</code></td>
+<td><code>.ls</code></td>
+<td>Teleport back to the last grenade position</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dryrun-round-control">Dryrun &amp; Round Control<a class="headerlink" href="#dryrun-round-control" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.dryrun</code></td>
+<td><code>.dry</code></td>
+<td>Temporarily switch from prac to competitive config for one round; auto-revert to prac when the round ends</td>
+</tr>
+<tr>
+<td><code>.restartround</code></td>
+<td><code>.rr</code></td>
+<td>Restart the current round (executes <code>mp_restartgame</code>)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Dryrun flow</strong>: kick all bots → disable prac-specific ConVars (sv_cheats, traj, infinite_ammo, etc.) → load <code>dryrun.cfg</code> competitive config → restart the round to begin; when the round ends (<code>EventRoundEnd</code>), prac config is automatically restored. Use this to play a real competitive round from within a practice session.</p>
+</blockquote>
+<h3 id="replay-system">Replay System<a class="headerlink" href="#replay-system" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.record</code></td>
+<td>—</td>
+<td>Enter pending-record state; <strong>starts recording when the player moves or presses F (inspect key)</strong>; press F again or use <code>.stoprecord</code> to stop and save</td>
+</tr>
+<tr>
+<td><code>.stoprecord</code></td>
+<td>—</td>
+<td>Stop recording and save (equivalent to pressing F)</td>
+</tr>
+<tr>
+<td><code>.replay [Id]</code></td>
+<td>—</td>
+<td>No argument: play back all stopped recordings in parallel; with Id: play back only that recording. A bot of the same team is auto-spawned as the playback carrier</td>
+</tr>
+<tr>
+<td><code>.stopreplay</code></td>
+<td>—</td>
+<td>Stop all ongoing playbacks and kick the corresponding bots</td>
+</tr>
+<tr>
+<td><code>.clearrecord &lt;Id&gt;</code></td>
+<td>—</td>
+<td>Delete the recording with the given Id (removes both JSON file and list entry)</td>
+</tr>
+<tr>
+<td><code>.clearrecordall</code></td>
+<td>—</td>
+<td>Clear all recordings</td>
+</tr>
+<tr>
+<td><code>.currentrecord</code></td>
+<td><code>.currentrec</code></td>
+<td>Print the recording list table (ID / Name / Status / Bot) to the <strong>server console</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Two-layer architecture</strong>: The replay system consists of two parts —
+- <strong>Layer 1 (CSSharp C#)</strong>: command dispatch, UI prompts, JSON read/write for recording files (under <code>cfg/PracLab/recordings/</code>).
+- <strong>Layer 2 (C++ Metamod plugin <code>PracLabReplayEngine</code>)</strong>: hooks engine functions (<code>ProcessMovement</code>, <code>CCSBot::Update</code>, <code>PlayerRunCommand</code>, etc.) to implement frame-level movement recording and playback.</p>
+<p>The cross-language ABI contract is documented in <a href="../../../replay-engine/include/praclab_replay.h"><code>replay-engine/include/praclab_replay.h</code></a>. Any change to field order/type must be synchronized across both layers.</p>
+<p><strong>When the replay engine is not deployed</strong>: all <code>.record/.replay/...</code> commands show a "replay engine not loaded, replay unavailable" message to the player, but other plugin features are unaffected.</p>
+</blockquote>
+<h3 id="timer">Timer<a class="headerlink" href="#timer" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.timer</code></td>
+<td>—</td>
+<td>Start timing; entering <code>.timer</code> again stops it and prints the elapsed time to the player</td>
+</tr>
+</tbody>
+</table>
+<h3 id="convar-toggles">ConVar Toggles<a class="headerlink" href="#convar-toggles" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.solid</code></td>
+<td>—</td>
+<td>Toggle <code>mp_solid_teammates</code> (teammate collision)</td>
+</tr>
+<tr>
+<td><code>.impacts</code></td>
+<td>—</td>
+<td>Toggle <code>sv_showimpacts</code> (show bullet impact markers)</td>
+</tr>
+<tr>
+<td><code>.traj</code></td>
+<td>—</td>
+<td>Toggle <code>sv_grenade_trajectory_prac_pipreview</code> (show grenade trajectory)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="help">Help<a class="headerlink" href="#help" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.help</code></td>
+<td>—</td>
+<td>Display all available commands grouped by category in chat (visible to sender only)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+      <div class="md-progress" data-md-component="progress" role="progressbar"></div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["header.autohide", "navigation.indexes", "navigation.instant", "navigation.instant.progress"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
