@@ -140,7 +140,6 @@ FetchContent_MakeAvailable(nlohmann_json)
 # 编译进插件的 SDK 基础设施源文件：ConVar、KeyValues3、SourceHook
 set(SDK_SOURCES
     ${HL2SDK}/public/tier0/memoverride.cpp
-    ${HL2SDK}/tier1/generichash.cpp
     ${HL2SDK}/tier1/keyvalues3.cpp
     ${HL2SDK}/tier1/convar.cpp
     ${MMS}/core/sourcehook/sourcehook.cpp
@@ -149,6 +148,11 @@ set(SDK_SOURCES
     ${MMS}/core/sourcehook/sourcehook_impl_cvfnptr.cpp
     ${MMS}/core/sourcehook/sourcehook_impl_cproto.cpp
 )
+
+# 兼容旧版 HL2SDK（generichash.cpp 存在于 < 2026-07-17 的 commit，之后改为 header-only 内联）
+if(EXISTS "${HL2SDK}/tier1/generichash.cpp")
+    list(APPEND SDK_SOURCES ${HL2SDK}/tier1/generichash.cpp)
+endif()
 
 # ==================== 插件源文件 ====================
 set(PLUGIN_SOURCES
@@ -219,11 +223,14 @@ if(WIN32)
     target_link_libraries(PracLabReplayEngine PRIVATE
         psapi
         ${HL2SDK_LIBDIR}/tier0.lib
-        ${HL2SDK_LIBDIR}/tier1.lib
         ${HL2SDK_LIBDIR}/mathlib.lib
         ${HL2SDK_LIBDIR}/interfaces.lib
         ${HL2SDK_LIBDIR}/2015/libprotobuf.lib
     )
+    # 兼容旧版 HL2SDK：预编译 tier1.lib 已于 2026-07-17 上游移除（功能改头文件内联）
+    if(EXISTS "${HL2SDK_LIBDIR}/tier1.lib")
+        target_link_libraries(PracLabReplayEngine PRIVATE ${HL2SDK_LIBDIR}/tier1.lib)
+    endif()
     target_link_options(PracLabReplayEngine PRIVATE /NODEFAULTLIB:LIBCMTD)
 
     target_compile_definitions(PracLabReplayEngine PRIVATE
@@ -241,13 +248,16 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 
     target_link_libraries(PracLabReplayEngine PRIVATE
         ${HL2SDK_LIBDIR}/libtier0.so
-        ${HL2SDK_LIBDIR}/tier1.a
         ${HL2SDK_LIBDIR}/mathlib.a
         ${HL2SDK_LIBDIR}/interfaces.a
         ${HL2SDK_LIBDIR}/release/libprotobuf.a
         pthread
         dl
     )
+    # 兼容旧版 HL2SDK：预编译 tier1.a 已于 2026-07-17 上游移除（功能改头文件内联）
+    if(EXISTS "${HL2SDK_LIBDIR}/tier1.a")
+        target_link_libraries(PracLabReplayEngine PRIVATE ${HL2SDK_LIBDIR}/tier1.a)
+    endif()
 
     target_compile_definitions(PracLabReplayEngine PRIVATE
         POSIX _LINUX LINUX
