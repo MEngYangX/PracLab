@@ -62,6 +62,7 @@ public partial class PracLab
         ["de_nuke"] = new() { [CsTeam.Terrorist] = -90f, [CsTeam.CounterTerrorist] = 90f },
         ["de_mirage"] = new() { [CsTeam.Terrorist] = 90f, [CsTeam.CounterTerrorist] = -90f },
         ["de_inferno"] = new() { [CsTeam.Terrorist] = -90f, [CsTeam.CounterTerrorist] = 90f },
+        ["de_dust2"] = new() { [CsTeam.Terrorist] = 0f, [CsTeam.CounterTerrorist] = 180f },
     };
 
     /// <summary>

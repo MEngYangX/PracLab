@@ -4,6 +4,13 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.1.1] - 2026-07-19
+
+### Fixed
+
+- **诱饵弹/手雷 .rethrow 错误**：2026-07 游戏更新导致 `CHEGrenadeProjectile::Create`（HE）和 `CDecoyProjectile::Create` 的 Windows 函数签名失效，fallback 路径创建的"空壳"实体没有引信且缺少物理阻尼。从 `server.dll` (2026-07-17) 重新提取唯一匹配的函数序言签名：HE 栈帧 `sub rsp,0x50` → `0x40`（函数起始 0x1803896a0），decoy 栈帧 `0x168` → `0x158`（函数起始 0x1809567b0）。同时移除已被证据证明无效的 HE fallback `AcceptInput("Detonate")` 定时器。
+- **出生点序号显示方向错误（de_dust2 CT）**：CT 队伍出生点方框的序号文字朝向需相对 T 队伍旋转 180° 才能正向朝向玩家。在 `SpawnTextYawByMap` 中为 `de_dust2` 的 CT 队伍配置 `180f` 旋转。
+
 ## [0.1.0] - 2026-07-17
 
 ### Added

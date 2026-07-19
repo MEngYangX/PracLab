@@ -23,11 +23,14 @@ public static class GrenadeFunctions
                 : @"48 8B C4 48 89 58 ? 48 89 68 ? 48 89 70 ? 57 41 56 41 57 48 81 EC ? ? ? ? 48 8B B4 24 ? ? ? ? 4D 8B F8"
         );
 
+    // Bug 2 修复（2026-07 游戏更新）：旧 Windows 签名失效（栈帧 sub rsp,0x50 → 0x40）。
+    // 新签名从 server.dll (2026-07-17) 提取，唯一匹配函数起始 0x1803896a0，
+    // 函数模式与 CSmokeGrenadeProjectile::Create 一致（lea "<nade>_projectile" → call 实体工厂）。
     public static MemoryFunctionWithReturn<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, int, CHEGrenadeProjectile>
         CHEGrenadeProjectile_CreateFunc = new(
             IsLinux
                 ? "55 4C 89 C1 48 89 E5 41 57 49 89 D7"
-                : "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 50 48 8B AC 24 80 00 00 00 49 8B F8"
+                : "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 40 48 8B 6C 24 70 49 8B F8"
         );
 
     public static MemoryFunctionWithReturn<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, int, CMolotovProjectile>
@@ -37,10 +40,12 @@ public static class GrenadeFunctions
                 : "48 8B C4 48 89 58 10 4C 89 40 18 48 89 48 08"
         );
 
+    // Bug 2 修复（2026-07 游戏更新）：旧 Windows 签名失效（栈帧 sub rsp,0x168 → 0x158）。
+    // 新签名从 server.dll (2026-07-17) 提取，唯一匹配函数起始 0x1809567b0。
     public static MemoryFunctionWithReturn<IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, int, CDecoyProjectile>
         CDecoyProjectile_CreateFunc = new(
             IsLinux
                 ? "55 4C 89 C1 48 89 E5 41 57 45 89 CF 41 56 49 89 D6 48 89 F2 48 89 FE 41 55 49 89 FD 41 54 48 8D 3D ?? ?? ?? ?? 4D 89 C4 53 48 83 EC ?? E8 ?? ?? ?? ?? 45 31 C0"
-                : "48 8B C4 55 56 48 81 EC 68 01 00 00"
+                : "48 8B C4 55 56 48 81 EC 58 01 00 00 48 89 58 08 48 8B D9 48 89 78 10 49 8B F8 4C 89 78 E8"
         );
 }

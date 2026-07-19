@@ -201,9 +201,6 @@ public partial class PracLab
             var ang = angle ?? new QAngle(0, 0, 0);
             var itemIndex = record.HasValue ? record.Value.ItemIndex : (ushort)0;
             CBaseCSGrenadeProjectile? projectile = null;
-            // 跟踪是否走了 CreateFunc 路径（CreateFunc 内部会启动引信）
-            // 若 CreateFunc 签名失效（游戏更新），fallback 到 CreateEntityByName 不会启动引信
-            var usedCreateFunc = false;
 
             try
             {
@@ -212,23 +209,19 @@ public partial class PracLab
                     case "smokegrenade_projectile":
                         projectile = GrenadeFunctions.CSmokeGrenadeProjectile_CreateFunc.Invoke(
                             position.Handle, ang.Handle, velocity.Handle, velocity.Handle, IntPtr.Zero, itemIndex, player.TeamNum);
-                        usedCreateFunc = true;
                         break;
                     case "hegrenade_projectile":
                         projectile = GrenadeFunctions.CHEGrenadeProjectile_CreateFunc.Invoke(
                             position.Handle, ang.Handle, velocity.Handle, velocity.Handle, IntPtr.Zero, itemIndex);
-                        usedCreateFunc = true;
                         break;
                     case "molotov_projectile":
                     case "incgrenade_projectile":
                         projectile = GrenadeFunctions.CMolotovProjectile_CreateFunc.Invoke(
                             position.Handle, ang.Handle, velocity.Handle, velocity.Handle, IntPtr.Zero, itemIndex);
-                        usedCreateFunc = true;
                         break;
                     case "decoy_projectile":
                         projectile = GrenadeFunctions.CDecoyProjectile_CreateFunc.Invoke(
                             position.Handle, ang.Handle, velocity.Handle, velocity.Handle, IntPtr.Zero, itemIndex);
-                        usedCreateFunc = true;
                         break;
                     case "flashbang_projectile":
                         // Flash 使用 Utilities.CreateEntityByName（与 MatchZy 一致），DispatchSpawn 会启动引信
@@ -282,25 +275,6 @@ public partial class PracLab
                 projectile.OwnerEntity.Raw = pawnRaw;
 
                 projectile.Teleport(position, ang, velocity);
-
-                // HE 手雷 fallback 引爆方案：当 CreateFunc 签名失效时，CreateEntityByName 创建的实体没有引信
-                // 不手动设置 IsLive/DetonateTime（引擎 Think 函数未注册，设置了也不会检查）
-                // 改用引擎原生 AcceptInput("Detonate") 调用实体原生的 Detonate 函数，让引擎自己处理爆炸逻辑
-                // HE 引信 1.5s，通过 AddTimer 延迟模拟引信计时（与正常投掷的 HE 行为一致）
-                if (!usedCreateFunc && projectileClass == "hegrenade_projectile")
-                {
-                    var projRef = projectile;
-                    var playerRef = player;
-                    AddTimer(1.5f, () =>
-                    {
-                        if (projRef.IsValid)
-                        {
-                            projRef.AcceptInput("Detonate", playerRef, playerRef);
-                            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Rethrow detonated {projectileClass} via native Detonate input");
-                        }
-                    });
-                    Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Rethrow scheduled native detonate in 1.5s for {projectileClass}");
-                }
             }
 
             // Bug 5 配套：标记为自定义实体，避免被 OnEntitySpawned 重复记录
