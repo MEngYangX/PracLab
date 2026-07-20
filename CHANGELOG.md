@@ -4,6 +4,12 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.1.2] - 2026-07-20
+
+### Fixed
+
+- **Linux 下投掷物 .rethrow 失效**：2026-07 游戏更新导致 Linux 端 Create 函数签名整体失效——`CHEGrenadeProjectile::Create` / `CDecoyProjectile::Create` 旧签名失效，fallback 路径创建无引信"空壳"实体；`CSmokeGrenadeProjectile::Create` 旧签名命中 2 个函数且首个匹配为 flashbang Create（0xd16ed0），导致 .rethrowsmoke 实际投出闪光弹。从 `libserver.so` (2026-07-16, ServerVersion 2000876) 重新提取唯一匹配签名：smoke 函数起始 0x1408d80、HE 0xd17860、decoy 0x1407fe0。
+
 ## [0.1.1] - 2026-07-19
 
 ### Fixed
