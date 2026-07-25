@@ -7,5 +7,6 @@ documentation/开发/
 .vscode/
 .trae/
 .agents/
+.dbg/
 deps/
 documentation/site/
