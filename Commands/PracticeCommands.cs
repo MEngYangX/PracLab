@@ -86,6 +86,10 @@ public partial class PracLab
             Server.ExecuteCommand($"exec {PracConfigPath}");
             _isPracMode = true;
 
+            // 重新进入 practice 模式视为全新练习会话：清空全部目标区域（R 编号从 1 重新计数）与搜索结果/可视化
+            ClearAllDrawState();
+            ClearAllSearchState();
+
             if (player != null)
                 player.PrintToChat(Localizer.ForPlayer(player, "prac.command.loaded"));
 

@@ -49,6 +49,27 @@ public partial class PracLab
             ("hidespawns", "help.cmd.hidespawns"),
             ("[E key]", "help.cmd.ekey"),
         ]),
+        ("help.cat.nadedraw", [
+            ("nadedraw", "help.cmd.nadedraw"),
+            ("cleardraw", "help.cmd.cleardraw"),
+        ]),
+        ("help.cat.nadesearch", [
+            ("findall", "help.cmd.findall"),
+            ("findnormal", "help.cmd.findnormal"),
+            ("findjump", "help.cmd.findjump"),
+            ("findrunjump", "help.cmd.findrunjump"),
+            ("findduck", "help.cmd.findduck"),
+            ("findduckjump", "help.cmd.findduckjump"),
+            ("findduckrunjump", "help.cmd.findduckrunjump"),
+            ("nadeaccuracy", "help.cmd.nadeaccuracy"),
+            ("nadetype", "help.cmd.nadetype"),
+            ("nadetest", "help.cmd.nadetest"),
+        ]),
+        ("help.cat.naderesult", [
+            ("nadelist", "help.cmd.nadelist"),
+            ("nadeclearlist", "help.cmd.nadeclearlist"),
+            ("nadegoto <ID>", "help.cmd.nadegoto"),
+        ]),
         ("help.cat.team", [
             ("watch", "help.cmd.watch"),
         ]),

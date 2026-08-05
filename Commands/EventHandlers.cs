@@ -69,6 +69,12 @@ public partial class PracLab
             _pendingRecordSlot = -1;
             _recordFKeyCooldown.Clear();
 
+            // 清空全部目标区域绘制状态（会话、预览实体、区域常驻实体与区域数据）
+            ClearAllDrawState();
+
+            // 清空全部搜索状态（进行中 Job、结果列表与可视化实体）
+            ClearAllSearchState();
+
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Core map changed to {mapName}, all states reset");
         }
         catch (Exception ex)
@@ -186,6 +192,9 @@ public partial class PracLab
                         itemIndex);
 
                     Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Grenade {thrower.PlayerName} threw {weapon} velocity=({vel.X:F1},{vel.Y:F1},{vel.Z:F1}) class={designerName}");
+
+                    // .nadetest 校准：玩家有待测意图时打印真实 vs 模型对比数据并消费意图（同时启动轨迹录制）
+                    ReportNadeTestCapture(thrower, pos, vel, designerName, entity.Handle);
                 }
                 catch (Exception ex)
                 {
@@ -225,6 +234,12 @@ public partial class PracLab
     {
         try
         {
+            // 回合结束时取消所有进行中的绘制会话（保留已入库区域），与 dryrun 门控无关
+            CancelAllDrawSessions();
+
+            // 回合结束时取消所有进行中的搜索 Job（保留已完成结果）
+            CancelAllSearchJobs("round_end");
+
             if (!_isDryRun) return HookResult.Continue;
 
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} DryRun round ended, restoring practice mode");
@@ -250,6 +265,39 @@ public partial class PracLab
         catch (Exception ex)
         {
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error OnRoundEnd failed - {ex.Message}");
+        }
+
+        return HookResult.Continue;
+    }
+
+    /// <summary>
+    /// 玩家断连事件回调。
+    /// 清理断连玩家的进行中搜索 Job 与全部搜索结果及其可视化实体，防止状态泄漏。
+    /// （搜索 OnTick 也会检测玩家失效取消 Job，此处事件驱动更及时，并额外清理结果实体）
+    /// </summary>
+    private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+        try
+        {
+            var player = @event.Userid;
+            if (player == null || !player.IsValid) return HookResult.Continue;
+
+            var steamId = player.SteamID;
+
+            // 取消进行中搜索 Job（不通知：玩家已断连看不到提示）
+            CancelSearchJob(steamId, "disconnect", notifyPlayer: false);
+
+            // 清除搜索结果与可视化实体
+            int cleared = ClearNadeResults(steamId);
+
+            // 清理 .nadetest 待测意图与按键追踪状态
+            ClearNadeTestState(steamId);
+
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Player {player.PlayerName} disconnected, search state cleared ({cleared} results)");
+        }
+        catch (Exception ex)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error OnPlayerDisconnect failed - {ex.Message}");
         }
 
         return HookResult.Continue;
