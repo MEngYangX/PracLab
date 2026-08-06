@@ -74,7 +74,70 @@ typedef struct PRL_SubtickMove {
     float yawDelta;          // 偏航增量
 } PRL_SubtickMove;
 
+// 可选的每 tick 命令帧数据（68 字节）。
+// 对应 C++ 侧 BotController::ReplayCommandFrameData。
+typedef struct PRL_ReplayCommandFrameData {
+    float forwardMove;
+    float leftMove;
+    float upMove;
+    float pitch;
+    float yaw;
+    float roll;
+    unsigned long long buttons;
+    unsigned long long buttons1;
+    unsigned long long buttons2;
+    int mouseDx;
+    int mouseDy;
+    int weaponSelect;
+    unsigned int fields;
+    unsigned char leftHandDesired;
+    unsigned char _pad[3];
+} PRL_ReplayCommandFrameData;
+
+// 可选的每 tick 移动服务额外状态（48 字节）。
+// 对应 C++ 侧 BotController::ReplayMovementExtra。
+typedef struct PRL_ReplayMovementExtra {
+    unsigned int fields;
+    float jumpPressedTime;
+    float lastDuckTime;
+    int lastActualJumpPressTick;
+    float lastActualJumpPressFrac;
+    int lastUsableJumpPressTick;
+    float lastUsableJumpPressFrac;
+    int lastLandedTick;
+    float lastLandedFrac;
+    float lastLandedVelocityX;
+    float lastLandedVelocityY;
+    float lastLandedVelocityZ;
+} PRL_ReplayMovementExtra;
+
 #pragma pack(pop)
+
+// Bot 配置文件数据（只读快照）。
+// 对应 C++ 侧 BotController::BotProfileData。
+#pragma pack(push, 4)
+typedef struct PRL_BotProfileData {
+    float aggression;            // 0..1
+    float skill;                 // 0..1
+    float teamwork;              // 0..1
+    float reactionTime;          // seconds
+    float attackDelay;           // seconds
+    float lookAccelAtk;          // m_lookAngleMaxAccelAttacking
+    float lookStiffAtk;          // m_lookAngleStiffnessAttacking
+    float lookDampAtk;           // m_lookAngleDampingAttacking
+    int cost;                    // m_cost
+    int difficulty;              // m_difficultyFlags (bitmask)
+    int weaponPrefCount;         // valid entries in weaponPref
+    unsigned short weaponPref[16]; // item def index
+} PRL_BotProfileData;
+#pragma pack(pop)
+
+// 锁定类型枚举（对应 BotController::LockKind）。
+typedef enum PRL_LockKind {
+    PRL_LockKind_All = 0,     // Update + Upkeep 全锁
+    PRL_LockKind_Aim = 1,     // 仅 Upkeep（视角锁）
+    PRL_LockKind_Weapon = 2,  // 武器锁
+} PRL_LockKind;
 
 // ---- 录制 API ----
 // 所有函数返回 int：1 = 成功，0 = 失败。
@@ -169,6 +232,72 @@ typedef struct PRL_DiagnosticCounters {
 
 // 读取诊断计数器快照。返回 1 成功，0 失败（指针为空）。
 PRL_API int PRL_GetDiagnosticCounters(PRL_DiagnosticCounters *out);
+
+// ---- 扩展 API（v0.2.0+，对应 BotController v0.6.0 ABI 17）----
+
+// ABI 版本号。返回 17。
+PRL_API int PRL_GetAbiVersion(void);
+
+// 加载扩展回放数据（含命令帧 + 移动额外状态）。返回 1 成功，0 失败。
+PRL_API int PRL_LoadReplayExtended(int slot,
+                                   const PRL_ReplayTick *ticks, int tickCount,
+                                   const PRL_SubtickMove *subs, int subCount,
+                                   const PRL_ReplayCommandFrameData *commands, int commandCount,
+                                   const PRL_ReplayMovementExtra *movementExtras, int movementExtraCount);
+
+// 当前回放 tick 索引。<0 表示未在回放。
+PRL_API int PRL_GetReplayCursor(int slot);
+// 回放缓冲区总 tick 数。
+PRL_API int PRL_GetReplayTotal(int slot);
+// 拷贝当前正在回放的 tick。返回 1 成功，0 失败（未回放或指针空）。
+PRL_API int PRL_GetReplayTick(int slot, PRL_ReplayTick *out);
+
+// 切换 bot 武器到指定 def index。返回 1 成功，0 失败。
+PRL_API int PRL_SwitchBotWeapon(int slot, int defIndex);
+
+// 注入 usercmd 按钮输入（独立可取消）。返回 injectionId，<0 失败。
+PRL_API long long PRL_InjectUsercmd(int slot, unsigned long long buttonMask, int durationMs);
+// 取消一个 usercmd 注入。返回 1 成功，0 失败。
+PRL_API int PRL_CancelUsercmdInjection(int slot, long long injectionId);
+
+// ---- Buy plan ----
+// 设置 bot 购买计划（空格/逗号分隔的别名列表）。返回 0 成功，-2 slot 非法。
+PRL_API int PRL_SetBuyPlan(int slot, const char *aliases);
+// 标记 slot 本回合不购买。返回 0 成功，-2 slot 非法。
+PRL_API int PRL_SetBuySkip(int slot);
+// 清除 slot 的购买计划。返回 0 成功，-2 slot 非法。
+PRL_API int PRL_ClearBuyPlan(int slot);
+
+// ---- Bot profile ----
+// 读取 bot 的 BotProfile 数据。返回 1 成功，0 失败（无 bot 或指针空）。
+PRL_API int PRL_GetProfile(int slot, PRL_BotProfileData *out);
+
+// ---- Voice ----
+// 查询语音发送是否可用。返回 1 可用，0 不可用。
+PRL_API int PRL_CanSendVoice(void);
+// 发送一帧编码 Opus 语音到指定接收者。返回 0 成功，<0 失败。
+PRL_API int PRL_SendVoiceFrame(int recipientSlot,
+                               int senderClient,
+                               unsigned long long senderXuid,
+                               const unsigned char *audio,
+                               int audioBytes,
+                               int sampleRate,
+                               float voiceLevel,
+                               int sequenceBytes,
+                               int sectionNumber,
+                               int uncompressedSampleOffset,
+                               unsigned int numPackets,
+                               const unsigned int *packetOffsets,
+                               int packetOffsetCount,
+                               int tick,
+                               int audibleMask);
+
+// ---- Lock / Unlock ----
+// 锁定 slot 的指定类型。arg 仅 Weapon 类型使用（LockTarget int）。
+// 返回 0 成功，-2 slot 非法，-3 正在回放。
+PRL_API int PRL_Lock(int slot, int kind, int arg);
+// 解锁 slot 的指定类型。返回 0 成功，-2 slot 非法。
+PRL_API int PRL_Unlock(int slot, int kind);
 
 #ifdef __cplusplus
 } // extern "C"

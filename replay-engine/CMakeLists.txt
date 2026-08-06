@@ -155,17 +155,26 @@ if(EXISTS "${HL2SDK}/tier1/generichash.cpp")
 endif()
 
 # ==================== 插件源文件 ====================
+# BotController v0.6.0 上游源文件（扁平结构，保留上游文件名）
 set(PLUGIN_SOURCES
     src/plugin.cpp
-    src/platform.cpp
     src/sig_scan.cpp
-    src/memory.cpp
+    src/schema_resolver.cpp
     src/version_targets.cpp
-    src/slot_resolver.cpp
-    src/hooks.cpp
-    src/recorder.cpp
-    src/replayer.cpp
-    src/weapon_switcher.cpp
+    src/ccsbot_slot.cpp
+    src/dispatch.cpp
+    src/commands.cpp
+    src/platform.cpp
+    src/BotController.cpp
+    src/BotControllerState.cpp
+    src/BuyController.cpp
+    src/BuyControllerState.cpp
+    src/InputInjector.cpp
+    src/MotionRecorder.cpp
+    src/VoiceSender.cpp
+    src/BotProfile.cpp
+    src/WeaponLocker.cpp
+    src/WeaponLockerState.cpp
     src/exports.cpp
     ${PROTO_SRCS}
 )

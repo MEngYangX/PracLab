@@ -118,7 +118,7 @@ public partial class PracLab : BasePlugin
 
     public override string ModuleName => "PracLab Plugin";
 
-    public override string ModuleVersion => "0.1.2";
+    public override string ModuleVersion => "0.2.0";
 
     /// <summary>
     /// 插件加载入口。加载配置、设置默认语言、注册聊天监听器、构建路由表、注册事件监听器。
@@ -154,12 +154,23 @@ public partial class PracLab : BasePlugin
         AddCommandListener("say", OnPlayerSay, HookMode.Pre);
         AddCommandListener("say_team", OnPlayerSay, HookMode.Pre);
 
+        // 注册 F3（autobuy）/ F4（rebuy）按键监听器：prac 模式下转调 .timer / .help
+        // CS2 客户端固定将 F3 绑定到 autobuy、F4 绑定到 rebuy，拦截这两条命令即可重映射按键
+        AddCommandListener("autobuy", OnAutobuyPressed, HookMode.Pre);
+        AddCommandListener("rebuy", OnRebuyPressed, HookMode.Pre);
+
         // 注册投掷物实体生成监听器：在实体生成时记录玩家最后投掷位置/角度/速度/类名
         // Fix 8+9：替代原 EventGrenadeThrown，OnEntitySpawned 触发时实体已有 AbsVelocity，可完整复现弹道
         RegisterListener<Listeners.OnEntitySpawned>(OnEntitySpawned);
 
         // 注册玩家被闪光弹闪到事件：用于 noflash 免疫（Fix 5，替代原 0.1 秒轮询定时器）
         RegisterEventHandler<EventPlayerBlind>(OnPlayerBlind);
+
+        // 注册投掷物引爆事件：用于报告飞行时间与反弹次数（任务 5a）
+        RegisterEventHandler<EventSmokegrenadeDetonate>(OnSmokegrenadeDetonate);
+        RegisterEventHandler<EventFlashbangDetonate>(OnFlashbangDetonate);
+        RegisterEventHandler<EventHegrenadeDetonate>(OnHegrenadeDetonate);
+        RegisterEventHandler<EventMolotovDetonate>(OnMolotovDetonate);
 
         // 注册玩家受伤事件：用于实时伤害信息显示（Bug 4，参考 MEngZy MatchZy.cs 第 414-438 行）
         // 注意：不使用 [GameEventHandler] 特性，避免重复注册导致伤害信息打印两次
@@ -170,6 +181,9 @@ public partial class PracLab : BasePlugin
 
         // 注册回合结束事件：用于 dryrun 回合结束后自动回到 prac 模式（参考 MEngZy EventRoundEnd）
         RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+
+        // 注册玩家断连事件：清理断连玩家的搜索 Job 与结果可视化实体（Task 7 生命周期联动）
+        RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
 
         // 注册 OnMapStart 监听器：地图切换时重置所有插件状态（Fix 11）
         RegisterListener<Listeners.OnMapStart>(OnMapStart);
@@ -223,7 +237,7 @@ public partial class PracLab : BasePlugin
         AddRoute(new CommandRoute("kick", [], HandleKickBot, RequiresPracMode: true));
 
         // —— T4 道具与环境清理（2 条）——
-        AddRoute(new CommandRoute("clear", [], HandleClear, RequiresPracMode: true));
+        AddRoute(new CommandRoute("clear", ["cl"], HandleClear, RequiresPracMode: true));
         AddRoute(new CommandRoute("break", ["br"], HandleBreak, RequiresPracMode: true));
 
         // —— T5 时间与无敌（3 条）——
@@ -296,6 +310,51 @@ public partial class PracLab : BasePlugin
         AddRoute(new CommandRoute("clearrecord", [], HandleClearRecord, RequiresPracMode: true));
         AddRoute(new CommandRoute("clearrecordall", [], HandleClearRecordAll, RequiresPracMode: true));
         AddRoute(new CommandRoute("currentrecord", ["currentrec"], HandleCurrentRecord, RequiresPracMode: true));
+
+        // —— T14 目标区域绘制（2 条 + 别名）——
+        AddRoute(new CommandRoute("nadedraw", ["ndr"], HandleNadeDraw, RequiresPracMode: true));
+        AddRoute(new CommandRoute("cleardraw", ["cdr"], HandleClearDraw, RequiresPracMode: true));
+
+        // —— T15 投掷物反解搜索（26 处理器 + 别名）——
+        // find 系列：按「投掷方式 × 力度」映射搜索子集（HandleFind 三参数，lambda 包装）
+        AddRoute(new CommandRoute("findall", ["fa"], (p, a) => HandleFind(p, null, null), RequiresPracMode: true));
+        AddRoute(new CommandRoute("findnormal", ["fn"], (p, a) => HandleFind(p, ThrowMode.Normal, null), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fnl", [], (p, a) => HandleFind(p, ThrowMode.Normal, ThrowStrength.Left), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fnm", [], (p, a) => HandleFind(p, ThrowMode.Normal, ThrowStrength.Mid), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fnr", [], (p, a) => HandleFind(p, ThrowMode.Normal, ThrowStrength.Right), RequiresPracMode: true));
+        AddRoute(new CommandRoute("findjump", ["fj"], (p, a) => HandleFind(p, ThrowMode.Jump, null), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fjl", [], (p, a) => HandleFind(p, ThrowMode.Jump, ThrowStrength.Left), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fjm", [], (p, a) => HandleFind(p, ThrowMode.Jump, ThrowStrength.Mid), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fjr", [], (p, a) => HandleFind(p, ThrowMode.Jump, ThrowStrength.Right), RequiresPracMode: true));
+        AddRoute(new CommandRoute("findrunjump", ["frj"], (p, a) => HandleFind(p, ThrowMode.RunJump, null), RequiresPracMode: true));
+        AddRoute(new CommandRoute("frjl", [], (p, a) => HandleFind(p, ThrowMode.RunJump, ThrowStrength.Left), RequiresPracMode: true));
+        AddRoute(new CommandRoute("frjm", [], (p, a) => HandleFind(p, ThrowMode.RunJump, ThrowStrength.Mid), RequiresPracMode: true));
+        AddRoute(new CommandRoute("frjr", [], (p, a) => HandleFind(p, ThrowMode.RunJump, ThrowStrength.Right), RequiresPracMode: true));
+        // duck 系列：蹲下投掷 / 蹲下跳投 / 蹲下前跳投（眼位自动下沉 DuckEyeOffsetZ，玩家可站立搜索）
+        AddRoute(new CommandRoute("findduck", ["fd"], (p, a) => HandleFind(p, ThrowMode.Duck, null), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdl", [], (p, a) => HandleFind(p, ThrowMode.Duck, ThrowStrength.Left), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdm", [], (p, a) => HandleFind(p, ThrowMode.Duck, ThrowStrength.Mid), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdr", [], (p, a) => HandleFind(p, ThrowMode.Duck, ThrowStrength.Right), RequiresPracMode: true));
+        AddRoute(new CommandRoute("findduckjump", ["fdj"], (p, a) => HandleFind(p, ThrowMode.DuckJump, null), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdjl", [], (p, a) => HandleFind(p, ThrowMode.DuckJump, ThrowStrength.Left), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdjm", [], (p, a) => HandleFind(p, ThrowMode.DuckJump, ThrowStrength.Mid), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdjr", [], (p, a) => HandleFind(p, ThrowMode.DuckJump, ThrowStrength.Right), RequiresPracMode: true));
+        AddRoute(new CommandRoute("findduckrunjump", ["fdrj"], (p, a) => HandleFind(p, ThrowMode.DuckRunJump, null), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdrjl", [], (p, a) => HandleFind(p, ThrowMode.DuckRunJump, ThrowStrength.Left), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdrjm", [], (p, a) => HandleFind(p, ThrowMode.DuckRunJump, ThrowStrength.Mid), RequiresPracMode: true));
+        AddRoute(new CommandRoute("fdrjr", [], (p, a) => HandleFind(p, ThrowMode.DuckRunJump, ThrowStrength.Right), RequiresPracMode: true));
+        AddRoute(new CommandRoute("nadeaccuracy", ["nac"], HandleNadeAccuracy, RequiresPracMode: true));
+        AddRoute(new CommandRoute("nadetype", ["nt"], HandleNadeType, RequiresPracMode: true));
+        AddRoute(new CommandRoute("nadetest", ["ntt"], HandleNadeTest, RequiresPracMode: true));
+        // .nts：单次仿真调试命令，用指定 yaw/pitch/mode/strength 跑一次弹道仿真并输出诊断到玩家控制台，
+        // 用于对比 .nadetest 真实数据，定位弹道预测偏差（衰减系数 / 出手点 / 法线恢复 等）
+        AddRoute(new CommandRoute("nadetestsim", ["nts"], HandleNadeTestSim, RequiresPracMode: true));
+
+        // —— T16 探测结果（3 条 + 别名）——
+        // .nl 控制台输出结果表格；.ncl 清除结果与可视化；.ng <ID> 传送站位 + 对准描点角 + 重建预览
+        AddRoute(new CommandRoute("nadelist", ["nl"], HandleNadeList, RequiresPracMode: true));
+        AddRoute(new CommandRoute("nadeclearlist", ["ncl"], HandleNadeClearList, RequiresPracMode: true));
+        AddRoute(new CommandRoute("nadegoto", ["ng"], HandleNadeGoto, RequiresPracMode: true));
     }
 
     /// <summary>
@@ -460,7 +519,23 @@ public partial class PracLab : BasePlugin
         "\n" +
         "// 默认语言代码 (zh-CN / en)\n" +
         "// 语言仅由此配置项控制，玩家无法在游戏内切换\n" +
-        "praclab_default_language zh-CN\n";
+        "praclab_default_language zh-CN\n" +
+        "\n" +
+        "// —— 投掷物反解搜索 ——\n" +
+        "// 弹道仿真步频 (Hz)：dt = 1/sim_hz，建议 64 或 128（128 更精确但更慢）\n" +
+        "praclab_nade_sim_hz 64\n" +
+        "\n" +
+        "// 每 tick 搜索耗时毫秒预算（全部搜索 Job 全局共享，防止卡顿）\n" +
+        "praclab_nade_trace_ms 2.0\n" +
+        "\n" +
+        "// yaw 搜索扇形余量（度）：仅扫站位看目标盒体的方位角扇形 ± 余量\n" +
+        "praclab_nade_yaw_margin 15\n" +
+        "\n" +
+        "// 粗筛余量（游戏单位）：抛物线弧到盒体最小距离超过此值才跳过（~800 ≈ 20m，防误杀弹墙点位）\n" +
+        "praclab_nade_arc_margin 800\n" +
+        "\n" +
+        "// 每组（投掷方式,力度）去重代表解上限：凑够即跳到下一组（早停）\n" +
+        "praclab_nade_group_max_hits 3\n";
 
     /// <summary>
     /// 从 csgo/cfg/PracLab/config.cfg 加载插件配置（CS2 ConVar 文本格式）。
@@ -513,6 +588,41 @@ public partial class PracLab : BasePlugin
 
                     case "praclab_default_language":
                         config.DefaultLanguage = value;
+                        break;
+
+                    case "praclab_nade_sim_hz":
+                        if (int.TryParse(value, out var simHz) && simHz >= 16 && simHz <= 256)
+                            config.NadeSimHz = simHz;
+                        else
+                            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning praclab_nade_sim_hz invalid value: {value}, using default {config.NadeSimHz}");
+                        break;
+
+                    case "praclab_nade_trace_ms":
+                        if (float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var traceMs) && traceMs >= 0.1f && traceMs <= 10.0f)
+                            config.NadeTraceMs = traceMs;
+                        else
+                            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning praclab_nade_trace_ms invalid value: {value}, using default {config.NadeTraceMs}");
+                        break;
+
+                    case "praclab_nade_yaw_margin":
+                        if (float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var yawMargin) && yawMargin >= 0f && yawMargin <= 180f)
+                            config.NadeYawMargin = yawMargin;
+                        else
+                            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning praclab_nade_yaw_margin invalid value: {value}, using default {config.NadeYawMargin}");
+                        break;
+
+                    case "praclab_nade_arc_margin":
+                        if (float.TryParse(value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var arcMargin) && arcMargin >= 0f && arcMargin <= 5000f)
+                            config.NadeArcMargin = arcMargin;
+                        else
+                            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning praclab_nade_arc_margin invalid value: {value}, using default {config.NadeArcMargin}");
+                        break;
+
+                    case "praclab_nade_group_max_hits":
+                        if (int.TryParse(value, out var groupMaxHits) && groupMaxHits >= 1 && groupMaxHits <= 10)
+                            config.NadeGroupMaxHits = groupMaxHits;
+                        else
+                            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning praclab_nade_group_max_hits invalid value: {value}, using default {config.NadeGroupMaxHits}");
                         break;
 
                     default:
@@ -579,5 +689,32 @@ public partial class PracLab : BasePlugin
 
         /// <summary>默认语言代码（如 zh-CN、en）。</summary>
         public string DefaultLanguage { get; set; } = "zh-CN";
+
+        /// <summary>
+        /// 弹道仿真步频（Hz），dt = 1/NadeSimHz。
+        /// 默认 128：高速雷（770u/s）每 tick 位移 6u，配合 SimulateGrenade 子步碰撞处理
+        /// 能准确捕捉斜坡/墙地交界处的多次碰撞。原 64Hz（位移 12u/tick）会遗漏中间碰撞导致弹墙预测偏差。
+        /// </summary>
+        public int NadeSimHz { get; set; } = 128;
+
+        /// <summary>每 tick 搜索耗时毫秒预算（全部 Job 全局共享）。</summary>
+        public float NadeTraceMs { get; set; } = 2.0f;
+
+        /// <summary>
+        /// yaw 搜索扇形余量（度，已弃用——ComputeYawSector 始终全扫 360°）。
+        /// 保留配置项以兼容已有 cfg，不再生效。
+        /// </summary>
+        public float NadeYawMargin { get; set; } = 15.0f;
+
+        /// <summary>
+        /// 粗筛余量（游戏单位），抛物线弧到盒体最小距离超过此值才跳过。
+        /// 默认 1500 覆盖弹墙场景：弹墙弹道的直飞弧线（玩家→墙壁）不经过目标盒体，
+        /// 但墙壁反弹点通常距目标 500~2000 单位，放宽至 1500 可让弹墙弹道通过粗筛，
+        /// 完整仿真阶段（含 TraceShape 反弹）会正确识别落点。若搜索耗时过长可下调。
+        /// </summary>
+        public float NadeArcMargin { get; set; } = 1500.0f;
+
+        /// <summary>每组（方式,力度）去重代表解上限（早停）。</summary>
+        public int NadeGroupMaxHits { get; set; } = 3;
     }
 }

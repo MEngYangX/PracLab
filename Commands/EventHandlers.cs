@@ -31,6 +31,10 @@ public partial class PracLab
             _lastGrenadeThrow.Clear();
             _pracBots.Clear();
 
+            // 清空投掷物飞行追踪与闪光投掷者标记（地图切换时所有实体被销毁）
+            _grenadeFlightTracker.Clear();
+            _lastFlashThrower = 0;
+
             // 停止所有 bot 碰撞管理定时器
             foreach (var timer in _botCollisionTimers.Values)
             {
@@ -69,6 +73,12 @@ public partial class PracLab
             _pendingRecordSlot = -1;
             _recordFKeyCooldown.Clear();
 
+            // 清空全部目标区域绘制状态（会话、预览实体、区域常驻实体与区域数据）
+            ClearAllDrawState();
+
+            // 清空全部搜索状态（进行中 Job、结果列表与可视化实体）
+            ClearAllSearchState();
+
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Core map changed to {mapName}, all states reset");
         }
         catch (Exception ex)
@@ -82,6 +92,7 @@ public partial class PracLab
     /// 若玩家在 _noflashState 中标记为启用，使用 Server.NextFrame 清零 FlashDuration/FlashMaxAlpha。
     /// 用事件驱动替代每 0.1 秒轮询，性能更好且 100% 可靠。
     /// 参考来源：CSS API CCSPlayerPawnBase.FlashDuration/FlashMaxAlpha 为 ref float，可直接赋值。
+    /// 任务 5b：额外读取 BlindDuration 并向投掷者报告致盲时长（不影响 noflash 免疫逻辑）。
     /// </summary>
     private HookResult OnPlayerBlind(EventPlayerBlind @event, GameEventInfo info)
     {
@@ -91,6 +102,18 @@ public partial class PracLab
             if (player == null || !player.IsValid) return HookResult.Continue;
 
             var steamId = player.SteamID;
+
+            // 任务 5b：报告致盲时长到投掷者（noflash 免疫玩家仍会触发 player_blind，BlindDuration 可读到原始值）
+            try
+            {
+                var blindDuration = @event.BlindDuration;
+                ReportFlashBlindInfo(player, blindDuration);
+            }
+            catch (Exception ex)
+            {
+                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning OnPlayerBlind report failed - {ex.Message}");
+            }
+
             if (!_noflashState.TryGetValue(steamId, out var enabled) || !enabled)
                 return HookResult.Continue;
 
@@ -186,6 +209,13 @@ public partial class PracLab
                         itemIndex);
 
                     Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Grenade {thrower.PlayerName} threw {weapon} velocity=({vel.X:F1},{vel.Y:F1},{vel.Z:F1}) class={designerName}");
+
+                    // 任务 5：登记到飞行追踪器，用于 detonate 时报告飞行时间与反弹次数
+                    // 参考 MatchZy：用 projectile.Index 作为 key，detonate 事件的 Entityid 直接对应
+                    RegisterGrenadeFlight(thrower, entity.Handle, (uint)projectile.Index, designerName, vel);
+
+                    // .nadetest 校准：玩家有待测意图时打印真实 vs 模型对比数据并消费意图（同时启动轨迹录制）
+                    ReportNadeTestCapture(thrower, pos, vel, designerName, entity.Handle);
                 }
                 catch (Exception ex)
                 {
@@ -225,6 +255,12 @@ public partial class PracLab
     {
         try
         {
+            // 回合结束时取消所有进行中的绘制会话（保留已入库区域），与 dryrun 门控无关
+            CancelAllDrawSessions();
+
+            // 回合结束时取消所有进行中的搜索 Job（保留已完成结果）
+            CancelAllSearchJobs("round_end");
+
             if (!_isDryRun) return HookResult.Continue;
 
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} DryRun round ended, restoring practice mode");
@@ -250,6 +286,39 @@ public partial class PracLab
         catch (Exception ex)
         {
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error OnRoundEnd failed - {ex.Message}");
+        }
+
+        return HookResult.Continue;
+    }
+
+    /// <summary>
+    /// 玩家断连事件回调。
+    /// 清理断连玩家的进行中搜索 Job 与全部搜索结果及其可视化实体，防止状态泄漏。
+    /// （搜索 OnTick 也会检测玩家失效取消 Job，此处事件驱动更及时，并额外清理结果实体）
+    /// </summary>
+    private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
+    {
+        try
+        {
+            var player = @event.Userid;
+            if (player == null || !player.IsValid) return HookResult.Continue;
+
+            var steamId = player.SteamID;
+
+            // 取消进行中搜索 Job（不通知：玩家已断连看不到提示）
+            CancelSearchJob(steamId, "disconnect", notifyPlayer: false);
+
+            // 清除搜索结果与可视化实体
+            int cleared = ClearNadeResults(steamId);
+
+            // 清理 .nadetest 待测意图与按键追踪状态
+            ClearNadeTestState(steamId);
+
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Player {player.PlayerName} disconnected, search state cleared ({cleared} results)");
+        }
+        catch (Exception ex)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error OnPlayerDisconnect failed - {ex.Message}");
         }
 
         return HookResult.Continue;
