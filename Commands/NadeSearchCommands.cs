@@ -70,20 +70,23 @@ public partial class PracLab
     }
 
     /// <summary>
-    /// 道具注册表条目。反弹衰减为 .nadetest 轨迹录制实测常数（15 次碰撞样本拟合）：
-    /// 切向（平行于碰撞面）衰减 0.45（9 次弹地样本 0.447~0.454，极稳定）；
-    /// 弹墙法向衰减 0.45（6 次弹墙总衰减 0.448~0.457，与切向一致，统一衰减正确）；
-    /// 弹地法向衰减 0.42（9 次弹地法向 0.339~0.466，均值 0.419，低于切向）。
-    /// 弹墙与弹地法向衰减不同：墙面近切向入射能量损失小，地面近法向入射能量损失大。
+    /// 道具注册表条目。反弹衰减为 .nadetest 轨迹录制实测常数，按碰撞类型与速度分段（SimulateGrenade 中应用）：
+    /// 弹墙（任意速度）：切向 + 法向均 0.45（6 次弹墙总衰减 0.448~0.457，墙面近切向入射衰减轻）；
+    /// 高速弹地（|v_in|>SpeedDampThreshold≈500，首次弹地 |v_in|≈920）：切向 + 法向均 0.35
+    ///   （实测切向 0.345、法向 0.347；旧值 0.45/0.42 在高速场景偏高 31%/21%，弹道飞过目标框）；
+    /// 中低速弹地（|v_in|≤500，二次弹地 |v_in|≈225）：切向 + 法向均 0.45
+    ///   （实测切向 0.450~0.477、法向 0.410~0.477；旧值统一 0.35 过度衰减，落点 y 偏短 ~17 跌出目标框）。
+    /// 字段语义：BounceDampTangential=弹墙/中低速弹地切向(0.45)；BounceDampNormalWall=弹墙法向(0.45)；
+    /// BounceDampNormalGround=高速弹地切向+法向(0.35，SimulateGrenade 中高速分支复用此字段)。
     /// 显示名通过 lang 键 nadesearch.nade_{Key} 本地化（GetNadeDisplayName）。
     /// </summary>
     /// <param name="Key">.nt 命令参数（smoke/flash/he/molo/inc/decoy）。</param>
     /// <param name="WeaponName">对应武器实体名。</param>
     /// <param name="Abbrev">结果 ID 前缀（SMK/FLH/HE/MOL/INC/DCY）。</param>
     /// <param name="Term">终止类型。</param>
-    /// <param name="BounceDampTangential">切向衰减系数：v'_t = D_t × v_t（实测 0.45）。</param>
-    /// <param name="BounceDampNormalWall">弹墙法向衰减系数（实测 0.45，与切向一致）。</param>
-    /// <param name="BounceDampNormalGround">弹地法向衰减系数（实测均值 0.42，低于切向）。</param>
+    /// <param name="BounceDampTangential">弹墙/中低速弹地切向衰减系数（实测 0.45）；高速弹地切向见 BounceDampNormalGround。</param>
+    /// <param name="BounceDampNormalWall">弹墙法向衰减系数（实测 0.45，墙面近切向入射衰减轻）。</param>
+    /// <param name="BounceDampNormalGround">高速弹地（切向+法向）衰减系数（实测 0.345/0.347，舍入 0.35）；中低速弹地见 BounceDampTangential。</param>
     private sealed record NadeInfo(
         string Key,
         string WeaponName,
@@ -98,12 +101,12 @@ public partial class PracLab
     /// </summary>
     private static readonly NadeInfo[] NadeRegistry =
     [
-        new("smoke", "weapon_smokegrenade", "SMK", NadeTermType.Rest,             0.45f, 0.45f, 0.42f),
-        new("flash", "weapon_flashbang",    "FLH", NadeTermType.Fuse,             0.45f, 0.45f, 0.42f),
-        new("he",    "weapon_hegrenade",    "HE",  NadeTermType.Fuse,             0.45f, 0.45f, 0.42f),
-        new("molo",  "weapon_molotov",      "MOL", NadeTermType.GroundOrAirburst, 0.45f, 0.45f, 0.42f),
-        new("inc",   "weapon_incgrenade",   "INC", NadeTermType.GroundOrAirburst, 0.45f, 0.45f, 0.42f),
-        new("decoy", "weapon_decoy",        "DCY", NadeTermType.Rest,             0.45f, 0.45f, 0.42f),
+        new("smoke", "weapon_smokegrenade", "SMK", NadeTermType.Rest,             0.45f, 0.45f, 0.35f),
+        new("flash", "weapon_flashbang",    "FLH", NadeTermType.Fuse,             0.45f, 0.45f, 0.35f),
+        new("he",    "weapon_hegrenade",    "HE",  NadeTermType.Fuse,             0.45f, 0.45f, 0.35f),
+        new("molo",  "weapon_molotov",      "MOL", NadeTermType.GroundOrAirburst, 0.45f, 0.45f, 0.35f),
+        new("inc",   "weapon_incgrenade",   "INC", NadeTermType.GroundOrAirburst, 0.45f, 0.45f, 0.35f),
+        new("decoy", "weapon_decoy",        "DCY", NadeTermType.Rest,             0.45f, 0.45f, 0.35f),
     ];
 
     /// <summary>
@@ -144,11 +147,16 @@ public partial class PracLab
     private const float DuckJumpThrowVelocityZ = 278.0f;
 
     /// <summary>
-    /// 跳投系出手眼位抬升量（单位）。.nadetest 18 组跳投系实测：投掷物在按压时刻生成，
-    /// 此时玩家已起跳上升，按压眼位 = 站姿眼位 + 28.4~29.7（均值 28.9，站跳/蹲跳/前跳/蹲前跳一致）。
-    /// 搜索从地面站姿眼位起步时必须抬升，否则跳投轨迹起点系统性偏低 ~29 导致落点偏近。
+    /// 跳投系出手眼位抬升量（单位）= 玩家起跳高度 jumpHeight。
+    /// .nadetest 实测（duckjumpthrow/Left）：玩家起跳脚底 z=77.7，按压时刻脚底 z=121.3，
+    /// jumpHeight = 43.6。投掷物在按压时刻生成，按压眼位 = 起跳后脚底 + 蹲/站眼高。
+    /// 仿真流程：releaseEye = eye - DuckEyeOffsetZ(duck 系) + JumpReleaseLiftZ，
+    /// 其中 DuckEyeOffsetZ 补偿站→蹲眼高位差，JumpReleaseLiftZ 补偿起跳抬升（= jumpHeight）。
+    /// 旧值 29 误用「按压眼位 - 站姿眼位」(对 DuckJump ≈ 25.6~28.9) 作为抬升量，
+    /// 但该差值已含 DuckEyeOffsetZ 抵消（= jumpHeight - 18），导致 releaseEye 偏低 14.6，
+    /// 轨迹系统性偏低撞墙（.fdjl smoke 搜索失败根因，详见 debugger.md）。
     /// </summary>
-    private const float JumpReleaseLiftZ = 29.0f;
+    private const float JumpReleaseLiftZ = 43.6f;
 
     /// <summary>
     /// 前跳投水平助跑速度增量（单位/秒）。.nadetest 实测：跳投出手瞬间玩家水平速度 pawnVel.XY ≈30（非跑速250），
@@ -329,8 +337,8 @@ public partial class PracLab
         => IsDuckMode(mode) ? new Vector3(eye.X, eye.Y, eye.Z - DuckEyeOffsetZ) : eye;
 
     /// <summary>
-    /// 按投掷方式取按压时刻出手眼位：在 EyeForMode 基础上，跳投系再抬升 JumpReleaseLiftZ
-    /// （实测按压时玩家已起跳上升 ~29，投掷物按按压眼位生成）。
+    /// 按投掷方式取按压时刻出手眼位：在 EyeForMode 基础上，跳投系再抬升 JumpReleaseLiftZ（= jumpHeight 43.6）。
+    /// 物理流程：玩家先蹲（EyeForMode 减 DuckEyeOffsetZ）→ 起跳（+ jumpHeight）→ 按压时刻投掷物生成。
     /// </summary>
     private static Vector3 ReleaseEyeForMode(Vector3 eye, ThrowMode mode)
     {
@@ -480,6 +488,13 @@ public partial class PracLab
     private const float BounceEpsilon = 0.125f;
 
     /// <summary>
+    /// 投掷物静止半径（游戏单位）。仿真用 TraceShape（零半径射线）命中地面表面，真实投掷物有碰撞半径，
+    /// 静止时中心位于 地面表面 + 半径。.nadetest 实测：仿真落点 z=-28.9（表面），真实落点 z=-26.9（中心），差 2.0。
+    /// 在地面静止/触地终止时给 LandPoint 沿法线加此偏移，补偿 TraceHull 弃用（引擎 AllSolid 缺陷）带来的半径缺失。
+    /// </summary>
+    private const float GrenadeRestRadius = 2.0f;
+
+    /// <summary>
     /// 手雷碰撞掩码：仅 Solid（世界几何/静态道具）。
     /// 不含 PassBullets —— 栅栏/铁丝网等可穿弹面被真实 grenade 物理穿过不发生反弹，
     /// 含此位时预测会提前撞墙反弹（SMK-N-L-01 案例：预测在 (523,641.7,188) 撞 PassBullets 面反弹，
@@ -493,6 +508,13 @@ public partial class PracLab
 
     /// <summary>命中面法线 Z 阈值（&gt; 此值视为地面，与绘制模块共用）。</summary>
     private const float SimGroundNormalZ = 0.7f;
+
+    /// <summary>
+    /// 弹地衰减速度分段阈值（单位/秒）。地面碰撞速度高于此值取高速衰减 0.35，低于取中低速衰减 0.45。
+    /// .nadetest 实测：首次弹地 |v_in|≈920（高速，衰减 0.345/0.347），二次弹地 |v_in|≈234（中速，衰减 0.450~0.477）；
+    /// 阈值 500 居中分隔。弹墙衰减不随速度变化（始终 0.45）。详见 NadeInfo 类注释与 debugger.md「切向衰减速度相关修复」。
+    /// </summary>
+    private const float SpeedDampThreshold = 500.0f;
 
     /// <summary>
     /// 弹道仿真结果。
@@ -517,7 +539,7 @@ public partial class PracLab
     }
 
     /// <summary>
-    /// 单次碰撞信息（[PracLab-DBG] 调试插桩，仅记录数值避免热路径字符串分配）。
+    /// 单次碰撞信息（调试插桩，仅记录数值避免热路径字符串分配）。
     /// 命中后由调用方格式化为 NadeResult.BounceLog 字符串。
     /// </summary>
     private struct BounceInfo
@@ -527,7 +549,8 @@ public partial class PracLab
         public Vector3 ProbeN; // ProbeWallNormalZ 修正后法线
         public Vector3 VIn;    // 碰撞时刻入射速度
         public Vector3 VOut;   // 反弹后速度
-        public string? ProbeNote; // [PracLab-DBG] ProbeWallNormalZ 降级原因（null=成功恢复）
+        public uint Contents;  // 碰撞面 contents 位掩码（用于诊断误撞 PlayerClip 等）
+        public string? ProbeNote; // ProbeWallNormalZ 降级原因（null=成功恢复）
     }
 
     /// <summary>
@@ -563,7 +586,7 @@ public partial class PracLab
     /// GrenadeSim：固定步长弹道仿真（仅可在主线程调用，每步一次或多次引擎 TraceShape 线段扫掠）。
     /// 积分：半隐式欧拉（先重力后位移），dt = 1/simHz；碰撞体按线段近似（grenade 半径 4 远小于目标盒体尺度，
     /// TraceHull+CTraceFilter 通道存在引擎层封送缺陷——全部查询恒返回 AllSolid，已弃用，见 debug-search-no-results.md）。
-    /// 反弹模型：法向/切向分离衰减，v' = D_t × v_t - D_n × v_n（切向 D_t=0.45，法向 D_n=0.35）。
+    /// 反弹模型：法向/切向分离衰减，v' = D_t × v_t - D_n × v_n（切向 D_t=0.45，法向 D_n=0.35 弹地 / 0.45 弹墙）。
     /// 子步碰撞处理：一个 tick 内检测到碰撞后，用剩余时间 (1-fraction)×dt 继续做 TraceShape，
     /// 直到走完整个 dt 或达到 MaxSubSteps 上限。解决高速撞击斜坡/墙地交界处单 tick 多次碰撞遗漏问题。
     /// 重力分摊：每个子步开始时按子步时间施加重力（v.Z -= g·remainingDt），碰撞时修正碰撞时刻速度
@@ -588,7 +611,7 @@ public partial class PracLab
     /// <param name="skipPawn">trace 跳过的实体句柄（搜索者自身 pawn；Zero 不跳过）。</param>
     /// <param name="boxMin">目标盒体最小角（非 null 时启用"任意触地即命中"判定；null 仅仿真不判命中）。</param>
     /// <param name="boxMax">目标盒体最大角（与 boxMin 配对）。</param>
-    /// <param name="bounces">[PracLab-DBG] 碰撞复用缓冲（调用方传入，仿真前 Clear；前 3 次碰撞记录数值，命中后格式化）。</param>
+    /// <param name="bounces">碰撞复用缓冲（调用方传入，仿真前 Clear；前 3 次碰撞记录数值，命中后格式化）。</param>
     /// <returns>仿真结果（落点 + 终止原因 + 飞行时长）。</returns>
     private GrenadeSimResult SimulateGrenade(Vector3 origin, Vector3 velocity, NadeInfo nade, int simHz, List<Vector3>? trajectory, nint skipPawn, Vector3? boxMin = null, Vector3? boxMax = null, List<BounceInfo>? bounces = null)
     {
@@ -598,7 +621,7 @@ public partial class PracLab
         float elapsed = 0f;
         int restTicks = 0;
         float lastSurfaceNormalZ = 0f;
-        // [PracLab-DBG] 碰撞计数：前 3 次碰撞记录到 bounces 缓冲，定位"弹墙方向与真实不符"
+        // 碰撞计数：前 3 次碰撞记录到 bounces 缓冲，定位"弹墙方向与真实不符"
         int bounceCount = 0;
         // 墙碰撞计数：超过 MaxWallBounces 提前终止，防止 ProbeWallNormalZ 修改反弹方向后
         // grenade 卡在墙缝/复杂地形反复撞墙导致单次仿真卡死主线程
@@ -673,6 +696,19 @@ public partial class PracLab
                         return result;
                     }
 
+                    // 非固体面穿透：contents 不含 Solid(0x1) 的面（PlayerClip/trigger/clip 等）
+                    // 真实 grenade 用 collision group 过滤这类面，仿真 TraceShape 无 filter 会误撞。
+                    // 实测 .nts 90.3 -13.5 DJ L bounce[0] contents=0x40000030（无 Solid bit）误撞导致弹道反向。
+                    // 穿透策略：position 推进到碰撞点 + 沿运动方向微偏移，不反弹，继续子步受重力影响。
+                    // 安全性：MaxSubSteps 限制子步数，RestTimeoutSeconds 限制总时长，不会死循环。
+                    if ((trace.Contents & 0x1u) == 0)
+                    {
+                        var moveDir = v.LengthSquared() > 1.0f ? Vector3.Normalize(v) : new Vector3(0, 0, 1);
+                        position = trace.Position + moveDir * BounceEpsilon;
+                        remainingDt *= (1.0f - trace.Fraction);
+                        continue;
+                    }
+
                     // AllSolid 处理：当 trace 起点被认为在固体内部时，不直接终止，
                     // 而是落入下方正常碰撞处理流程（用法线弹跳）。
                     // 证据：SMK-N-L-01 预测在地面对撞点 (766,854,2.6) 返回 allsolid 终止，
@@ -682,7 +718,7 @@ public partial class PracLab
                     // 安全性：MaxSubSteps 限制子步数，RestTimeoutSeconds 限制总时长，不会死循环。
 
                     var n = Vector3.Normalize(trace.Normal);
-                    // [PracLab-DBG] 保存引擎原始法线（ProbeWallNormalZ 会覆盖 n），用于 BounceLog
+                    // 保存引擎原始法线（ProbeWallNormalZ 会覆盖 n），用于 BounceLog
                     var rawN = n;
                     lastSurfaceNormalZ = n.Z;
 
@@ -708,10 +744,11 @@ public partial class PracLab
                     // molo/inc：首次触地（法线朝上）即终止取命中点
                     if (nade.Term == NadeTermType.GroundOrAirburst && n.Z > SimGroundNormalZ)
                     {
-                        result.LandPoint = trace.Position;
+                        // 沿法线加半径补偿：TraceShape 命中表面，真实投掷物中心在 表面+半径
+                        result.LandPoint = trace.Position + n * GrenadeRestRadius;
                         result.TermReason = "ground";
                         result.FlightTime = elapsed;
-                        trajectory?.Add(trace.Position);
+                        trajectory?.Add(result.LandPoint);
                         return result;
                     }
 
@@ -742,18 +779,22 @@ public partial class PracLab
                         lastSurfaceNormalZ = n.Z;
                     }
 
-                    // 反弹：法向/切向分离衰减，法向衰减按碰撞面类型区分。
-                    // .nadetest 15 次碰撞实测：切向稳定 ×0.45；弹墙法向 ×0.45（与切向一致）；
-                    // 弹地法向 ×0.42（9 次样本均值 0.419，低于切向——近法向入射能量损失更大）。
+                    // 反弹：法向/切向分离衰减，按碰撞类型与速度分段（.nadetest 实测，详见 NadeInfo 类注释）：
+                    // 弹墙（任意速度）：D_t = D_n = 0.45（墙面近切向入射衰减轻）；
+                    // 高速弹地（|v|>SpeedDampThreshold，首次弹地 |v|≈920）：D_t = D_n = 0.35（实测 0.345/0.347）；
+                    // 中低速弹地（|v|≤500，二次弹地 |v|≈225）：D_t = D_n = 0.45（实测 0.450~0.477，旧统一 0.35 过度衰减致落点偏短）。
                     // v' = D_t × v_t - D_n × v_n，其中 v_n = (v·n)n，v_t = v - v_n。
                     float vDotN = Vector3.Dot(vAtCollision, n);
                     var normalComp = n * vDotN;
                     var tangentComp = vAtCollision - normalComp;
-                    float dampNormal = n.Z > SimGroundNormalZ ? nade.BounceDampNormalGround : nade.BounceDampNormalWall;
-                    v = tangentComp * nade.BounceDampTangential - normalComp * dampNormal;
+                    bool isGround = n.Z > SimGroundNormalZ;
+                    bool highSpeedGround = isGround && vAtCollision.Length() > SpeedDampThreshold;
+                    float dampT = highSpeedGround ? nade.BounceDampNormalGround : nade.BounceDampTangential;
+                    float dampNormal = highSpeedGround ? nade.BounceDampNormalGround : nade.BounceDampNormalWall;
+                    v = tangentComp * dampT - normalComp * dampNormal;
                     position = trace.Position + n * BounceEpsilon;
 
-                    // [PracLab-DBG] 前 3 次碰撞记录数值到复用缓冲（无字符串分配，命中后格式化）。
+                    // 前 3 次碰撞记录数值到复用缓冲（无字符串分配，命中后格式化）。
                     // 用于定位"预测弹墙方向与真实不符"：若 rawN 与 probeN 方向相反，说明 ProbeWallNormalZ 修正反了。
                     if (bounces != null && bounces.Count < 3)
                     {
@@ -764,6 +805,7 @@ public partial class PracLab
                             ProbeN = n,
                             VIn = vAtCollision,
                             VOut = v,
+                            Contents = trace.Contents,
                             ProbeNote = probeNote,
                         });
                     }
@@ -777,10 +819,12 @@ public partial class PracLab
                     if (nade.Term == NadeTermType.Rest && n.Z > SimGroundNormalZ
                         && v.LengthSquared() < RestSpeedThreshold * RestSpeedThreshold)
                     {
-                        result.LandPoint = trace.Position;
+                        // 沿法线加半径补偿：TraceShape 命中地面表面，真实投掷物中心静止在 表面+半径
+                        // 不补偿会导致落点 z 系统性偏低 ~2 单位，可能跌出目标框底（.fdjl 搜索未命中根因）
+                        result.LandPoint = trace.Position + n * GrenadeRestRadius;
                         result.TermReason = "rest_bounce";
                         result.FlightTime = elapsed;
-                        trajectory?.Add(trace.Position);
+                        trajectory?.Add(result.LandPoint);
                         return result;
                     }
 
@@ -849,7 +893,7 @@ public partial class PracLab
     }
 
     /// <summary>
-    /// [PracLab-DBG] 将碰撞复用缓冲格式化为字符串列表（仅命中时调用，避免热路径字符串分配）。
+    /// 将碰撞复用缓冲格式化为字符串列表（仅命中时调用，避免热路径字符串分配）。
     /// </summary>
     private static List<string> FormatBounceLog(List<BounceInfo> bounces)
     {
@@ -857,14 +901,17 @@ public partial class PracLab
         for (int i = 0; i < bounces.Count; i++)
         {
             var b = bounces[i];
-            // [PracLab-DBG] 若 ProbeWallNormalZ 降级，追加 note 说明原因
+            // 若 ProbeWallNormalZ 降级，追加 note 说明原因
             var note = string.IsNullOrEmpty(b.ProbeNote) ? "" : $" NOTE={b.ProbeNote}";
+            // contents 十六进制：诊断误撞 PlayerClip(0x40)/CsgoGrenadeClip 等
+            // Solid=0x1 Window=0x2 PassBullets=0x20000 PlayerClip=0x40 CsgoGrenadeClip=0x400000
             log.Add(
                 $"bounce[{i}] pos=({b.Pos.X:F1},{b.Pos.Y:F1},{b.Pos.Z:F1}) " +
                 $"rawN=({b.RawN.X:F2},{b.RawN.Y:F2},{b.RawN.Z:F2}) " +
                 $"probeN=({b.ProbeN.X:F2},{b.ProbeN.Y:F2},{b.ProbeN.Z:F2}) " +
                 $"vIn=({b.VIn.X:F1},{b.VIn.Y:F1},{b.VIn.Z:F1}) " +
-                $"vOut=({b.VOut.X:F1},{b.VOut.Y:F1},{b.VOut.Z:F1}){note}");
+                $"vOut=({b.VOut.X:F1},{b.VOut.Y:F1},{b.VOut.Z:F1}) " +
+                $"contents=0x{b.Contents:X}{note}");
         }
         return log;
     }
@@ -967,7 +1014,7 @@ public partial class PracLab
 
         float normalZ = Math.Clamp(num / den, -0.5f, 0.5f);
 
-        // [PracLab-DBG] 记录有效点数与回归结果（成功路径），由 .ng 输出
+        // 记录有效点数与回归结果（成功路径），由 .ng 输出
         note = $"multi pts={validCount} b={normalZ:F4}";
 
         return Vector3.Normalize(new Vector3(flatNormal.X, flatNormal.Y, normalZ));
@@ -1054,7 +1101,7 @@ public partial class PracLab
         /// <summary>出手点（投掷物真实生成位置，.ng 终端调试输出用，对比预测/真实起点偏移）。</summary>
         public Vector3 ThrowOrigin;
 
-        /// <summary>前 3 次碰撞详情（[PracLab-DBG] 调试插桩，定位"弹墙方向与真实不符"问题）。</summary>
+        /// <summary>前 3 次碰撞详情（调试插桩，定位"弹墙方向与真实不符"问题）。</summary>
         public List<string> BounceLog = new();
 
         /// <summary>.ng 重建的可视化实体（描点十字 + 弹道 beam）。</summary>
@@ -1145,7 +1192,7 @@ public partial class PracLab
         /// <summary>仿真轨迹复用缓冲（命中时复制到 NadeResult，避免每候选分配）。</summary>
         public List<Vector3> ScratchTrajectory = new(256);
 
-        /// <summary>[PracLab-DBG] 碰撞复用缓冲（仿真前 Clear，前 3 次碰撞记录数值，命中后格式化）。</summary>
+        /// <summary>碰撞复用缓冲（仿真前 Clear，前 3 次碰撞记录数值，命中后格式化）。</summary>
         public List<BounceInfo> ScratchBounces = new(4);
     }
 
@@ -1345,20 +1392,8 @@ public partial class PracLab
         _searchJobs[steamId] = job;
         RegisterSearchTickListener();
 
-        // 启动提示：道具 / 精度 / 组合数（粗筛后/前）/ 预计时长
-        // 预估基于实测吞吐校准：128Hz + 2ms/tick 预算下约 78 候选/秒（41370 候选 / 527 秒 实测）。
-        // 每候选实际耗时约 1.63ms（大部分候选提前终止，远小于 ArcCoarseDuration 上限；
-        // TraceShape 耗时约 6μs，远低于理论 20μs）。
-        // 旧公式 /2000 严重高估速度（显示 1 秒实际 10 分钟）；中间公式 /4 严重低估速度（显示 165 分钟实际 9 分钟）。
-        int simHz = _config.NadeSimHz;
-        float traceMsPerTick = _config.NadeTraceMs;
-        // 每秒搜索预算（毫秒）= 每 tick 预算 × 64 tick/秒（CS2 默认 64 tick）
-        double searchMsPerSecond = traceMsPerTick * 64.0;
-        // 每候选实测耗时系数：simHz × 0.013ms（128Hz → 1.66ms/候选，与实测 1.63ms 吻合）
-        // 系数来源：simHz=128 时 41370 候选耗时 527 秒，反推 msPerCandidate = 527×128/41370 = 1.63ms
-        double msPerCandidate = simHz * 0.013;
-        int estSeconds = Math.Max(1, (int)(job.MainCandidateCount * msPerCandidate / searchMsPerSecond));
-        player.PrintToChat(Localizer.ForPlayer(player, "nadesearch.started", GetNadeDisplayName(player, nade), accuracy.ToString().ToLowerInvariant(), job.MainCandidateCount, job.PreFilterCount, estSeconds));
+        // 启动提示：道具 / 精度 / 组合数（粗筛后/前）
+        player.PrintToChat(Localizer.ForPlayer(player, "nadesearch.started", GetNadeDisplayName(player, nade), accuracy.ToString().ToLowerInvariant(), job.MainCandidateCount, job.PreFilterCount));
 
         Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Search job started: player={player.PlayerName} nade={nade.Key} acc={accuracy} candidates={job.PreFilterCount}->{job.MainCandidateCount}");
     }
@@ -1545,7 +1580,7 @@ public partial class PracLab
                         parent.Pitch = c.Pitch;
                         parent.LandPoint = sim.LandPoint;
                         parent.Trajectory = new List<Vector3>(job.ScratchTrajectory);
-                        // [PracLab-DBG] 同步出手点与前 3 次碰撞日志
+                        // 同步出手点与前 3 次碰撞日志
                         parent.ThrowOrigin = throwOrigin;
                         parent.BounceLog = FormatBounceLog(job.ScratchBounces);
                     }
@@ -1572,7 +1607,7 @@ public partial class PracLab
                             dup.Pitch = c.Pitch;
                             dup.LandPoint = sim.LandPoint;
                             dup.Trajectory = new List<Vector3>(job.ScratchTrajectory);
-                            // [PracLab-DBG] 同步出手点与前 3 次碰撞日志
+                            // 同步出手点与前 3 次碰撞日志
                             dup.ThrowOrigin = throwOrigin;
                             dup.BounceLog = FormatBounceLog(job.ScratchBounces);
                         }
@@ -1593,7 +1628,7 @@ public partial class PracLab
                             BoxMax = boxMax,
                             TermReason = sim.TermReason,
                             FlightTime = sim.FlightTime,
-                            // [PracLab-DBG] 出手点与前 3 次碰撞日志
+                            // 出手点与前 3 次碰撞日志
                             ThrowOrigin = throwOrigin,
                             BounceLog = FormatBounceLog(job.ScratchBounces),
                         });
@@ -1820,5 +1855,165 @@ public partial class PracLab
         _nadeType[steamId] = found.Key;
         player.PrintToChat(Localizer.ForPlayer(player, "nadesearch.type_set", found.Key, GetNadeDisplayName(player, found)));
         Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} NadeSearch {player.PlayerName} set type={found.Key}");
+    }
+
+    // ==================== 单次仿真调试命令（.nadetestsim / .nts） ====================
+
+    /// <summary>
+    /// .nadetestsim / .nts 命令处理器：按指定 yaw/pitch/mode/strength 在玩家当前位置跑一次弹道仿真，
+    /// 将出手点、前 3 次碰撞详情、落点、终止原因、飞行时长输出到玩家控制台（前缀）。
+    /// 用于对比 .nadetest 录制的真实弹道数据，定位「弹地衰减系数 / 出手点 / 法线恢复」等根因。
+    /// 参数格式（任意顺序、可省略，全部省略时取玩家当前视角 + 默认 DuckJump/Left）：
+    ///   .nts                      → yaw/pitch 取当前视角，mode=DuckJump，strength=Left
+    ///   .nts 90.5 -13.4           → yaw=90.5 pitch=-13.4，mode/strength 默认
+    ///   .nts 90.5 -13.4 DJ L      → 全部显式（mode/strength 顺序可互换）
+    ///   .nts DJ R                 → yaw/pitch 取当前视角，mode=DuckJump strength=Right
+    /// mode 关键字：N(ormal) / J(ump) / RJ / D(uck) / DJ / DRJ
+    /// strength 关键字：L(eft) / M(id) / R(ight)
+    /// </summary>
+    /// <param name="player">调用者玩家（站位与默认视角来源）。</param>
+    /// <param name="args">命令参数（yaw/pitch 浮点 + mode/strength 关键字，任意顺序）。</param>
+    private void HandleNadeTestSim(CCSPlayerController player, string args)
+    {
+        Server.PrintToConsole("[PracLab] HandleNadeTestSim: executing...");
+
+        var pawn = player.PlayerPawn.Value;
+        if (pawn == null || !pawn.IsValid || pawn.AbsOrigin == null)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeTestSim pawn invalid for {player.PlayerName}");
+            player.PrintToChat(Localizer.ForPlayer(player, "nadetestsim.pawn_invalid"));
+            return;
+        }
+
+        // 默认值：yaw/pitch 取玩家当前视角；mode=DuckJump（常见练习场景）；strength=Left（满力）
+        float yaw = pawn.EyeAngles.Y;
+        float pitch = pawn.EyeAngles.X;
+        var mode = ThrowMode.DuckJump;
+        var strength = ThrowStrength.Left;
+
+        // 参数解析：浮点（按出现顺序赋给 yaw、pitch）+ 关键字（mode/strength 任意顺序）
+        var parts = args.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var pendingFloats = new List<float>(2);
+        foreach (var part in parts)
+        {
+            // 先按关键字匹配，未命中再尝试解析为浮点
+            var lower = part.ToLowerInvariant();
+            switch (lower)
+            {
+                case "n":
+                case "normal":
+                    mode = ThrowMode.Normal;
+                    break;
+                case "j":
+                case "jump":
+                    mode = ThrowMode.Jump;
+                    break;
+                case "rj":
+                case "runjump":
+                    mode = ThrowMode.RunJump;
+                    break;
+                case "d":
+                case "duck":
+                    mode = ThrowMode.Duck;
+                    break;
+                case "dj":
+                case "duckjump":
+                    mode = ThrowMode.DuckJump;
+                    break;
+                case "drj":
+                case "duckrunjump":
+                    mode = ThrowMode.DuckRunJump;
+                    break;
+                case "l":
+                case "left":
+                    strength = ThrowStrength.Left;
+                    break;
+                case "m":
+                case "mid":
+                    strength = ThrowStrength.Mid;
+                    break;
+                case "r":
+                case "right":
+                    strength = ThrowStrength.Right;
+                    break;
+                default:
+                    // 浮点解析（InvariantCulture，兼容 90.5 / -13.4 等格式）
+                    if (float.TryParse(part, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var f))
+                    {
+                        if (pendingFloats.Count < 2)
+                            pendingFloats.Add(f);
+                        else
+                        {
+                            player.PrintToChat(Localizer.ForPlayer(player, "nadetestsim.invalid", part));
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        player.PrintToChat(Localizer.ForPlayer(player, "nadetestsim.invalid", part));
+                        return;
+                    }
+                    break;
+            }
+        }
+
+        if (pendingFloats.Count >= 1) yaw = pendingFloats[0];
+        if (pendingFloats.Count >= 2) pitch = pendingFloats[1];
+
+        // 道具：未设置时默认 smoke 并提示（与 HandleFind 一致）
+        var steamId = player.SteamID;
+        if (!_nadeType.TryGetValue(steamId, out var nadeKey) || FindNadeByKey(nadeKey) is not { } nade)
+        {
+            nade = NadeRegistry[0]; // smoke
+            _nadeType[steamId] = nade.Key;
+            player.PrintToChat(Localizer.ForPlayer(player, "nadesearch.default_type", nade.Key, GetNadeDisplayName(player, nade)));
+        }
+
+        // 取眼位 → 按方式下沉/抬升 → 计算出手点与初速度
+        var eye = player.GetEyePosition();
+        if (eye == null)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeTestSim eye position unavailable for {player.PlayerName}");
+            player.PrintToChat(Localizer.ForPlayer(player, "nadetestsim.pawn_invalid"));
+            return;
+        }
+
+        var eyePos = ToNumerics(eye);
+        var releaseEye = ReleaseEyeForMode(eyePos, mode);
+        var throwOrigin = ComputeThrowOrigin(releaseEye, pitch, yaw, strength);
+        var v0 = ComputeThrowVelocity(pitch, yaw, strength, mode);
+        int simHz = _config.NadeSimHz;
+        var skipPawn = pawn.Handle;
+
+        // 仿真：轨迹采样到 scratch，前 3 次碰撞记录到 bounces 缓冲（参考 .ng 调试输出格式）
+        var trajectory = new List<Vector3>(256);
+        var bounces = new List<BounceInfo>(3);
+        var sim = SimulateGrenade(throwOrigin, v0, nade, simHz, trajectory, skipPawn, null, null, bounces);
+
+        // —— 玩家控制台诊断输出（中文，[PracLab] 前缀，便于与 .nadetest 真实数据对照）——
+        var modeName = GetModeLocalizedName(player, mode);
+        var strengthName = GetStrengthLocalizedName(player, strength);
+        var nadeName = GetNadeDisplayName(player, nade);
+
+        player.PrintToConsole($"[PracLab] ===== NadeTestSim 开始 =====");
+        player.PrintToConsole($"[PracLab] 参数: nade={nade.Key} mode={mode} strength={strength} yaw={yaw:F2} pitch={pitch:F2}");
+        player.PrintToConsole($"[PracLab] 仿真: simHz={simHz} dt={1000.0f / simHz:F3}ms");
+        player.PrintToConsole($"[PracLab] 出手: eye=({eyePos.X:F1},{eyePos.Y:F1},{eyePos.Z:F1}) releaseEye=({releaseEye.X:F1},{releaseEye.Y:F1},{releaseEye.Z:F1})");
+        player.PrintToConsole($"[PracLab]       origin=({throwOrigin.X:F1},{throwOrigin.Y:F1},{throwOrigin.Z:F1}) v0=({v0.X:F1},{v0.Y:F1},{v0.Z:F1}) |v0|={v0.Length():F1}");
+
+        player.PrintToConsole($"[PracLab] 碰撞日志（前 {bounces.Count} 次）:");
+        var bounceLog = FormatBounceLog(bounces);
+        foreach (var entry in bounceLog)
+            player.PrintToConsole($"[PracLab]   {entry}");
+
+        var land = sim.LandPoint;
+        player.PrintToConsole($"[PracLab] 结果: land=({land.X:F1},{land.Y:F1},{land.Z:F1}) term={sim.TermReason} flight={sim.FlightTime:F3}s");
+        player.PrintToConsole($"[PracLab]       轨迹采样 {trajectory.Count} 点（每 4 tick 一点）");
+        player.PrintToConsole($"[PracLab] ===== NadeTestSim 结束 =====");
+
+        // 聊天提示：参数 + 结果摘要，引导玩家查看控制台
+        player.PrintToChat(Localizer.ForPlayer(player, "nadetestsim.done", nadeName, modeName, strengthName, yaw, pitch, sim.TermReason, sim.FlightTime));
+
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} NadeTestSim {player.PlayerName} nade={nade.Key} mode={mode} strength={strength} yaw={yaw:F2} pitch={pitch:F2} term={sim.TermReason} flight={sim.FlightTime:F3}s");
     }
 }

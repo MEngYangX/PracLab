@@ -31,6 +31,10 @@ public partial class PracLab
             _lastGrenadeThrow.Clear();
             _pracBots.Clear();
 
+            // 清空投掷物飞行追踪与闪光投掷者标记（地图切换时所有实体被销毁）
+            _grenadeFlightTracker.Clear();
+            _lastFlashThrower = 0;
+
             // 停止所有 bot 碰撞管理定时器
             foreach (var timer in _botCollisionTimers.Values)
             {
@@ -88,6 +92,7 @@ public partial class PracLab
     /// 若玩家在 _noflashState 中标记为启用，使用 Server.NextFrame 清零 FlashDuration/FlashMaxAlpha。
     /// 用事件驱动替代每 0.1 秒轮询，性能更好且 100% 可靠。
     /// 参考来源：CSS API CCSPlayerPawnBase.FlashDuration/FlashMaxAlpha 为 ref float，可直接赋值。
+    /// 任务 5b：额外读取 BlindDuration 并向投掷者报告致盲时长（不影响 noflash 免疫逻辑）。
     /// </summary>
     private HookResult OnPlayerBlind(EventPlayerBlind @event, GameEventInfo info)
     {
@@ -97,6 +102,18 @@ public partial class PracLab
             if (player == null || !player.IsValid) return HookResult.Continue;
 
             var steamId = player.SteamID;
+
+            // 任务 5b：报告致盲时长到投掷者（noflash 免疫玩家仍会触发 player_blind，BlindDuration 可读到原始值）
+            try
+            {
+                var blindDuration = @event.BlindDuration;
+                ReportFlashBlindInfo(player, blindDuration);
+            }
+            catch (Exception ex)
+            {
+                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning OnPlayerBlind report failed - {ex.Message}");
+            }
+
             if (!_noflashState.TryGetValue(steamId, out var enabled) || !enabled)
                 return HookResult.Continue;
 
@@ -192,6 +209,10 @@ public partial class PracLab
                         itemIndex);
 
                     Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Grenade {thrower.PlayerName} threw {weapon} velocity=({vel.X:F1},{vel.Y:F1},{vel.Z:F1}) class={designerName}");
+
+                    // 任务 5：登记到飞行追踪器，用于 detonate 时报告飞行时间与反弹次数
+                    // 参考 MatchZy：用 projectile.Index 作为 key，detonate 事件的 Entityid 直接对应
+                    RegisterGrenadeFlight(thrower, entity.Handle, (uint)projectile.Index, designerName, vel);
 
                     // .nadetest 校准：玩家有待测意图时打印真实 vs 模型对比数据并消费意图（同时启动轨迹录制）
                     ReportNadeTestCapture(thrower, pos, vel, designerName, entity.Handle);

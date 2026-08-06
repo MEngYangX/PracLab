@@ -154,12 +154,23 @@ public partial class PracLab : BasePlugin
         AddCommandListener("say", OnPlayerSay, HookMode.Pre);
         AddCommandListener("say_team", OnPlayerSay, HookMode.Pre);
 
+        // 注册 F3（autobuy）/ F4（rebuy）按键监听器：prac 模式下转调 .timer / .help
+        // CS2 客户端固定将 F3 绑定到 autobuy、F4 绑定到 rebuy，拦截这两条命令即可重映射按键
+        AddCommandListener("autobuy", OnAutobuyPressed, HookMode.Pre);
+        AddCommandListener("rebuy", OnRebuyPressed, HookMode.Pre);
+
         // 注册投掷物实体生成监听器：在实体生成时记录玩家最后投掷位置/角度/速度/类名
         // Fix 8+9：替代原 EventGrenadeThrown，OnEntitySpawned 触发时实体已有 AbsVelocity，可完整复现弹道
         RegisterListener<Listeners.OnEntitySpawned>(OnEntitySpawned);
 
         // 注册玩家被闪光弹闪到事件：用于 noflash 免疫（Fix 5，替代原 0.1 秒轮询定时器）
         RegisterEventHandler<EventPlayerBlind>(OnPlayerBlind);
+
+        // 注册投掷物引爆事件：用于报告飞行时间与反弹次数（任务 5a）
+        RegisterEventHandler<EventSmokegrenadeDetonate>(OnSmokegrenadeDetonate);
+        RegisterEventHandler<EventFlashbangDetonate>(OnFlashbangDetonate);
+        RegisterEventHandler<EventHegrenadeDetonate>(OnHegrenadeDetonate);
+        RegisterEventHandler<EventMolotovDetonate>(OnMolotovDetonate);
 
         // 注册玩家受伤事件：用于实时伤害信息显示（Bug 4，参考 MEngZy MatchZy.cs 第 414-438 行）
         // 注意：不使用 [GameEventHandler] 特性，避免重复注册导致伤害信息打印两次
@@ -226,7 +237,7 @@ public partial class PracLab : BasePlugin
         AddRoute(new CommandRoute("kick", [], HandleKickBot, RequiresPracMode: true));
 
         // —— T4 道具与环境清理（2 条）——
-        AddRoute(new CommandRoute("clear", [], HandleClear, RequiresPracMode: true));
+        AddRoute(new CommandRoute("clear", ["cl"], HandleClear, RequiresPracMode: true));
         AddRoute(new CommandRoute("break", ["br"], HandleBreak, RequiresPracMode: true));
 
         // —— T5 时间与无敌（3 条）——
@@ -335,6 +346,9 @@ public partial class PracLab : BasePlugin
         AddRoute(new CommandRoute("nadeaccuracy", ["nac"], HandleNadeAccuracy, RequiresPracMode: true));
         AddRoute(new CommandRoute("nadetype", ["nt"], HandleNadeType, RequiresPracMode: true));
         AddRoute(new CommandRoute("nadetest", ["ntt"], HandleNadeTest, RequiresPracMode: true));
+        // .nts：单次仿真调试命令，用指定 yaw/pitch/mode/strength 跑一次弹道仿真并输出诊断到玩家控制台，
+        // 用于对比 .nadetest 真实数据，定位弹道预测偏差（衰减系数 / 出手点 / 法线恢复 等）
+        AddRoute(new CommandRoute("nadetestsim", ["nts"], HandleNadeTestSim, RequiresPracMode: true));
 
         // —— T16 探测结果（3 条 + 别名）——
         // .nl 控制台输出结果表格；.ncl 清除结果与可视化；.ng <ID> 传送站位 + 对准描点角 + 重建预览

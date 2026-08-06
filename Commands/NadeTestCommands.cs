@@ -209,6 +209,7 @@ public partial class PracLab
             player.PrintToChat(Localizer.ForPlayer(player, "nadetest.armed_auto", (int)NadeTestIntentSeconds));
         }
 
+        player.PrintToConsole($"[PracLab] ===== NadeTest 调试开始 =====");
         player.PrintToConsole($"[PracLab] NadeTest intent={(strength?.ToString() ?? "auto")}/{(mode?.ToString() ?? "auto")}");
     }
 
@@ -510,7 +511,10 @@ public partial class PracLab
                 if (pos != null && vel != null && player != null && player.IsValid)
                     player.PrintToConsole($"[PracLab] NadeTest traj last i={rec.Tick} t={rec.Tick / 64.0f:F3} p=({pos.X:F1},{pos.Y:F1},{pos.Z:F1}) v=({vel.X:F1},{vel.Y:F1},{vel.Z:F1})");
                 if (player != null && player.IsValid)
+                {
                     player.PrintToConsole($"[PracLab] NadeTest traj end ticks={rec.Tick} reason={endReason}");
+                    player.PrintToConsole($"[PracLab] ===== NadeTest 调试结束 =====");
+                }
                 (finished ??= new List<ulong>()).Add(steamId);
             }
         }

@@ -64,6 +64,7 @@ public partial class PracLab
             ("nadeaccuracy", "help.cmd.nadeaccuracy"),
             ("nadetype", "help.cmd.nadetype"),
             ("nadetest", "help.cmd.nadetest"),
+            ("nadetestsim", "help.cmd.nadetestsim"),
         ]),
         ("help.cat.naderesult", [
             ("nadelist", "help.cmd.nadelist"),

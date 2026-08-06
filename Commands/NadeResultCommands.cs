@@ -171,10 +171,11 @@ public partial class PracLab
     // ==================== 内部辅助 ====================
 
     /// <summary>
-    /// 玩家控制台调试输出：打印搜索目标框三维坐标、预测轨迹采样点、仿真终止诊断。
+    /// 终端调试输出：打印搜索目标框三维坐标、预测轨迹采样点、仿真终止诊断。
     /// 用于对比预测轨迹与实际轨迹的差异，定位"预测与实际不符"问题。
+    /// 输出到服务器终端（Server.PrintToConsole），避免刷玩家控制台。
     /// </summary>
-    /// <param name="player">目标玩家（输出到其控制台）。</param>
+    /// <param name="player">目标玩家（仅用于日志标识）。</param>
     /// <param name="result">搜索结果条目（含目标框和轨迹数据）。</param>
     private void PrintNadeGotoDebug(CCSPlayerController player, NadeResult result)
     {
@@ -183,26 +184,30 @@ public partial class PracLab
         var bMax = result.BoxMax;
         var center = (bMin + bMax) * 0.5f;
         var size = bMax - bMin;
-        player.PrintToConsole($"[PracLab-DBG] NadeGoto target box: min=({bMin.X:F1},{bMin.Y:F1},{bMin.Z:F1}) max=({bMax.X:F1},{bMax.Y:F1},{bMax.Z:F1}) center=({center.X:F1},{center.Y:F1},{center.Z:F1}) size=({size.X:F1},{size.Y:F1},{size.Z:F1})");
+        var ts = DateTime.Now.ToString("HH:mm:ss");
+
+        Server.PrintToConsole($"[PracLab] {ts} ===== NadeGoto 调试开始 ===== player={player.PlayerName} id={result.Id}");
+        Server.PrintToConsole($"[PracLab] {ts} NadeGoto target box: min=({bMin.X:F1},{bMin.Y:F1},{bMin.Z:F1}) max=({bMax.X:F1},{bMax.Y:F1},{bMax.Z:F1}) center=({center.X:F1},{center.Y:F1},{center.Z:F1}) size=({size.X:F1},{size.Y:F1},{size.Z:F1})");
 
         // 预测轨迹
         var traj = result.Trajectory;
         var land = result.LandPoint;
         var origin = result.ThrowOrigin;
-        player.PrintToConsole($"[PracLab-DBG] NadeGoto trajectory for {result.Id}: {traj.Count} points, origin=({origin.X:F1},{origin.Y:F1},{origin.Z:F1}) land=({land.X:F1},{land.Y:F1},{land.Z:F1}) term={result.TermReason} flight={result.FlightTime:F3}s");
+        Server.PrintToConsole($"[PracLab] {ts} NadeGoto trajectory: {traj.Count} points, origin=({origin.X:F1},{origin.Y:F1},{origin.Z:F1}) land=({land.X:F1},{land.Y:F1},{land.Z:F1}) term={result.TermReason} flight={result.FlightTime:F3}s");
         for (int i = 0; i < traj.Count; i++)
         {
             var p = traj[i];
             string tag = (i == traj.Count - 1) ? " [END]" : "";
-            player.PrintToConsole($"[PracLab-DBG]   traj[{i}] = ({p.X:F1},{p.Y:F1},{p.Z:F1}){tag}");
+            Server.PrintToConsole($"[PracLab] {ts}   traj[{i}] = ({p.X:F1},{p.Y:F1},{p.Z:F1}){tag}");
         }
 
         // 前 3 次碰撞详情（定位"弹墙方向与真实不符"：对比 rawN 与 probeN，确认法线修正是否反了方向）
-        player.PrintToConsole($"[PracLab-DBG] NadeGoto bounce log ({result.BounceLog.Count} entries):");
+        Server.PrintToConsole($"[PracLab] {ts} NadeGoto bounce log ({result.BounceLog.Count} entries):");
         foreach (var entry in result.BounceLog)
         {
-            player.PrintToConsole($"[PracLab-DBG]   {entry}");
+            Server.PrintToConsole($"[PracLab] {ts}   {entry}");
         }
+        Server.PrintToConsole($"[PracLab] {ts} ===== NadeGoto 调试结束 =====");
     }
 
     /// <summary>
