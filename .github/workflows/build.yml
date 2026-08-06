@@ -32,6 +32,8 @@ jobs:
       - name: Build C# Plugin (standalone)
         run: |
           dotnet publish PracLab.csproj -c Release -o package/addons/counterstrikesharp/plugins/PracLab
+          mkdir -p package/addons/counterstrikesharp/gamedata
+          cp CS2TraceRay.gamedata.json package/addons/counterstrikesharp/gamedata/
           cp -r cfg package
           cd package && zip -q -r ../PracLab-${{ env.PRACLAB_VERSION }}.zip * && cd ..
 
@@ -50,6 +52,8 @@ jobs:
           rm cssharp-linux.zip
           cd ..
           dotnet publish PracLab.csproj -c Release -o package/addons/counterstrikesharp/plugins/PracLab
+          mkdir -p package/addons/counterstrikesharp/gamedata
+          cp CS2TraceRay.gamedata.json package/addons/counterstrikesharp/gamedata/
           cd package && zip -q -r ../PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip * && cd ..
 
       - name: Build C# + CSSharp (Windows)
@@ -67,6 +71,8 @@ jobs:
           rm cssharp-windows.zip
           cd ..
           dotnet publish PracLab.csproj -c Release -o package/addons/counterstrikesharp/plugins/PracLab
+          mkdir -p package/addons/counterstrikesharp/gamedata
+          cp CS2TraceRay.gamedata.json package/addons/counterstrikesharp/gamedata/
           cd package && zip -q -r ../PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip * && cd ..
 
       - name: Upload C# Artifacts
