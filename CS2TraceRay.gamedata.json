@@ -3,7 +3,7 @@
     "signatures": {
       "library": "server",
       "windows": "48 8B 0D ? ? ? ? 0C",
-      "linux": "4C 8D 1D ? ? ? ? BB"
+      "linux": "48 8D 0D ? ? ? ? F3 41 0F 10 4F 08"
     }
   },
   "TraceFunc": {
@@ -17,7 +17,7 @@
     "signatures": {
       "library": "server",
       "windows": "4C 8D 2D ? ? ? ? 24",
-      "linux": "48 8D 0D ? ? ? ? 66 89 95"
+      "linux": "4C 8D 3D ? ? ? ? 66 89 95 54 FF FF FF 31 D2"
     }
   },
   "TraceShape": {

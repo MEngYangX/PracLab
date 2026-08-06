@@ -4,6 +4,33 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.2.0] - 2026-08-06
+
+### Added
+
+- **投掷物反解搜索系统**：完整的弹道反解工具链，支持 6 种道具类型（smoke/flash/he/molo/inc/decoy）× 7 种投掷方式 × 3 档力度网格搜索，3 档精度（low 4° / mid 2°+细化 / high 1°+细化），毫秒预算摊销执行不卡服务器。
+  - **目标区域绘制**（`.nadedraw` / `.ndr`）：三段式立方体绘制（底面角点 → 底面斜对角 → 高度点），左键确认 / 右键取消，红色预览 / 绿色已确认线框，支持空中取点自动投影到地面，最多 8 个区域。
+  - **搜索命令**：`.findall`（`.fa`）、`.findnormal`（`.fn`）、`.findjump`（`.fj`）、`.findrunjump`（`.frj`）、`.findduck`（`.fd`）、`.findduckjump`（`.fdj`）、`.findduckrunjump`（`.fdrj`），每种方式均支持左/中/右力度子命令（如 `.fnl`/`.fnm`/`.fnr`）。
+  - **精度/类型切换**：`.nadeaccuracy`（`.nac`）、`.nadetype`（`.nt`）。
+  - **投掷校准**：`.nadetest`（`.ntt`）登记后 30 秒内投掷，自动识别力度/方式并在服务器控制台输出真实 vs 预测对比数据。
+  - **单次仿真调试**：`.nadetestsim`（`.nts`）指定 `yaw pitch mode strength` 跑一次弹道仿真，输出出手点/碰撞日志/落点/终止原因/飞行时长。
+  - **搜索结果管理**：`.nadelist`（`.nl`）控制台输出结果表格、`.nadeclearlist`（`.ncl`）清除结果及可视化实体、`.nadegoto`（`.ng`）传送到指定结果站位并显示弹道预览。
+- **投掷物数据提示**：道具落地后显示飞行时间与反弹次数；闪光弹命中时显示对目标的致盲时间。
+- **F3 按键绑定**：按下 F3（自动购买键）自动开始 `.timer` 计时，再次按下结束。
+- **F4 按键绑定**：按下 F4（重新购买键）显示 `.help` 帮助信息。
+- **`.clear` 缩写 `.cl`**。
+
+### Fixed
+
+- **Bot 阵营归属**：切换到与 bot 同阵营时击杀 bot 会错误提示「你击杀了一名队友」。Bot 现在不属于任何一方阵营，消除误报。
+- **CS2TraceRay Linux 签名失效**：2026-07 游戏更新导致 `GameTraceManager` Linux 签名（`4C 8D 3D ? ? ? ? 48 8B 80 18 02 00 00`）匹配 19 处且全部指向 .text 段 RTTI/vtable 地址，解引用后 segfault。从 `libserver.so` 重新提取唯一匹配签名 `48 8D 0D ? ? ? ? F3 41 0F 10 4F 08`（LEA rcx,[rip+disp] 加载 .data 段全局变量），经反汇编验证与 TraceFunc 调用链一致。
+
+### Changed
+
+- **统一输出格式**：控制台、聊天栏、终端输出统一为 `[PracLab] {Time} {Module} {Message}` 结构化日志格式。
+- **清除调试信息**：移除所有 debug/DBG 残留输出。
+- **回放引擎更新**：replay-engine 同步至 [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) 上游最新版本，保证 Linux 和 Windows 双平台正常运行。
+
 ## [0.1.2] - 2026-07-20
 
 ### Fixed

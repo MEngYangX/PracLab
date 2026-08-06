@@ -1,179 +1,197 @@
-// PracLabReplayEngine Metamod:Source 插件入口实现。
-// Task 1: 空壳 Load/Unload，获取引擎接口并打印日志。
-// Task 2: 在 Load 中集成 SigScan 扫描。
-// Task 3: 在 Load 中加载偏移量、安装 funchook；在 Unload 中卸载 hook。
+// PracLabReplayEngine Metamod:Source plugin entry point.
+//
+// Load/Unload orchestrate the BotController v0.6.0 subsystems:
+//   Schema init → sig-scan → hook install (WeaponLocker/BotController/BuyController/InputInjector)
+//   → record/replay ready for PRL_* C-ABI calls.
 
 #include "plugin.h"
-#include "platform.h"
-#include "sig_scan.h"
-#include "version_targets.h"
-#include "hooks.h"
-#include "weapon_switcher.h"
+
+#include <ISmmPlugin.h>
 
 #include <cstdio>
 #include <cstring>
-#include <filesystem>
 #include <string>
 
-#include <ISmmPlugin.h>
 #include <eiface.h>
 #include <icvar.h>
 #include <convar.h>
 #include <interfaces/interfaces.h>
+#include <networksystem/inetworkmessages.h>
+#include <tier0/dbg.h>
 
-using namespace PracLab::ReplayEngine;
+#include <nlohmann/json.hpp>
 
-// 命名空间级变量：ISource2GameClients 锚点指针。
-// Task 2 的 SigScan 通过此指针反查 server 模块；
-// Task 3 的 hooks 模块直接访问此变量。
-// 声明见 plugin.h 的 extern void *g_pGameClientsAnchor;
-void *PracLab::ReplayEngine::g_pGameClientsAnchor = nullptr;
+#include "WeaponLocker.h"
+#include "BotController.h"
+#include "BuyController.h"
+#include "BuyControllerState.h"
+#include "InputInjector.h"
+#include "MotionRecorder.h"
+#include "VoiceSender.h"
+#include "dispatch.h"
+#include "WeaponLockerState.h"
+#include "BotControllerState.h"
+#include "commands.h"
+#include "sig_scan.h"
+#include "schema_resolver.h"
+#include "platform.h"
+#include "version_targets.h"
 
-namespace
+namespace PracLab::ReplayEngine {
+
+// addons/<name>/bin/<platform>/<lib> -> up 3 dirs -> addons/<name>/gamedata.json
+static std::string ComputeGamedataPath()
 {
-    // 文件内静态：引擎接口指针。
-    // Task 2 起供 SigScan（锚点定位）和 Hook（命令注入）使用。
-    IVEngineServer2 *_pEngine = nullptr;
-
-    // 计算 gamedata.json 的部署路径。
-    // 部署结构：
-    //   addons/PracLabReplayEngine/bin/<platform>/PracLabReplayEngine.dll
-    //   addons/PracLabReplayEngine/gamedata.json
-    // 因此从插件 DLL/SO 路径向上退 3 级目录（bin/<platform>/ -> bin/ -> PracLabReplayEngine/）。
-    // 返回空字符串表示获取本模块路径失败。
-    std::string ComputeGamedataPath()
+    std::string p = BotController::SelfModulePath();
+    if (p.empty()) return "";
+    for (int i = 0; i < 3; ++i)
     {
-        std::string self = Platform::SelfModulePath();
-        if (self.empty())
-            return "";
-
-        std::filesystem::path p(self);
-        // bin/<platform>/PracLabReplayEngine.dll -> bin/<platform>/
-        p = p.parent_path();
-        // bin/<platform>/ -> bin/
-        p = p.parent_path();
-        // bin/ -> PracLabReplayEngine/
-        p = p.parent_path();
-        p /= "gamedata.json";
-        return p.string();
+        size_t slash = p.find_last_of("/\\");
+        if (slash == std::string::npos) return "";
+        p.resize(slash);
     }
+    return p + "/gamedata.json";
 }
 
-// 全局插件实例，由 PLUGIN_EXPOSE 宏向 Metamod 暴露 CreateInterface_Mm 导出。
+} // namespace PracLab::ReplayEngine
+
+// Global instance + Metamod export. Must appear before method definitions
+// so PLUGIN_EXPOSE-defined globals (g_SMAPI, g_PLAPI, g_PLID, g_SHPtr) are
+// visible to PLUGIN_SAVEVARS() inside Load().
 PracLab::ReplayEngine::PracLabReplayEnginePlugin g_PracLabReplayEnginePlugin;
 PLUGIN_EXPOSE(PracLab::ReplayEngine::PracLabReplayEnginePlugin, g_PracLabReplayEnginePlugin);
 
-bool PracLabReplayEnginePlugin::Load(PluginId id, ISmmAPI *ismm,
-                                     char *error, size_t maxlen, bool /*late*/)
+bool PracLab::ReplayEngine::PracLabReplayEnginePlugin::Load(PluginId id, ISmmAPI* ismm, char* error, size_t maxlen, bool /*late*/)
 {
+    Msg("[PracLab] PracLabReplayEnginePlugin::Load: Executing...\n");
     PLUGIN_SAVEVARS();
 
-    // 获取 ICvar 接口，ConVar_Register 依赖全局 g_pCVar 被正确设置。
-    // g_pCVar 由 SDK convar.cpp 定义，icvar.h 中 extern 声明。
-    g_pCVar = static_cast<ICvar *>(
-        ismm->GetEngineFactory()(CVAR_INTERFACE_VERSION, nullptr));
+    g_pCVar = static_cast<ICvar*>(ismm->GetEngineFactory()(CVAR_INTERFACE_VERSION, nullptr));
     if (!g_pCVar)
     {
-        std::snprintf(error, maxlen,
-                      "Failed to get ICvar (%s) via engine factory",
-                      CVAR_INTERFACE_VERSION);
+        std::snprintf(error, maxlen, "Failed to get ICvar (%s) via engine factory", CVAR_INTERFACE_VERSION);
+        return false;
+    }
+
+    char schemaError[256] = { 0 };
+    if (!BotController::Schema::Init(schemaError, sizeof(schemaError)))
+    {
+        std::snprintf(error, maxlen, "Schema initialization failed: %s", schemaError);
+        return false;
+    }
+    if (!BotController::targets::LoadFromSchema(schemaError, sizeof(schemaError)))
+    {
+        BotController::Schema::Reset();
+        std::snprintf(error, maxlen, "Schema target resolution failed: %s", schemaError);
         return false;
     }
     ConVar_Register(FCVAR_RELEASE | FCVAR_GAMEDLL);
 
-    // 获取 IVEngineServer2，后续用于服务端命令执行（ClientPrintf 等）。
-    _pEngine = static_cast<IVEngineServer2 *>(
-        ismm->GetEngineFactory()(INTERFACEVERSION_VENGINESERVER, nullptr));
-    if (!_pEngine)
+    // IVEngineServer2::ClientCommand
+    BotController::Dispatch::g_pEngine = static_cast<IVEngineServer2*>(ismm->GetEngineFactory()(INTERFACEVERSION_VENGINESERVER, nullptr));
+    if (!BotController::Dispatch::g_pEngine)
     {
-        std::snprintf(error, maxlen,
-                      "Failed to get IVEngineServer2 (%s)",
-                      INTERFACEVERSION_VENGINESERVER);
+        std::snprintf(error, maxlen, "Failed to get IVEngineServer2 (%s)", INTERFACEVERSION_VENGINESERVER);
         return false;
     }
 
-    // 获取 ISource2GameClients 作为 SigScan 锚点。
-    // Task 2 通过该指针反查所属模块并扫描函数签名。
-    void *serverIface =
-        ismm->GetServerFactory()(INTERFACEVERSION_SERVERGAMECLIENTS, nullptr);
+    // Need ISource2GameClients only as the anchor for sig-scan
+    void* serverIface = ismm->GetServerFactory()(INTERFACEVERSION_SERVERGAMECLIENTS, nullptr);
     if (!serverIface)
     {
-        std::snprintf(error, maxlen,
-                      "Failed to get ISource2GameClients (%s)",
-                      INTERFACEVERSION_SERVERGAMECLIENTS);
+        std::snprintf(error, maxlen, "Failed to get ISource2GameClients (%s)", INTERFACEVERSION_SERVERGAMECLIENTS);
         return false;
     }
-    g_pGameClientsAnchor = serverIface;
 
-    // ---- Task 3: 加载 gamedata.json + 偏移量 + 安装 hooks ----
+    // Engine interface used by console command output (ClientPrintf).
+    BotController::Commands::g_pEngine = BotController::Dispatch::g_pEngine;
+
+    // Server-side command executor for issuing bot "buy" commands.
+    BotController::Dispatch::g_pGameClients = static_cast<ISource2GameClients*>(serverIface);
+
+    // NetworkMessages lets the C ABI send recorded voice frames to clients.
+    auto* networkMessages = static_cast<INetworkMessages*>(ismm->GetEngineFactory()(NETWORKMESSAGES_INTERFACE_VERSION, nullptr));
+    if (!networkMessages)
+    {
+        networkMessages = static_cast<INetworkMessages*>(ismm->GetServerFactory()(NETWORKMESSAGES_INTERFACE_VERSION, nullptr));
+    }
+    BotController::VoiceSender::SetInterfaces(BotController::Dispatch::g_pEngine, networkMessages);
+    if (!networkMessages)
+    {
+        Warning("[PracLab] network messages interface unavailable; voice send disabled\n");
+    }
+
     std::string gamedataPath = ComputeGamedataPath();
     if (gamedataPath.empty())
     {
-        std::snprintf(error, maxlen,
-                      "Failed to compute gamedata path from self module");
+        std::snprintf(error, maxlen, "Failed to compute gamedata.json path");
         return false;
     }
 
     nlohmann::json gd;
-    if (!Sig::LoadGamedata(gamedataPath.c_str(), gd))
+    if (!BotController::Sig::LoadGamedata(gamedataPath.c_str(), gd))
     {
-        std::snprintf(error, maxlen,
-                      "Failed to load gamedata: %s", gamedataPath.c_str());
+        std::snprintf(error, maxlen, "Failed to load gamedata: %s", gamedataPath.c_str());
         return false;
     }
 
-    // 从锚点反查 server 模块（server.dll / libserver.so）
-    Sig::ModuleInfo serverModule = Sig::ModuleFromInterfacePtr(g_pGameClientsAnchor);
+    BotController::Sig::ModuleInfo serverModule = BotController::Sig::ModuleFromInterfacePtr(serverIface);
     if (!serverModule)
     {
-        std::snprintf(error, maxlen,
-                      "Failed to resolve server module from game clients anchor");
+        std::snprintf(error, maxlen, "ModuleFromInterfacePtr returned null");
         return false;
     }
 
-    // 加载偏移量（覆盖编译时默认值）
-    targets::LoadFromGamedata(gd);
+    // Resolve non-Schema offsets before installing hooks that read targets
+    BotController::targets::LoadFromGamedata(gd);
 
-    // 安装引擎函数 hook（ProcessMovement 必装，其余失败降级）
-    char hookErr[512] = {0};
-    if (!Hooks::Install(gd, serverModule, hookErr, sizeof(hookErr)))
+    if (!BotController::WeaponLockerHooks::Install(gd, serverModule, error, maxlen)) return false;
+
+    if (!BotController::BotControllerHooks::Install(gd, serverModule, error, maxlen))
     {
-        std::snprintf(error, maxlen,
-                      "Hooks::Install failed: %s", hookErr);
+        BotController::WeaponLockerHooks::Remove();
         return false;
     }
 
-    // 安装武器切换模块（可选：失败不阻断插件加载，仅武器切换不可用）
-    // 解析 CCSPlayer_WeaponServices::GetSlot/SelectItem 签名
-    char wsErr[256] = {0};
-    if (!WeaponSwitcher::Install(gd, serverModule, wsErr, sizeof(wsErr)))
+    // BuyController is optional; missing sig only disables buy control
+    char buyErr[256] = { 0 };
+    if (!BotController::BuyControllerHooks::Install(gd, serverModule, buyErr, sizeof(buyErr)))
     {
-        // 降级：回放仍可工作，但 bot 不会按 tick 切换武器
-        char dbg[384];
-        std::snprintf(dbg, sizeof(dbg),
-                      "[PracLabReplayEngine] WARN: WeaponSwitcher unavailable (%s); "
-                      "replay weapon switching disabled\n",
-                      wsErr[0] ? wsErr : "unknown");
-        Platform::DebugOut(dbg);
+        Warning("[PracLab] BuyController::Install failed (%s); bot buy control disabled\n", buyErr);
     }
 
-    char status[256];
-    std::snprintf(status, sizeof(status),
-                  "[PracLabReplayEngine] plugin loaded; hooks: %s; weapon_switcher: %s\n",
-                  Hooks::Status(), WeaponSwitcher::Status());
-    Platform::DebugOut(status);
+    // movement hooks for record/replay
+    char injErr[256] = { 0 };
+    if (!BotController::InputInjector::Install(gd, serverModule, injErr, sizeof(injErr)))
+    {
+        Warning("[PracLab] InputInjector::Install failed (%s); record/replay movement will be a no-op\n", injErr);
+    }
+
+    Msg("[PracLab] PracLabReplayEnginePlugin::Load: completed successfully\n");
     return true;
 }
 
-bool PracLabReplayEnginePlugin::Unload(char * /*error*/, size_t /*maxlen*/)
+bool PracLab::ReplayEngine::PracLabReplayEnginePlugin::Unload(char* /*error*/, size_t /*maxlen*/)
 {
-    // 先卸载 hook，再 unregister ConVar，避免 hook 仍在运行时引用已释放资源
-    Hooks::Remove();
-    WeaponSwitcher::Remove();
+    Msg("[PracLab] PracLabReplayEnginePlugin::Unload: Executing...\n");
+
+    BotController::MotionRecorder::ClearAll();
+    BotController::InputInjector::Remove();
+    BotController::BuyControllerHooks::Remove();
+    BotController::BuyControllerState::ClearAll();
+    BotController::BotControllerHooks::Remove();
+    BotController::WeaponLockerHooks::Remove();
+    BotController::WeaponLockerState::ClearAll();
+    BotController::BotControllerState::ClearAllAll();
+    BotController::BotControllerState::ClearAllAim();
+    BotController::Dispatch::g_pEngine = nullptr;
+    BotController::Dispatch::g_pGameClients = nullptr;
+    BotController::VoiceSender::SetInterfaces(nullptr, nullptr);
+    BotController::Commands::g_pEngine = nullptr;
+    BotController::Schema::Reset();
     ConVar_Unregister();
-    _pEngine = nullptr;
-    g_pGameClientsAnchor = nullptr;
     g_pCVar = nullptr;
-    Platform::DebugOut("[PracLabReplayEngine] plugin unloaded\n");
+
+    Msg("[PracLab] PracLabReplayEnginePlugin::Unload: completed\n");
     return true;
 }
