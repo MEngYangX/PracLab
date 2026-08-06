@@ -872,6 +872,39 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#target-area-drawing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Target Area Drawing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grenade-inverse-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grenade Inverse Search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#team-switching" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1106,6 +1139,39 @@
     <span class="md-ellipsis">
       
         Spawn Point Boxes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#target-area-drawing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Target Area Drawing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grenade-inverse-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grenade Inverse Search
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search Results
       
     </span>
   </a>
@@ -1359,7 +1425,7 @@
 <tbody>
 <tr>
 <td><code>.clear</code></td>
-<td>—</td>
+<td><code>.cl</code></td>
 <td>Remove all grenades/projectiles</td>
 </tr>
 <tr>
@@ -1477,6 +1543,131 @@
 </table>
 <blockquote>
 <p><strong>E-key teleport</strong>: Aim at a box and press the use key (default E) to teleport to that spawn; the chat shows "Teleported to spawn N". CT and T boxes are both green; the box center shows an index number (rotated per-map config). In prac mode there is no team restriction — players may aim at any box to teleport. Boxes only show competitive-mode spawns (consistent with the <code>.spawn</code> family commands).</p>
+</blockquote>
+<h3 id="target-area-drawing">Target Area Drawing<a class="headerlink" href="#target-area-drawing" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.nadedraw</code></td>
+<td><code>.ndr</code></td>
+<td>Three-step box target region drawing (left-click to confirm base corner / base diagonal corner / height point, right-click to cancel; red preview / green confirmed wireframe, max 8 regions)</td>
+</tr>
+<tr>
+<td><code>.cleardraw</code></td>
+<td><code>.cdr</code></td>
+<td>Clear all your target regions (also clears search results)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Box semantics</strong>: the base corner and diagonal corner define the base rectangle (air points are projected down to the ground); the height point's z becomes the box top (must be above the base). The 3D box expresses height-aware targets such as "window flashes" and "on-box smokes".</p>
+</blockquote>
+<h3 id="grenade-inverse-search">Grenade Inverse Search<a class="headerlink" href="#grenade-inverse-search" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.findall</code></td>
+<td><code>.fa</code></td>
+<td>Search all throw modes × strengths for aim angles that land inside the newest target region</td>
+</tr>
+<tr>
+<td><code>.findnormal</code></td>
+<td><code>.fn</code></td>
+<td>Search normal throws only (<code>.fnl</code>/<code>.fnm</code>/<code>.fnr</code> select left/mid/right strength)</td>
+</tr>
+<tr>
+<td><code>.findjump</code></td>
+<td><code>.fj</code></td>
+<td>Search jump throws only (<code>.fjl</code>/<code>.fjm</code>/<code>.fjr</code> select strength)</td>
+</tr>
+<tr>
+<td><code>.findrunjump</code></td>
+<td><code>.frj</code></td>
+<td>Search run-jump throws only (<code>.frjl</code>/<code>.frjm</code>/<code>.frjr</code> select strength)</td>
+</tr>
+<tr>
+<td><code>.findduck</code></td>
+<td><code>.fd</code></td>
+<td>Search crouch throws only (<code>.fdl</code>/<code>.fdm</code>/<code>.fdr</code> select strength)</td>
+</tr>
+<tr>
+<td><code>.findduckjump</code></td>
+<td><code>.fdj</code></td>
+<td>Search crouch-jump throws only (<code>.fdjl</code>/<code>.fdjm</code>/<code>.fdjr</code> select strength)</td>
+</tr>
+<tr>
+<td><code>.findduckrunjump</code></td>
+<td><code>.fdrj</code></td>
+<td>Search crouch run-jump throws only (<code>.fdrjl</code>/<code>.fdrjm</code>/<code>.fdrjr</code> select strength)</td>
+</tr>
+<tr>
+<td><code>.nadeaccuracy</code></td>
+<td><code>.nac</code></td>
+<td>Show/switch search accuracy <code>low</code> (4°) / <code>mid</code> (2° + refine) / <code>high</code> (1° + refine)</td>
+</tr>
+<tr>
+<td><code>.nadetype</code></td>
+<td><code>.nt</code></td>
+<td>Show/switch item type <code>smoke</code>/<code>flash</code>/<code>he</code>/<code>molo</code>/<code>inc</code>/<code>decoy</code></td>
+</tr>
+<tr>
+<td><code>.nadetest</code></td>
+<td><code>.ntt</code></td>
+<td>Throw calibration: throw within 30s after arming, auto-detect strength/mode and print real vs predicted comparison to the server console</td>
+</tr>
+<tr>
+<td><code>.nadetestsim</code></td>
+<td><code>.nts</code></td>
+<td>Single-shot sim debug: run one trajectory sim with <code>yaw pitch mode strength</code> and print diagnostics (origin/bounce log/land point/term reason/flight time) to console, for comparing with <code>.nadetest</code> real data</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Search notes</strong>: draw a target region with <code>.nadedraw</code> first; searching is amortized under a per-tick millisecond budget and never stalls the server, with live progress in the center hint; flash/HE use a fixed 1.65s fuse air-burst as the landing point, molotov/incendiary use first ground contact or a 2s air-burst timeout, smoke/decoy use rest; wall-bounce spots are never killed by the pre-filter. The yaw scan sector is ±15° around the direction from your position to the target (known v1 coverage limit: direct + shallow-bounce lineups mainly).</p>
+</blockquote>
+<h3 id="search-results">Search Results<a class="headerlink" href="#search-results" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Alias</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.nadelist</code></td>
+<td><code>.nl</code></td>
+<td>Print the search result table to console (ID / mode / strength / item / aim angle)</td>
+</tr>
+<tr>
+<td><code>.nadeclearlist</code></td>
+<td><code>.ncl</code></td>
+<td>Clear all your search results and their visualization entities</td>
+</tr>
+<tr>
+<td><code>.nadegoto</code></td>
+<td><code>.ng</code></td>
+<td>Teleport to the spot of a result ID, aim at the stored angle, show spot cross and trajectory preview</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Result ID rule</strong>: <code>item-mode-strength-index</code> (e.g. <code>SMK-N-L-01</code>). After teleporting, throw with the hinted strength and mode to reproduce the found trajectory.</p>
 </blockquote>
 <h3 id="team-switching">Team Switching<a class="headerlink" href="#team-switching" title="Permanent link">&para;</a></h3>
 <table>

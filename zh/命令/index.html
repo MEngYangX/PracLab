@@ -627,7 +627,7 @@
   <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       
-        队伍切换
+        目标区域绘制
       
     </span>
   </a>
@@ -636,6 +636,39 @@
         
           <li class="md-nav__item">
   <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        投掷物反解搜索
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        探测结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        队伍切换
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         道具重投与位置回溯
@@ -657,7 +690,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         回放系统
@@ -668,7 +701,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_15" class="md-nav__link">
     <span class="md-ellipsis">
       
         计时器
@@ -690,7 +723,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_16" class="md-nav__link">
     <span class="md-ellipsis">
       
         帮助
@@ -1116,7 +1149,7 @@
   <a href="#_9" class="md-nav__link">
     <span class="md-ellipsis">
       
-        队伍切换
+        目标区域绘制
       
     </span>
   </a>
@@ -1125,6 +1158,39 @@
         
           <li class="md-nav__item">
   <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        投掷物反解搜索
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        探测结果
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        队伍切换
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
     <span class="md-ellipsis">
       
         道具重投与位置回溯
@@ -1146,7 +1212,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#_14" class="md-nav__link">
     <span class="md-ellipsis">
       
         回放系统
@@ -1157,7 +1223,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#_15" class="md-nav__link">
     <span class="md-ellipsis">
       
         计时器
@@ -1179,7 +1245,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#_16" class="md-nav__link">
     <span class="md-ellipsis">
       
         帮助
@@ -1359,7 +1425,7 @@
 <tbody>
 <tr>
 <td><code>.clear</code></td>
-<td>—</td>
+<td><code>.cl</code></td>
 <td>清除所有的道具</td>
 </tr>
 <tr>
@@ -1478,7 +1544,132 @@
 <blockquote>
 <p><strong>E 键传送</strong>：对准方框按下使用键（默认 E）即可传送到该出生点，聊天栏提示「已传送到第 N 个出生点」。CT 和 T 方框均为绿色，方框中心显示序号（按地图配置旋转）。prac 模式下不限制队伍，玩家可瞄准任一方框传送。方框仅显示竞技模式出生点（与 <code>.spawn</code> 系列命令一致）。</p>
 </blockquote>
-<h3 id="_9">队伍切换<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<h3 id="_9">目标区域绘制<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>别名</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.nadedraw</code></td>
+<td><code>.ndr</code></td>
+<td>三段式绘制立方体目标区域（左键依次确认底面角点/底面斜对角/高度点，右键取消，红色预览/绿色已确认线框，最多 8 个）</td>
+</tr>
+<tr>
+<td><code>.cleardraw</code></td>
+<td><code>.cdr</code></td>
+<td>清除自己所有目标区域（联动清除搜索结果）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>立方体语义</strong>：底面角点与斜对角确定底面矩形（支持空中取点自动投影到地面），高度点直接取其 z 作为盒体顶面（必须高于底面）。3D 盒体用于表达「窗口闪」「箱上烟」等有高度语义的目标。</p>
+</blockquote>
+<h3 id="_10">投掷物反解搜索<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>别名</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.findall</code></td>
+<td><code>.fa</code></td>
+<td>搜索全部投掷方式 × 力度组合，找出可投进最新目标区域的描点角度</td>
+</tr>
+<tr>
+<td><code>.findnormal</code></td>
+<td><code>.fn</code></td>
+<td>仅搜索普通投掷（<code>.fnl</code>/<code>.fnm</code>/<code>.fnr</code> 分别指定左键/中力/右键力度）</td>
+</tr>
+<tr>
+<td><code>.findjump</code></td>
+<td><code>.fj</code></td>
+<td>仅搜索跳投（<code>.fjl</code>/<code>.fjm</code>/<code>.fjr</code> 指定力度）</td>
+</tr>
+<tr>
+<td><code>.findrunjump</code></td>
+<td><code>.frj</code></td>
+<td>仅搜索前跳投（<code>.frjl</code>/<code>.frjm</code>/<code>.frjr</code> 指定力度）</td>
+</tr>
+<tr>
+<td><code>.findduck</code></td>
+<td><code>.fd</code></td>
+<td>仅搜索蹲下投掷（<code>.fdl</code>/<code>.fdm</code>/<code>.fdr</code> 指定力度）</td>
+</tr>
+<tr>
+<td><code>.findduckjump</code></td>
+<td><code>.fdj</code></td>
+<td>仅搜索蹲下跳投（<code>.fdjl</code>/<code>.fdjm</code>/<code>.fdjr</code> 指定力度）</td>
+</tr>
+<tr>
+<td><code>.findduckrunjump</code></td>
+<td><code>.fdrj</code></td>
+<td>仅搜索蹲下前跳投（<code>.fdrjl</code>/<code>.fdrjm</code>/<code>.fdrjr</code> 指定力度）</td>
+</tr>
+<tr>
+<td><code>.nadeaccuracy</code></td>
+<td><code>.nac</code></td>
+<td>查看/切换搜索精度 <code>low</code>（4°）/ <code>mid</code>（2°+细化）/ <code>high</code>（1°+细化）</td>
+</tr>
+<tr>
+<td><code>.nadetype</code></td>
+<td><code>.nt</code></td>
+<td>查看/切换道具类型 <code>smoke</code>/<code>flash</code>/<code>he</code>/<code>molo</code>/<code>inc</code>/<code>decoy</code></td>
+</tr>
+<tr>
+<td><code>.nadetest</code></td>
+<td><code>.ntt</code></td>
+<td>投掷校准：登记后 30 秒内投掷，自动识别力度/方式并在服务器控制台输出真实 vs 预测对比数据</td>
+</tr>
+<tr>
+<td><code>.nadetestsim</code></td>
+<td><code>.nts</code></td>
+<td>单次仿真调试：指定 <code>yaw pitch mode strength</code> 跑一次弹道仿真并输出诊断（出手点/碰撞日志/落点/终止原因/飞行时长）到控制台，用于对比 <code>.nadetest</code> 真实数据</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>搜索说明</strong>：前置需先用 <code>.nadedraw</code> 绘制目标区域；搜索按毫秒预算摊销执行不卡服务器，中心提示实时刷新进度；闪光/手雷按 1.65s 引信空爆判定落点，燃烧瓶/燃烧弹按触地或 2s 空爆判定，烟雾/诱饵按静止判定；弹墙类点位不会被粗筛误杀。yaw 扫描扇形为站位朝目标方向 ±15°（v1 已知限制：以直投+浅弹跳为主）。</p>
+</blockquote>
+<h3 id="_11">探测结果<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>别名</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.nadelist</code></td>
+<td><code>.nl</code></td>
+<td>控制台输出搜索结果表格（ID/投掷方式/力度/道具/描点角）</td>
+</tr>
+<tr>
+<td><code>.nadeclearlist</code></td>
+<td><code>.ncl</code></td>
+<td>清除自己所有搜索结果及其可视化实体</td>
+</tr>
+<tr>
+<td><code>.nadegoto</code></td>
+<td><code>.ng</code></td>
+<td>传送到指定结果 ID 站位，视角对准描点角，显示站位十字与弹道预览</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>结果 ID 规则</strong>：<code>道具缩写-方式-力度-序号</code>（如 <code>SMK-N-L-01</code>）。传送到站位后按提示的力度与方式投掷即可复现搜索到的弹道。</p>
+</blockquote>
+<h3 id="_12">队伍切换<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1495,7 +1686,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="_10">道具重投与位置回溯<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<h3 id="_13">道具重投与位置回溯<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1567,7 +1758,7 @@
 <blockquote>
 <p><strong>Dryrun 流程</strong>：踢出所有 bot → 关闭 prac 特有 ConVar（sv_cheats、traj、infinite_ammo 等）→ 加载 <code>dryrun.cfg</code> 竞技配置 → 重启回合开始；回合结束（<code>EventRoundEnd</code>）自动恢复 prac 配置。用于在练习中快速打一个真竞技回合。</p>
 </blockquote>
-<h3 id="_11">回放系统<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<h3 id="_14">回放系统<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1623,7 +1814,7 @@
 <p>跨语言 ABI 契约见 <a href="../../../replay-engine/include/praclab_replay.h"><code>replay-engine/include/praclab_replay.h</code></a>，修改字段顺序/类型须同步更新两层代码。</p>
 <p><strong>回放引擎未部署时</strong>：所有 <code>.record/.replay/...</code> 命令会向玩家提示「回放引擎未加载，回放功能不可用」，但插件其他功能不受影响。</p>
 </blockquote>
-<h3 id="_12">计时器<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<h3 id="_15">计时器<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1667,7 +1858,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="_13">帮助<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<h3 id="_16">帮助<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
