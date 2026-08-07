@@ -659,25 +659,35 @@ public partial class PracLab : BasePlugin
     /// <summary>
     /// 玩家最后投掷记录（值类型，避免持有可能失效的 native 句柄）。
     /// Fix 8+9：新增速度（VelX/VelY/VelZ）与投掷物类名（ProjectileClass），用于完整复现弹道与类型校验。
+    /// Bug 修复：新增 PlayerPos/PlayerAng（玩家投掷瞬间的脚下位置与视角），用于 .last 传送。
+    /// PosX/Y/Z 和 AngX/Y/Z 是投掷物的数据（用于 .rethrow 复现弹道），与玩家数据分开存储。
     /// </summary>
-    /// <param name="PosX">位置 X。</param>
-    /// <param name="PosY">位置 Y。</param>
-    /// <param name="PosZ">位置 Z。</param>
-    /// <param name="AngX">角度 X（pitch）。</param>
-    /// <param name="AngY">角度 Y（yaw）。</param>
-    /// <param name="AngZ">角度 Z（roll）。</param>
+    /// <param name="PosX">投掷物位置 X。</param>
+    /// <param name="PosY">投掷物位置 Y。</param>
+    /// <param name="PosZ">投掷物位置 Z。</param>
+    /// <param name="AngX">投掷物角度 X（pitch）。</param>
+    /// <param name="AngY">投掷物角度 Y（yaw）。</param>
+    /// <param name="AngZ">投掷物角度 Z（roll）。</param>
     /// <param name="VelX">速度 X（投掷瞬间的世界速度，用于重投复现弹道）。</param>
     /// <param name="VelY">速度 Y。</param>
     /// <param name="VelZ">速度 Z。</param>
     /// <param name="Weapon">武器名（如 weapon_smokegrenade）。</param>
     /// <param name="ProjectileClass">投掷物实体类名（如 smokegrenade_projectile），用于 .rethrowsmoke 等命令的类型校验。</param>
+    /// <param name="PlayerPosX">玩家脚下位置 X（用于 .last 传送）。</param>
+    /// <param name="PlayerPosY">玩家脚下位置 Y。</param>
+    /// <param name="PlayerPosZ">玩家脚下位置 Z。</param>
+    /// <param name="PlayerAngX">玩家视角 pitch X（用于 .last 传送）。</param>
+    /// <param name="PlayerAngY">玩家视角 yaw Y。</param>
+    /// <param name="PlayerAngZ">玩家视角 roll Z（始终为 0）。</param>
     private readonly record struct GrenadeThrowRecord(
         float PosX, float PosY, float PosZ,
         float AngX, float AngY, float AngZ,
         float VelX, float VelY, float VelZ,
         string Weapon,
         string ProjectileClass,
-        ushort ItemIndex);
+        ushort ItemIndex,
+        float PlayerPosX, float PlayerPosY, float PlayerPosZ,
+        float PlayerAngX, float PlayerAngY, float PlayerAngZ);
 
     /// <summary>
     /// 插件配置数据模型。

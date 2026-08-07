@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
+using System.Globalization;
 
 namespace PracLab;
 
@@ -149,13 +150,21 @@ public partial class PracLab
             return;
         }
 
-        var position = new Vector(record.PosX, record.PosY, record.PosZ);
-        var angle = new QAngle(record.AngX, record.AngY, record.AngZ);
-        if (TeleportPlayerTo(player, position, angle))
-        {
-            player.PrintToChat(Localizer.ForPlayer(player, "rethrow.teleported_last"));
-            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Last {player.PlayerName} teleported to last throw position");
-        }
+        // Bug 修复：使用玩家投掷瞬间的脚下位置与视角，而非投掷物位置与角度
+        // 投掷物位置在玩家眼前上方，直接传送会导致悬空
+        // 投掷物角度含飞行 roll，会导致视角倾斜
+        //
+        // 使用 setpos + setang 客户端命令而非 pawn.Teleport：
+        // pawn.Teleport 会把 qangle.X(pitch)同时写入 eye angles 和 CGameSceneNode.m_angRotation（身体旋转源），
+        // m_angRotation.X=pitch 导致身体绕 X 轴翻转（躺倒）+ 第一人称相机异常。
+        // setpos 只设位置、setang 只设 eye angles，均不写 m_angRotation → 身体保持直立。
+        // 需 sv_cheats 1（prac.cfg 已开启）。
+        var inv = CultureInfo.InvariantCulture;
+        player.ExecuteClientCommandFromServer($"setpos {record.PlayerPosX.ToString("F4", inv)} {record.PlayerPosY.ToString("F4", inv)} {record.PlayerPosZ.ToString("F4", inv)}");
+        player.ExecuteClientCommandFromServer($"setang {record.PlayerAngX.ToString("F4", inv)} {record.PlayerAngY.ToString("F4", inv)}");
+
+        player.PrintToChat(Localizer.ForPlayer(player, "rethrow.teleported_last"));
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Last {player.PlayerName} teleported to last throw position");
     }
 
     /// <summary>

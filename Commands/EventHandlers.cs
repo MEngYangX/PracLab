@@ -193,6 +193,16 @@ public partial class PracLab
 
                     if (pos == null || ang == null || vel == null) return;
 
+                    // Bug 修复：记录玩家脚下位置与视角（用于 .last 传送），而非投掷物位置与角度
+                    // 投掷物位置在玩家眼前上方，直接传送会导致悬空；投掷物角度含飞行 roll，会导致视角倾斜
+                    // 注意：必须用 EyeAngles 获取玩家视角，AbsRotation 是身体朝向不是瞄准方向
+                    var playerPawn = thrower.PlayerPawn.Value;
+                    if (playerPawn == null || !playerPawn.IsValid || playerPawn.AbsOrigin == null)
+                        return;
+
+                    var playerPos = playerPawn.AbsOrigin;
+                    var playerAng = playerPawn.EyeAngles;
+
                     var weapon = MapProjectileToWeapon(designerName);
 
                     // Bug 2: 记录 ItemIndex，用于 CreateFunc 调用
@@ -206,7 +216,9 @@ public partial class PracLab
                         vel.X, vel.Y, vel.Z,
                         weapon,
                         designerName,
-                        itemIndex);
+                        itemIndex,
+                        playerPos.X, playerPos.Y, playerPos.Z,
+                        playerAng.X, playerAng.Y, playerAng.Z);
 
                     Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Grenade {thrower.PlayerName} threw {weapon} velocity=({vel.X:F1},{vel.Y:F1},{vel.Z:F1}) class={designerName}");
 
