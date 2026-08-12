@@ -4,6 +4,12 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.2.1] - 2026-08-06
+
+### Fixed
+
+- **`.last` / `.ls` 传送异常**：传送回最后投掷位置后出现三个问题——传送点悬空、玩家视角倾斜（roll）、玩家模型翻转（身体躺倒）。根因有三：①记录时位置取的是投掷物 `AbsOrigin`（玩家眼前上方）而非玩家脚下位置；②角度取的是投掷物 `AbsRotation`（飞行中含 roll）而非玩家视角；③用 `pawn.Teleport` 设置角度会把 pitch 写入 `CGameSceneNode.m_angRotation`（身体旋转源）导致模型翻转。修复：在 `GrenadeThrowRecord` 新增玩家脚下位置（`PlayerPawn.AbsOrigin`）与玩家瞄准视角（`EyeAngles`）字段；传送改用 `setpos` + `setang` 客户端命令（只设位置与 eye angles，不写 `m_angRotation`），身体保持直立。`.rethrow` 系列不受影响（仍用投掷物数据复现弹道）。
+
 ## [0.2.0] - 2026-08-06
 
 ### Added
