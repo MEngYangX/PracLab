@@ -43,12 +43,8 @@ jobs:
           rm -rf package && mkdir -p package
           cp -r cfg package
           cd package
-          curl -s https://api.github.com/repos/roflmuffin/CounterStrikeSharp/releases/tags/v${{ env.CSSHARP_VERSION }} |
-            grep "/counterstrikesharp-with-runtime-linux-${{ env.CSSHARP_VERSION }}" |
-            cut -d : -f 2,3 |
-            tr -d \" |
-            head -n 1 |
-            wget -O cssharp-linux.zip -qi -
+          curl -L -o cssharp-linux.zip \
+            https://github.com/roflmuffin/CounterStrikeSharp/releases/download/v${{ env.CSSHARP_VERSION }}/counterstrikesharp-with-runtime-linux-${{ env.CSSHARP_VERSION }}.zip
           unzip -o cssharp-linux.zip -d .
           rm cssharp-linux.zip
           cd ..
@@ -62,12 +58,8 @@ jobs:
           rm -rf package && mkdir -p package
           cp -r cfg package
           cd package
-          curl -s https://api.github.com/repos/roflmuffin/CounterStrikeSharp/releases/tags/v${{ env.CSSHARP_VERSION }} |
-            grep "/counterstrikesharp-with-runtime-windows-${{ env.CSSHARP_VERSION }}" |
-            cut -d : -f 2,3 |
-            tr -d \" |
-            head -n 1 |
-            wget -O cssharp-windows.zip -qi -
+          curl -L -o cssharp-windows.zip \
+            https://github.com/roflmuffin/CounterStrikeSharp/releases/download/v${{ env.CSSHARP_VERSION }}/counterstrikesharp-with-runtime-windows-${{ env.CSSHARP_VERSION }}.zip
           unzip -o cssharp-windows.zip -d .
           rm cssharp-windows.zip
           cd ..
