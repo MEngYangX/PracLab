@@ -3,10 +3,6 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2TraceRay.Class;
-using CGameTrace = CS2TraceRay.Struct.CGameTrace;
-using Contents = CS2TraceRay.Enum.Contents;
-using TraceMask = CS2TraceRay.Enum.TraceMask;
 
 namespace PracLab;
 
@@ -417,18 +413,24 @@ public partial class PracLab
         try
         {
             // 眼位射线（沿 EyeAngles 打 8192 单位，跳过自身 pawn）
-            CGameTrace? result = player.GetGameTraceByEyePosition(TraceMask.MaskSolid, Contents.NoDraw, player);
-            if (result is not { } trace)
+            var eyePos = GetPlayerEyePosition(player);
+            if (eyePos == null)
             {
-                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeDraw eye trace unavailable for {player.PlayerName}");
+                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeDraw eye position unavailable for {player.PlayerName}");
                 if (!silent) player.PrintToChat(Localizer.ForPlayer(player, "nadedraw.trace_unavailable"));
                 return false;
             }
 
+            TraceResult trace = Trace.TraceShape(
+                eyePos,
+                player.PlayerPawn.Value!.EyeAngles,
+                player.PlayerPawn.Value,
+                new TraceOptions { InteractsAs = Contents.NoDraw, InteractsWith = Masks.Solid });
+
             // 命中且法线朝上：地面取点，直接使用命中点
             if (trace.Fraction < 1.0f && trace.Normal.Z > GroundNormalZThreshold)
             {
-                groundPoint = ToCssVector(trace.Position);
+                groundPoint = trace.HitPoint;
                 return true;
             }
 
@@ -438,13 +440,15 @@ public partial class PracLab
             airPoint = air;
 
             // 从空中点垂直向下投影找地面（跳过自身 pawn）
-            var pawn = player.PlayerPawn.Value;
-            nint skip = pawn != null ? pawn.Handle : nint.Zero;
             var downEnd = new Vector(air.X, air.Y, air.Z - TraceDistance);
-            var down = TraceRay.TraceShape(air, downEnd, (ulong)TraceMask.MaskSolid, (ulong)Contents.NoDraw, skip);
+            TraceResult down = Trace.TraceEndShape(
+                air,
+                downEnd,
+                player.PlayerPawn.Value,
+                new TraceOptions { InteractsAs = Contents.NoDraw, InteractsWith = Masks.Solid });
             if (down.Fraction < 1.0f)
             {
-                groundPoint = ToCssVector(down.Position);
+                groundPoint = down.HitPoint;
                 return true;
             }
 
@@ -454,7 +458,7 @@ public partial class PracLab
         }
         catch (Exception ex)
         {
-            // 打印 InnerException：CS2TraceRay 静态构造失败（gamedata 缺失/签名失配）时外层仅显示 TypeInitializationException
+            // CSSharp native trace 调用失败（实体/角度不可用）时打印完整异常
             var detail = ex.InnerException != null ? $"{ex.Message} | Inner: {ex.InnerException.Message}" : ex.Message;
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error NadeDraw TryPickPoint failed - {detail}");
             if (!silent) player.PrintToChat(Localizer.ForPlayer(player, "nadedraw.trace_unavailable"));
@@ -476,13 +480,20 @@ public partial class PracLab
 
         try
         {
-            CGameTrace? result = player.GetGameTraceByEyePosition(TraceMask.MaskSolid, Contents.NoDraw, player);
-            if (result is not { } trace)
+            // 眼位射线（沿 EyeAngles 打 8192 单位，跳过自身 pawn）
+            var eyePos = GetPlayerEyePosition(player);
+            if (eyePos == null)
             {
-                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeDraw eye trace unavailable for {player.PlayerName}");
+                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeDraw eye position unavailable for {player.PlayerName}");
                 if (!silent) player.PrintToChat(Localizer.ForPlayer(player, "nadedraw.trace_unavailable"));
                 return false;
             }
+
+            TraceResult trace = Trace.TraceShape(
+                eyePos,
+                player.PlayerPawn.Value!.EyeAngles,
+                player.PlayerPawn.Value,
+                new TraceOptions { InteractsAs = Contents.NoDraw, InteractsWith = Masks.Solid });
 
             return TryResolveAirPoint(player, trace, out point, silent);
         }
@@ -503,17 +514,17 @@ public partial class PracLab
     /// <param name="air">成功时输出的空中点。</param>
     /// <param name="silent">true 时失败不向玩家发送聊天提示。</param>
     /// <returns>true 表示解析成功，false 表示眼位或射线方向不可用。</returns>
-    private bool TryResolveAirPoint(CCSPlayerController player, CGameTrace trace, out Vector air, bool silent)
+    private bool TryResolveAirPoint(CCSPlayerController player, TraceResult trace, out Vector air, bool silent)
     {
         air = new Vector(0, 0, 0);
 
         if (trace.Fraction < 1.0f)
         {
-            air = ToCssVector(trace.Position);
+            air = trace.HitPoint;
             return true;
         }
 
-        var eye = player.GetEyePosition();
+        var eye = GetPlayerEyePosition(player);
         if (eye == null)
         {
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeDraw eye position unavailable for {player.PlayerName}");
@@ -969,4 +980,21 @@ public partial class PracLab
     /// System.Numerics.Vector3 → CounterStrikeSharp Vector 转换。
     /// </summary>
     private static Vector ToCssVector(System.Numerics.Vector3 v) => new(v.X, v.Y, v.Z);
+    private static System.Numerics.Vector3 ToSystemVector(Vector v) => new(v.X, v.Y, v.Z);
+
+    /// <summary>
+    /// 计算玩家眼位（眼位 = Pawn.AbsOrigin + Pawn.ViewOffset）。
+    /// CSSharp v1.0.372 移除了 CCSPlayerController.GetEyePosition()，使用此 helper 替代。
+    /// </summary>
+    /// <param name="player">玩家控制器。</param>
+    /// <returns>眼位 Vector；Pawn 或 AbsOrigin 为空时返回 null。</returns>
+    private static Vector? GetPlayerEyePosition(CCSPlayerController player)
+    {
+        var pawn = player.PlayerPawn.Value;
+        if (pawn == null) return null;
+        var origin = pawn.AbsOrigin;
+        if (origin == null) return null;
+        var viewOffset = pawn.ViewOffset;
+        return new Vector(origin.X + viewOffset.X, origin.Y + viewOffset.Y, origin.Z + viewOffset.Z);
+    }
 }

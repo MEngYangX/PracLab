@@ -4,10 +4,9 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2TraceRay.Class;
-using CGameTrace = CS2TraceRay.Struct.CGameTrace;
-using Contents = CS2TraceRay.Enum.Contents;
-using TraceMask = CS2TraceRay.Enum.TraceMask;
+// 解决 System.Diagnostics.Trace/TraceOptions 与 CounterStrikeSharp.API.Modules.Utils.Trace/TraceOptions 的命名冲突
+using Trace = CounterStrikeSharp.API.Modules.Utils.Trace;
+using TraceOptions = CounterStrikeSharp.API.Modules.Utils.TraceOptions;
 
 namespace PracLab;
 
@@ -608,12 +607,12 @@ public partial class PracLab
     /// <param name="nade">道具注册表条目。</param>
     /// <param name="simHz">仿真步频（praclab_nade_sim_hz）。</param>
     /// <param name="trajectory">轨迹采样输出（调用方复用的 scratch 列表，每 4 tick 追加一点；null 不采样）。</param>
-    /// <param name="skipPawn">trace 跳过的实体句柄（搜索者自身 pawn；Zero 不跳过）。</param>
+    /// <param name="skipPawn">trace 跳过的实体（搜索者自身 pawn；null 不跳过）。</param>
     /// <param name="boxMin">目标盒体最小角（非 null 时启用"任意触地即命中"判定；null 仅仿真不判命中）。</param>
     /// <param name="boxMax">目标盒体最大角（与 boxMin 配对）。</param>
     /// <param name="bounces">碰撞复用缓冲（调用方传入，仿真前 Clear；前 3 次碰撞记录数值，命中后格式化）。</param>
     /// <returns>仿真结果（落点 + 终止原因 + 飞行时长）。</returns>
-    private GrenadeSimResult SimulateGrenade(Vector3 origin, Vector3 velocity, NadeInfo nade, int simHz, List<Vector3>? trajectory, nint skipPawn, Vector3? boxMin = null, Vector3? boxMax = null, List<BounceInfo>? bounces = null)
+    private GrenadeSimResult SimulateGrenade(Vector3 origin, Vector3 velocity, NadeInfo nade, int simHz, List<Vector3>? trajectory, CBaseEntity? skipPawn, Vector3? boxMin = null, Vector3? boxMax = null, List<BounceInfo>? bounces = null)
     {
         float dt = 1.0f / simHz;
         var position = origin;
@@ -660,16 +659,20 @@ public partial class PracLab
 
                 var subNext = position + v * remainingDt;
 
-                CGameTrace trace;
+                TraceResult trace;
                 try
                 {
                     // TraceShape 线段扫掠（与 NadeDraw 取点同一通道，跳过搜索者自身 pawn）；
                     // mask 语义：仅 Solid（不撞栅栏/玻璃/玩家；不含 Sky 位，见 GrenadeTraceMask 注释），NoDraw 面忽略
-                    trace = TraceRay.TraceShape(ToCssVector(position), ToCssVector(subNext), GrenadeTraceMask, (ulong)Contents.NoDraw, skipPawn);
+                    trace = Trace.TraceEndShape(
+                        ToCssVector(position),
+                        ToCssVector(subNext),
+                        skipPawn,
+                        new TraceOptions { InteractsAs = Contents.NoDraw, InteractsWith = (Contents)GrenadeTraceMask });
                 }
                 catch (Exception ex)
                 {
-                    // TraceShape 异常（gamedata 签名失效等）：落点取当前位置并记录，禁止静默失败
+                    // CSSharp native trace 异常：落点取当前位置并记录，禁止静默失败
                     Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error GrenadeSim TraceShape failed - {ex.Message}");
                     result.LandPoint = position;
                     result.TermReason = "trace_error";
@@ -688,9 +691,9 @@ public partial class PracLab
                 else
                 {
                     // 命中天空盒（防御性保留：掩码不含 Sky 位后不可达）：真实投掷物被删除，立即终止
-                    if ((trace.Contents & (uint)Contents.Sky) != 0)
+                    if ((trace.Contents & Contents.Sky) != 0)
                     {
-                        result.LandPoint = trace.Position;
+                        result.LandPoint = ToSystemVector(trace.HitPoint);
                         result.TermReason = "sky";
                         result.FlightTime = elapsed;
                         return result;
@@ -701,10 +704,10 @@ public partial class PracLab
                     // 实测 .nts 90.3 -13.5 DJ L bounce[0] contents=0x40000030（无 Solid bit）误撞导致弹道反向。
                     // 穿透策略：position 推进到碰撞点 + 沿运动方向微偏移，不反弹，继续子步受重力影响。
                     // 安全性：MaxSubSteps 限制子步数，RestTimeoutSeconds 限制总时长，不会死循环。
-                    if ((trace.Contents & 0x1u) == 0)
+                    if ((trace.Contents & Contents.Solid) == 0)
                     {
                         var moveDir = v.LengthSquared() > 1.0f ? Vector3.Normalize(v) : new Vector3(0, 0, 1);
-                        position = trace.Position + moveDir * BounceEpsilon;
+                        position = ToSystemVector(trace.HitPoint) + moveDir * BounceEpsilon;
                         remainingDt *= (1.0f - trace.Fraction);
                         continue;
                     }
@@ -714,10 +717,10 @@ public partial class PracLab
                     // 证据：SMK-N-L-01 预测在地面对撞点 (766,854,2.6) 返回 allsolid 终止，
                     // 但真实投掷物在同一位置正常弹跳（v.Z 从 -365 反弹到 +158）。
                     // 原因：子步内 grenade shape 深入地面，trace 起点被判定为"卡体"，
-                    // 但 trace.Position 仍是有效碰撞点，trace.Normal 仍可用。
+                    // 但 trace.HitPoint 仍是有效碰撞点，trace.Normal 仍可用。
                     // 安全性：MaxSubSteps 限制子步数，RestTimeoutSeconds 限制总时长，不会死循环。
 
-                    var n = Vector3.Normalize(trace.Normal);
+                    var n = Vector3.Normalize(ToSystemVector(trace.Normal));
                     // 保存引擎原始法线（ProbeWallNormalZ 会覆盖 n），用于 BounceLog
                     var rawN = n;
                     lastSurfaceNormalZ = n.Z;
@@ -732,12 +735,12 @@ public partial class PracLab
                     {
                         var bMin = boxMin.Value;
                         var bMax = boxMax.Value;
-                        var bp = trace.Position;
+                        var bp = ToSystemVector(trace.HitPoint);
                         if (bp.X >= bMin.X && bp.X <= bMax.X
                             && bp.Y >= bMin.Y && bp.Y <= bMax.Y
                             && bp.Z >= bMin.Z && bp.Z <= bMax.Z)
                         {
-                            result.BoxHitPoint = trace.Position;
+                            result.BoxHitPoint = ToSystemVector(trace.HitPoint);
                         }
                     }
 
@@ -745,7 +748,7 @@ public partial class PracLab
                     if (nade.Term == NadeTermType.GroundOrAirburst && n.Z > SimGroundNormalZ)
                     {
                         // 沿法线加半径补偿：TraceShape 命中表面，真实投掷物中心在 表面+半径
-                        result.LandPoint = trace.Position + n * GrenadeRestRadius;
+                        result.LandPoint = ToSystemVector(trace.HitPoint) + n * GrenadeRestRadius;
                         result.TermReason = "ground";
                         result.FlightTime = elapsed;
                         trajectory?.Add(result.LandPoint);
@@ -768,14 +771,14 @@ public partial class PracLab
                         // 修改反弹方向后 grenade 卡在墙缝/复杂地形反复撞墙导致单次仿真卡死主线程
                         if (++wallBounceCount > MaxWallBounces)
                         {
-                            result.LandPoint = trace.Position;
+                            result.LandPoint = ToSystemVector(trace.HitPoint);
                             result.TermReason = "max_wall_bounces";
                             result.FlightTime = elapsed;
-                            trajectory?.Add(trace.Position);
+                            trajectory?.Add(ToSystemVector(trace.HitPoint));
                             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning SimulateGrenade exceeded {MaxWallBounces} wall bounces (tick={tick}), terminating early");
                             return result;
                         }
-                        n = ProbeWallNormalZ(trace.Position, n, skipPawn, out probeNote);
+                        n = ProbeWallNormalZ(ToSystemVector(trace.HitPoint), n, skipPawn, out probeNote);
                         lastSurfaceNormalZ = n.Z;
                     }
 
@@ -792,7 +795,7 @@ public partial class PracLab
                     float dampT = highSpeedGround ? nade.BounceDampNormalGround : nade.BounceDampTangential;
                     float dampNormal = highSpeedGround ? nade.BounceDampNormalGround : nade.BounceDampNormalWall;
                     v = tangentComp * dampT - normalComp * dampNormal;
-                    position = trace.Position + n * BounceEpsilon;
+                    position = ToSystemVector(trace.HitPoint) + n * BounceEpsilon;
 
                     // 前 3 次碰撞记录数值到复用缓冲（无字符串分配，命中后格式化）。
                     // 用于定位"预测弹墙方向与真实不符"：若 rawN 与 probeN 方向相反，说明 ProbeWallNormalZ 修正反了。
@@ -800,12 +803,12 @@ public partial class PracLab
                     {
                         bounces.Add(new BounceInfo
                         {
-                            Pos = trace.Position,
+                            Pos = ToSystemVector(trace.HitPoint),
                             RawN = rawN,
                             ProbeN = n,
                             VIn = vAtCollision,
                             VOut = v,
-                            Contents = trace.Contents,
+                            Contents = (uint)trace.Contents,
                             ProbeNote = probeNote,
                         });
                     }
@@ -821,7 +824,7 @@ public partial class PracLab
                     {
                         // 沿法线加半径补偿：TraceShape 命中地面表面，真实投掷物中心静止在 表面+半径
                         // 不补偿会导致落点 z 系统性偏低 ~2 单位，可能跌出目标框底（.fdjl 搜索未命中根因）
-                        result.LandPoint = trace.Position + n * GrenadeRestRadius;
+                        result.LandPoint = ToSystemVector(trace.HitPoint) + n * GrenadeRestRadius;
                         result.TermReason = "rest_bounce";
                         result.FlightTime = elapsed;
                         trajectory?.Add(result.LandPoint);
@@ -933,9 +936,9 @@ public partial class PracLab
     /// </summary>
     /// <param name="hitPos">原始碰撞点。</param>
     /// <param name="flatNormal">水平化的法线（z=0，已归一化）。</param>
-    /// <param name="skipPawn">trace 跳过的实体句柄。</param>
+    /// <param name="skipPawn">trace 跳过的实体。</param>
     /// <returns>恢复 z 分量后的法线（已归一化）；探测失败时返回原始水平化法线。</returns>
-    private static Vector3 ProbeWallNormalZ(Vector3 hitPos, Vector3 flatNormal, nint skipPawn, out string note)
+    private static Vector3 ProbeWallNormalZ(Vector3 hitPos, Vector3 flatNormal, CBaseEntity? skipPawn, out string note)
     {
         note = string.Empty;
         // 墙外偏移：大于 BounceEpsilon(0.125)，确保探测起点在墙外不卡墙
@@ -960,23 +963,27 @@ public partial class PracLab
         {
             float h = ProbeHeights[i];
             var q = hitPos + outward + new Vector3(0, 0, h);
-            CGameTrace t;
+            TraceResult t;
             try
             {
-                t = TraceRay.TraceShape(ToCssVector(q), ToCssVector(q + dir * ProbeDist), GrenadeTraceMask, (ulong)Contents.NoDraw, skipPawn);
+                t = Trace.TraceEndShape(
+                    ToCssVector(q),
+                    ToCssVector(q + dir * ProbeDist),
+                    skipPawn,
+                    new TraceOptions { InteractsAs = Contents.NoDraw, InteractsWith = (Contents)GrenadeTraceMask });
             }
             catch
             {
-                // 单点异常跳过（上层 TraceShape 异常处理覆盖日志）
+                // 单点异常跳过（上层 trace 异常处理覆盖日志）
                 continue;
             }
 
             // 过滤：未命中/卡固体
-            if (t.Fraction >= 1.0f || t.AllSolid)
+            if (t.Fraction >= 1.0f || t.IsAllSolid)
                 continue;
 
             // 过滤：命中法线水平方向与原始法线不一致（命中地面/天花/其他物体）
-            var nrm = Vector3.Normalize(t.Normal);
+            var nrm = Vector3.Normalize(ToSystemVector(t.Normal));
             if (MathF.Abs(nrm.X - flatNormal.X) > 0.2f || MathF.Abs(nrm.Y - flatNormal.Y) > 0.2f)
                 continue;
 
@@ -1153,8 +1160,8 @@ public partial class PracLab
         /// <summary>出手点（眼位快照，搜索期间玩家移动不影响结果）。</summary>
         public Vector3 EyePos;
 
-        /// <summary>弹道 trace 需跳过的搜索者自身 pawn 句柄（构建 Job 时快照；Zero 表示不可用）。</summary>
-        public nint SkipPawnHandle;
+        /// <summary>弹道 trace 需跳过的搜索者自身 pawn（构建 Job 时快照；null 表示不可用）。</summary>
+        public CBaseEntity? SkipPawn;
 
         /// <summary>粗筛 + 排序后的候选列表（主扫描候选在前，细化候选追加在后）。</summary>
         public List<SearchCandidate> Candidates = new();
@@ -1258,7 +1265,7 @@ public partial class PracLab
     /// <returns>构建完成的 SearchJob（候选可能为空，调用方判定提示）。</returns>
     private SearchJob? BuildSearchJob(CCSPlayerController player, TargetRegion target, NadeInfo nade, NadeAccuracy accuracy, ThrowMode? modeFilter, ThrowStrength? strengthFilter)
     {
-        var eye = player.GetEyePosition();
+        var eye = GetPlayerEyePosition(player);
         if (eye == null)
         {
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning BuildSearchJob eye position unavailable for {player.PlayerName}");
@@ -1282,7 +1289,7 @@ public partial class PracLab
             BaseStepDeg = baseStep,
             RefineStepDeg = refineStep,
             // 弹道 trace 跳过搜索者自身 pawn（与 NadeDraw 取点一致的 skip 语义）
-            SkipPawnHandle = player.PlayerPawn.Value?.Handle ?? nint.Zero,
+            SkipPawn = player.PlayerPawn.Value,
         };
 
         // yaw 扇形（站位在盒体 2D 范围内全扫 360°）
@@ -1558,7 +1565,7 @@ public partial class PracLab
             var v0 = ComputeThrowVelocity(c.Pitch, c.Yaw, c.Strength, c.Mode);
             var candEye = EyeForMode(job.EyePos, c.Mode);
             var throwOrigin = ComputeThrowOrigin(ReleaseEyeForMode(job.EyePos, c.Mode), c.Pitch, c.Yaw, c.Strength);
-            var sim = SimulateGrenade(throwOrigin, v0, job.Nade, simHz, job.ScratchTrajectory, job.SkipPawnHandle, boxMin, boxMax, job.ScratchBounces);
+            var sim = SimulateGrenade(throwOrigin, v0, job.Nade, simHz, job.ScratchTrajectory, job.SkipPawn, boxMin, boxMax, job.ScratchBounces);
             job.Cursor++;
 
             // 命中判定：最终静止位置必须在框选盒体内。
@@ -1970,7 +1977,7 @@ public partial class PracLab
         }
 
         // 取眼位 → 按方式下沉/抬升 → 计算出手点与初速度
-        var eye = player.GetEyePosition();
+        var eye = GetPlayerEyePosition(player);
         if (eye == null)
         {
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeTestSim eye position unavailable for {player.PlayerName}");
@@ -1983,7 +1990,7 @@ public partial class PracLab
         var throwOrigin = ComputeThrowOrigin(releaseEye, pitch, yaw, strength);
         var v0 = ComputeThrowVelocity(pitch, yaw, strength, mode);
         int simHz = _config.NadeSimHz;
-        var skipPawn = pawn.Handle;
+        var skipPawn = pawn;
 
         // 仿真：轨迹采样到 scratch，前 3 次碰撞记录到 bounces 缓冲（参考 .ng 调试输出格式）
         var trajectory = new List<Vector3>(256);

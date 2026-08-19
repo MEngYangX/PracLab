@@ -1,9 +1,9 @@
 // PracLabReplayEngine C-ABI exports for CounterStrikeSharp P/Invoke.
 //
-// Wraps BotController v0.6.0 C++ API under PRL_* functions matching the
+// Wraps BotController v0.6.1 C++ API under PRL_* functions matching the
 // praclab_replay.h header contract. Existing PRL_* signatures are preserved
 // for backward compatibility; new PRL_* extension functions expose the
-// upstream v0.6.0 feature set (buy plans, voice, profile, locks, etc.).
+// upstream v0.6.1 feature set (buy plans, voice, profile, locks, etc.).
 
 #include "praclab_replay.h"
 
@@ -159,11 +159,11 @@ PRL_API int PRL_GetDiagnosticCounters(PRL_DiagnosticCounters *out)
     return 1;
 }
 
-// ---- Extended API (v0.2.0+, BotController v0.6.0 ABI 17) ----
+// ---- Extended API (v0.2.1+, BotController v0.6.1 ABI 18) ----
 
 PRL_API int PRL_GetAbiVersion(void)
 {
-    return 17;
+    return 18;
 }
 
 PRL_API int PRL_LoadReplayExtended(int slot,
@@ -210,6 +210,11 @@ PRL_API long long PRL_InjectUsercmd(int slot, unsigned long long buttonMask, int
 PRL_API int PRL_CancelUsercmdInjection(int slot, long long injectionId)
 {
     return InputInjector::CancelUsercmdInjection(slot, static_cast<int64_t>(injectionId)) ? 1 : 0;
+}
+
+PRL_API int PRL_SuppressUsercmd(int slot, unsigned long long buttonMask, int durationMs)
+{
+    return InputInjector::SuppressUsercmd(slot, buttonMask, durationMs) ? 1 : 0;
 }
 
 // ---- Buy plan ----

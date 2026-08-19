@@ -152,7 +152,7 @@
   "replay.start_failed": " {red}[PracLab] 启动回放失败，ID={0}{default}",
   "replay.stopped": " {green}[PracLab] 已停止 {0} 个回放{default}",
   "replay.not_playing": " {lightred}[PracLab] 当前没有正在回放的录制{default}",
-  "record.usage": " {lightblue}[PracLab] 用法：.clearrecord &lt;Id&gt;{default}",
+  "record.usage": " {lightblue}[PracLab] 用法：.clearrecord <Id>{default}",
   "record.not_found": " {lightred}[PracLab] 未找到 ID={0} 的录制{default}",
   "record.cleared": " {green}[PracLab] 已清除录制 ID={0}{default}",
   "record.cleared_all": " {green}[PracLab] 已清除所有录制（共 {0} 条）{default}",

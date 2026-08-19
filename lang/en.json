@@ -152,7 +152,7 @@
   "replay.start_failed": " {red}[PracLab] Failed to start replay, ID={0}{default}",
   "replay.stopped": " {green}[PracLab] Stopped {0} replay(s){default}",
   "replay.not_playing": " {lightred}[PracLab] No replay is currently playing{default}",
-  "record.usage": " {lightblue}[PracLab] Usage: .clearrecord &lt;Id&gt;{default}",
+  "record.usage": " {lightblue}[PracLab] Usage: .clearrecord <Id>{default}",
   "record.not_found": " {lightred}[PracLab] Recording ID={0} not found{default}",
   "record.cleared": " {green}[PracLab] Cleared recording ID={0}{default}",
   "record.cleared_all": " {green}[PracLab] Cleared all recordings ({0} total){default}",

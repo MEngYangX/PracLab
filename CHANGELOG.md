@@ -4,6 +4,18 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.0] - 2026-08-19
+
+### Fixed
+
+- **`.clearrecord` 用法提示 HTML 转义**：输入 `.clearrecord`（无参数）后聊天栏显示 `.clearrecord &lt;Id&gt;` 而非 `.clearrecord <Id>`。根因：`lang/zh-CN.json` 与 `lang/en.json` 中 `record.usage` 键的值使用了 HTML 转义 `&lt;`/`&gt;`，CounterStrikeSharp 聊天栏不解析 HTML 实体（颜色占位符是 `{colorname}` 格式），原样输出。修复为直接尖括号。已扫描全部 lang 文件，仅此一处残留。
+
+### Changed
+
+- **迁移到 CSSharp 原生 Trace API**：移除 CS2TraceRay NuGet 依赖及 `CS2TraceRay.gamedata.json`，全面切换至 v1.0.372 新增的 `Trace.TraceShape` / `Trace.TraceEndShape` 原生 API。涉及 `NadeDrawCommands`、`NadeSearchCommands`、`NadeResultCommands`、`NadeTestCommands` 四个模块的射线调用点，统一使用 `CounterStrikeSharp.API.Modules.Utils` 命名空间下的 `Trace` / `TraceResult` / `Contents` / `Masks` 类型；`SkipPawn` 参数类型从 `nint` 调整为 `CBaseEntity?`，新增 `ToCssVector` / `ToSystemVector` 在 `CounterStrikeSharp.API.Modules.Utils.Vector` 与 `System.Numerics.Vector3` 之间转换。同步简化 `build.yml`（移除 gamedata.json 复制步骤）、移除 README 致谢中的 CS2TraceRay 引用。消除因 CS2 游戏更新导致签名失效引发 Linux segfault 的稳定性隐患。
+- **CSSharp 依赖升级**：`PracLab.csproj` 中 `CounterStrikeSharp.API` 版本由 1.0.371 升级到 1.0.372。v1.0.372 主要变更为新增 Ray/Hull Trace API（INavPhysicsInterface，PR #1331）与更新 Schema Definitions 至 1.41.6.9（PR #1356）。
+- **回放引擎更新至 BotController v0.6.1**：同步上游 [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) v0.6.1（ABI 17→18）。新增 `SuppressUsercmd` 导出（抑制指定 usercmd 按钮一段时长，PracLab 当前未使用但保持 ABI 一致）；`InputInjector` 新增 `UsercmdSuppression` 结构与 `ApplyUsercmdSuppressions` 处理路径；`ClearUsercmdInjections` 与 `Remove()` 同步清理 suppressions。更新 `praclab_replay.h`、`exports.cpp`、`plugin.h` 版本与注释。
+
 ## [0.2.1] - 2026-08-06
 
 ### Fixed
