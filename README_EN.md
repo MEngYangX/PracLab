@@ -30,7 +30,7 @@ English | [中文](README.md)
     <img src="https://img.shields.io/badge/C%23-14-239120" alt="C# 14">
   </a>
   <a href="#">
-    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.371+-blue" alt="CounterStrikeSharp 1.0.371+">
+    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.372+-blue" alt="CounterStrikeSharp 1.0.372+">
   </a>
 </p>
 
@@ -55,9 +55,8 @@ Full documentation is available at: https://mengyangx.github.io/PracLab
 
 This project drew inspiration from the following open-source projects during development:
 
-- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Reference for the replay engine's bot control, `CCSBot::Update` hook, and `PlayerRunCommand` recording.
+- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Replay engine integrated from upstream v0.6.1, including bot control (`CCSBot::Update`/`Upkeep` hooks), movement recording and playback (`ProcessMovement`/`PlayerRunCommand`), weapon locking, purchase control, voice chat, and `BotProfile` modules.
 - [MatchZy](https://github.com/shobhit-pathak/MatchZy) — Reference for project structure, documentation organization, and CS2 plugin engineering practices.
-- [CS2TraceRay](https://www.nuget.org/packages/CS2TraceRay) — Ray tracing query dependency used in grenade trajectory simulation.
 
 ## License
 

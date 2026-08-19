@@ -2,7 +2,6 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2TraceRay.Class;
 
 namespace PracLab;
 
@@ -559,7 +558,7 @@ public partial class PracLab
         thrower.PrintToConsole($"[PracLab] NadeTest traj start i=0 t=0.000 p=({pos.X:F1},{pos.Y:F1},{pos.Z:F1}) v=({vel.X:F1},{vel.Y:F1},{vel.Z:F1})");
 
         var pawn = thrower.PlayerPawn.Value;
-        var eye = thrower.GetEyePosition();
+        var eye = GetPlayerEyePosition(thrower);
         if (pawn == null || !pawn.IsValid || eye == null)
         {
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning NadeTest pawn/eye unavailable for {thrower.PlayerName}");

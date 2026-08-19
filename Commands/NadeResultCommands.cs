@@ -4,9 +4,6 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
-using CS2TraceRay.Class;
-using Contents = CS2TraceRay.Enum.Contents;
-using TraceMask = CS2TraceRay.Enum.TraceMask;
 
 namespace PracLab;
 
@@ -126,7 +123,7 @@ public partial class PracLab
             // 传送：眼位向下 trace 贴地；贴地失败（站位悬空/地图外）退化为眼位 - 站立眼高
             var eyePos = result.EyePos;
             var eyeVec = ToCssVector(eyePos);
-            var ground = TraceDownGround(eyeVec, pawn.Handle);
+            var ground = TraceDownGround(eyeVec, pawn);
             var feet = ground ?? new Vector(eyePos.X, eyePos.Y, eyePos.Z - StandEyeHeight);
 
             // 传送：使用 setpos + setang 客户端命令。
@@ -259,13 +256,17 @@ public partial class PracLab
     /// 从指定位置垂直向下 trace 找地面（跳过指定实体），未命中返回 null。
     /// </summary>
     /// <param name="from">起始位置。</param>
-    /// <param name="skip">跳过的实体句柄（玩家自身 pawn）。</param>
+    /// <param name="ignoreEntity">跳过的实体（玩家自身 pawn）。</param>
     /// <returns>地面命中点；未命中为 null。</returns>
-    private static Vector? TraceDownGround(Vector from, nint skip)
+    private static Vector? TraceDownGround(Vector from, CBaseEntity? ignoreEntity)
     {
         var downEnd = new Vector(from.X, from.Y, from.Z - TraceDistance);
-        var down = TraceRay.TraceShape(from, downEnd, (ulong)TraceMask.MaskSolid, (ulong)Contents.NoDraw, skip);
-        return down.Fraction < 1.0f ? ToCssVector(down.Position) : null;
+        TraceResult down = Trace.TraceEndShape(
+            from,
+            downEnd,
+            ignoreEntity,
+            new TraceOptions { InteractsAs = Contents.NoDraw, InteractsWith = Masks.Solid });
+        return down.Fraction < 1.0f ? down.HitPoint : null;
     }
 
     /// <summary>
