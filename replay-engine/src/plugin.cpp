@@ -1,6 +1,6 @@
 // PracLabReplayEngine Metamod:Source plugin entry point.
 //
-// Load/Unload orchestrate the BotController v0.6.0 subsystems:
+// Load/Unload orchestrate the BotController v0.6.1 subsystems:
 //   Schema init → sig-scan → hook install (WeaponLocker/BotController/BuyController/InputInjector)
 //   → record/replay ready for PRL_* C-ABI calls.
 

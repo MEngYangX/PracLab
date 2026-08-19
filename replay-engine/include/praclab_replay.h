@@ -233,9 +233,9 @@ typedef struct PRL_DiagnosticCounters {
 // 读取诊断计数器快照。返回 1 成功，0 失败（指针为空）。
 PRL_API int PRL_GetDiagnosticCounters(PRL_DiagnosticCounters *out);
 
-// ---- 扩展 API（v0.2.0+，对应 BotController v0.6.0 ABI 17）----
+// ---- 扩展 API（v0.2.1+，对应 BotController v0.6.1 ABI 18）----
 
-// ABI 版本号。返回 17。
+// ABI 版本号。返回 18。
 PRL_API int PRL_GetAbiVersion(void);
 
 // 加载扩展回放数据（含命令帧 + 移动额外状态）。返回 1 成功，0 失败。
@@ -259,6 +259,8 @@ PRL_API int PRL_SwitchBotWeapon(int slot, int defIndex);
 PRL_API long long PRL_InjectUsercmd(int slot, unsigned long long buttonMask, int durationMs);
 // 取消一个 usercmd 注入。返回 1 成功，0 失败。
 PRL_API int PRL_CancelUsercmdInjection(int slot, long long injectionId);
+// 抑制指定 usercmd 按钮一段时长。返回 1 成功，0 失败。
+PRL_API int PRL_SuppressUsercmd(int slot, unsigned long long buttonMask, int durationMs);
 
 // ---- Buy plan ----
 // 设置 bot 购买计划（空格/逗号分隔的别名列表）。返回 0 成功，-2 slot 非法。
