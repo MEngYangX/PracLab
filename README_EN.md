@@ -30,7 +30,7 @@ English | [中文](README.md)
     <img src="https://img.shields.io/badge/C%23-14-239120" alt="C# 14">
   </a>
   <a href="#">
-    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.372+-blue" alt="CounterStrikeSharp 1.0.372+">
+    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.374+-blue" alt="CounterStrikeSharp 1.0.374+">
   </a>
 </p>
 

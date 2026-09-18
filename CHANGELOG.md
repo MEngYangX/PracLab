@@ -13,6 +13,7 @@
 ### Changed
 
 - **回放引擎更新至 BotController v0.6.3**：同步上游 [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) v0.6.1 → v0.6.3（ABI 18 → 20，引擎版本 0.2.2）。新增：丢掷武器（drop weapon）事件的 tick 级录制与回放（`ReplayTick` 结构扩展 10 个事件字段至 228 字节，C# 侧 P/Invoke 结构同步）、`ProjectileBirthAlign` 投掷物出生对齐模块、`UsercmdMovement` / `UsercmdSuppression` API（PracLab C# 层暂未使用，保持 ABI 一致并预留）；命名空间重构（`BotController::` → `bot_controller::`）；gamedata 追加 `vtidx::DropWeapon` 偏移；控制台输出精简与全量代码格式化。
+- **CSSharp 依赖升级**：`PracLab.csproj` 中 `CounterStrikeSharp.API` 版本由 1.0.372 升级到 1.0.374。v1.0.374。
 
 ## [0.3.0] - 2026-08-19
 
