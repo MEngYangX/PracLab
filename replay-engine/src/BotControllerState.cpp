@@ -5,10 +5,14 @@
 #include <array>
 #include <atomic>
 
-namespace BotController {
-namespace BotControllerState {
-static std::array<std::atomic<bool>, kMaxSlots> g_allLocks{};
-static std::array<std::atomic<bool>, kMaxSlots> g_aimLocks{};
+namespace bot_controller {
+namespace bot_controller_state {
+
+namespace {
+std::array<std::atomic<bool>, kMaxSlots> g_allLocks{};
+std::array<std::atomic<bool>, kMaxSlots> g_aimLocks{};
+
+} // namespace
 
 bool GetAll(int slot)
 {
@@ -61,5 +65,5 @@ int CountAim()
         if (x.load(std::memory_order_relaxed)) ++n;
     return n;
 }
-} // namespace BotControllerState
-} // namespace BotController
+} // namespace bot_controller_state
+} // namespace bot_controller

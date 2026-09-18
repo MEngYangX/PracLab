@@ -2,8 +2,8 @@
 
 #pragma once
 
-namespace BotController {
-namespace BotControllerState {
+namespace bot_controller {
+namespace bot_controller_state {
 constexpr int kMaxSlots = 64;
 
 // All lock: Update + Upkeep.
@@ -17,5 +17,5 @@ bool GetAim(int slot);
 void SetAim(int slot, bool locked);
 void ClearAllAim();
 int CountAim();
-} // namespace BotControllerState
-} // namespace BotController
+} // namespace bot_controller_state
+} // namespace bot_controller

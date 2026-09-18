@@ -2,6 +2,7 @@
 // CCSPlayer_WeaponServices::SelectItem
 
 #include "WeaponLocker.h"
+#include "nlohmann/json.hpp"
 #include "sig_scan.h"
 #include "WeaponLockerState.h"
 #include "ccsbot_slot.h"
@@ -9,36 +10,39 @@
 #include "version_targets.h"
 #include "hook.h"
 
+#include <cstdint>
 #include <cstdio>
-#include <vector>
+#include <string>
 #include <mutex>
 #include <unordered_map>
 
-namespace tg = BotController::targets;
+namespace tg = bot_controller::targets;
 
-using EquipBestWeapon_t = void(BC_FASTCALL*)(void* self, char mustEquip);
-using EquipPistol_t = void(BC_FASTCALL*)(void* self, char mustEquip);
-using SelectItem_t = char(BC_FASTCALL*)(void* ws, void* weapon, int flag);
-using GetSlot_t = void*(BC_FASTCALL*)(void* ws, int slot, unsigned int mask);
+using EquipBestWeaponT = void(BC_FASTCALL*)(void* self, char mustEquip);
+using EquipPistolT = void(BC_FASTCALL*)(void* self, char mustEquip);
+using SelectItemT = char(BC_FASTCALL*)(void* ws, void* weapon, int flag);
+using GetSlotT = void*(BC_FASTCALL*)(void* ws, int slot, unsigned int mask);
 
-namespace BotController {
-namespace WeaponLockerHooks {
-static EquipBestWeapon_t g_origEquipBestWeapon = nullptr;
-static EquipPistol_t g_origEquipPistol = nullptr;
-static SelectItem_t g_origSelectItem = nullptr;
-static GetSlot_t g_pGetSlot = nullptr;
+namespace bot_controller {
+namespace weapon_locker_hooks {
 
-static void* g_addrEquipBestWeapon = nullptr;
-static void* g_addrEquipPistol = nullptr;
-static void* g_addrSelectItem = nullptr;
-static void* g_addrGetSlot = nullptr;
+namespace {
+EquipBestWeaponT g_origEquipBestWeapon = nullptr;
+EquipPistolT g_origEquipPistol = nullptr;
+SelectItemT g_origSelectItem = nullptr;
+GetSlotT g_getSlot = nullptr;
 
-static Hook g_hookEquipBestWeapon;
-static Hook g_hookEquipPistol;
-static Hook g_hookSelectItem;
+void* g_addrEquipBestWeapon = nullptr;
+void* g_addrEquipPistol = nullptr;
+void* g_addrSelectItem = nullptr;
+void* g_addrGetSlot = nullptr;
 
-static std::string g_status = "not_attempted";
-static bool g_installed = false;
+Hook g_hookEquipBestWeapon;
+Hook g_hookEquipPistol;
+Hook g_hookSelectItem;
+
+std::string g_status = "not_attempted"; // NOLINT(bugprone-throwing-static-initialization)
+bool g_installed = false;
 
 // WeaponServices* -> (bot slot, pawn)
 struct WsBinding
@@ -46,75 +50,75 @@ struct WsBinding
     int slot;
     void* pawn;
 };
-static std::unordered_map<void*, WsBinding> g_wsToBinding;
+std::unordered_map<void*, WsBinding> g_wsToBinding; // NOLINT(bugprone-throwing-static-initialization)
 // Inverse: slot -> WeaponServices*
-static void* g_slotToWs[64] = { nullptr };
-static std::mutex g_wsToSlotMu;
+void* g_slotToWs[64] = { nullptr };
+std::mutex g_wsToSlotMu;
 
-static void RememberWsForBot(void* bot, int slot)
+void RememberWsForBot(void* bot, int slot)
 {
     if (!bot || slot < 0 || slot >= 64) return;
     void* pawn = nullptr;
-    if (!GuardedRead(bot, tg::kBot_Pawn, pawn)) return;
+    if (!GuardedRead(bot, tg::g_botPawn, pawn)) return;
     if (!pawn) return;
     void* ws = nullptr;
-    if (!GuardedRead(pawn, tg::kPawn_WeaponServices, ws)) return;
+    if (!GuardedRead(pawn, tg::g_pawnWeaponServices, ws)) return;
     if (!ws) return;
-    std::lock_guard<std::mutex> lk(g_wsToSlotMu);
-    g_wsToBinding[ws] = { slot, pawn };
+    std::scoped_lock lk(g_wsToSlotMu);
+    g_wsToBinding[ws] = { .slot = slot, .pawn = pawn };
     g_slotToWs[slot] = ws;
 }
 
-static WsBinding LookupBindingForWs(void* ws)
+WsBinding LookupBindingForWs(void* ws)
 {
-    if (!ws) return { -1, nullptr };
-    std::lock_guard<std::mutex> lk(g_wsToSlotMu);
+    if (!ws) return { .slot = -1, .pawn = nullptr };
+    std::scoped_lock lk(g_wsToSlotMu);
     auto it = g_wsToBinding.find(ws);
-    return it == g_wsToBinding.end() ? WsBinding{ -1, nullptr } : it->second;
+    return it == g_wsToBinding.end() ? WsBinding{ .slot = -1, .pawn = nullptr } : it->second;
 }
 
 // LockTarget -> engine weapon-slot index
-static int LockTargetToEngineSlot(LockTarget t)
+int LockTargetToEngineSlot(LockTarget t)
 {
     int v = static_cast<int>(t);
     if (v < 1 || v > 5) return -1;
     return v - 1;
 }
 
-static bool IsGrenadeDef(int def) { return def >= 43 && def <= 48; }
+bool IsGrenadeDef(int def) { return def >= 43 && def <= 48; }
 
 // ---- detours ----
 
-static void BC_FASTCALL HookedEquipBestWeapon(void* bot, char mustEquip)
+void BC_FASTCALL HookedEquipBestWeapon(void* bot, char mustEquip)
 {
     auto sr = ResolveSlot(bot);
     if (sr.slot >= 0) RememberWsForBot(bot, sr.slot);
-    if (sr.slot >= 0 && MotionRecorder::IsReplaying(sr.slot)) return;
-    LockTarget lt = (sr.slot >= 0) ? WeaponLockerState::Get(sr.slot) : LockTarget::None;
+    if (sr.slot >= 0 && motion_recorder::IsReplaying(sr.slot)) return;
+    LockTarget lt = (sr.slot >= 0) ? weapon_locker_state::Get(sr.slot) : LockTarget::None;
     if (lt != LockTarget::None) return;
     g_origEquipBestWeapon(bot, mustEquip);
 }
 
-static void BC_FASTCALL HookedEquipPistol(void* bot, char mustEquip)
+void BC_FASTCALL HookedEquipPistol(void* bot, char mustEquip)
 {
     auto sr = ResolveSlot(bot);
     if (sr.slot >= 0) RememberWsForBot(bot, sr.slot);
-    if (sr.slot >= 0 && MotionRecorder::IsReplaying(sr.slot)) return;
-    LockTarget lt = (sr.slot >= 0) ? WeaponLockerState::Get(sr.slot) : LockTarget::None;
+    if (sr.slot >= 0 && motion_recorder::IsReplaying(sr.slot)) return;
+    LockTarget lt = (sr.slot >= 0) ? weapon_locker_state::Get(sr.slot) : LockTarget::None;
     if (lt != LockTarget::None) return;
     g_origEquipPistol(bot, mustEquip);
 }
 
-static char BC_FASTCALL HookedSelectItem(void* ws, void* weapon, int flag)
+char BC_FASTCALL HookedSelectItem(void* ws, void* weapon, int flag)
 {
     // Recording : a human switching weapons calls SelectItem
     if (weapon)
     {
         int def = ReadDefIndex(weapon);
         if (def >= 0)
-            for (int s = 0; s < MotionRecorder::kMaxSlots; ++s)
+            for (int s = 0; s < motion_recorder::kMaxSlots; ++s)
             {
-                if (MotionRecorder::IsRecording(s) && MotionRecorder::LiveWs(s) == ws) MotionRecorder::SetCurrentDef(s, def);
+                if (motion_recorder::IsRecording(s) && motion_recorder::LiveWs(s) == ws) motion_recorder::SetCurrentDef(s, def);
             }
     }
 
@@ -126,17 +130,17 @@ static char BC_FASTCALL HookedSelectItem(void* ws, void* weapon, int flag)
     int curSlot = ControllerSlotForPawn(bind.pawn);
     if (curSlot != bind.slot) return g_origSelectItem(ws, weapon, flag);
 
-    if (MotionRecorder::IsReplaying(bind.slot)) return g_origSelectItem(ws, weapon, flag);
+    if (motion_recorder::IsReplaying(bind.slot)) return g_origSelectItem(ws, weapon, flag);
 
-    LockTarget lt = WeaponLockerState::Get(bind.slot);
+    LockTarget lt = weapon_locker_state::Get(bind.slot);
     if (lt == LockTarget::None) return g_origSelectItem(ws, weapon, flag);
 
     int engineSlot = LockTargetToEngineSlot(lt);
-    if (engineSlot < 0 || !g_pGetSlot) return g_origSelectItem(ws, weapon, flag);
+    if (engineSlot < 0 || !g_getSlot) return g_origSelectItem(ws, weapon, flag);
 
     if (engineSlot == 3 && weapon && IsGrenadeDef(ReadDefIndex(weapon))) return g_origSelectItem(ws, weapon, flag);
 
-    void* targetWeapon = g_pGetSlot(ws, engineSlot, 0xFFFFFFFFu);
+    void* targetWeapon = g_getSlot(ws, engineSlot, 0xFFFFFFFFU);
     // No weapon in the locked slot -> can't enforce, let it through.
     if (!targetWeapon) return g_origSelectItem(ws, weapon, flag);
 
@@ -149,36 +153,38 @@ static char BC_FASTCALL HookedSelectItem(void* ws, void* weapon, int flag)
 
 // ---- install / remove ----
 
-bool Install(const nlohmann::json& gd, const Sig::ModuleInfo& serverModule, char* errorOut, size_t errorOutLen)
+} // namespace
+
+bool Install(const nlohmann::json& gd, const sig::ModuleInfo& serverModule, char* errorOut, size_t errorOutLen)
 {
-    g_addrEquipBestWeapon = Sig::ResolveSig(gd, serverModule, "CCSBot::EquipBestWeapon", errorOut, errorOutLen);
+    g_addrEquipBestWeapon = sig::ResolveSig(gd, serverModule, "CCSBot::EquipBestWeapon", errorOut, errorOutLen);
     if (!g_addrEquipBestWeapon)
     {
         g_status = "failed: EquipBestWeapon sig";
         return false;
     }
 
-    g_addrEquipPistol = Sig::ResolveSig(gd, serverModule, "CCSBot::EquipPistol", errorOut, errorOutLen);
+    g_addrEquipPistol = sig::ResolveSig(gd, serverModule, "CCSBot::EquipPistol", errorOut, errorOutLen);
     if (!g_addrEquipPistol)
     {
         g_status = "failed: EquipPistol sig";
         return false;
     }
 
-    g_addrSelectItem = Sig::ResolveSig(gd, serverModule, "CCSPlayer_WeaponServices::SelectItem", errorOut, errorOutLen);
+    g_addrSelectItem = sig::ResolveSig(gd, serverModule, "CCSPlayer_WeaponServices::SelectItem", errorOut, errorOutLen);
     if (!g_addrSelectItem)
     {
         g_status = "failed: SelectItem sig";
         return false;
     }
 
-    g_addrGetSlot = Sig::ResolveSig(gd, serverModule, "CCSPlayer_WeaponServices::GetSlot", errorOut, errorOutLen);
+    g_addrGetSlot = sig::ResolveSig(gd, serverModule, "CCSPlayer_WeaponServices::GetSlot", errorOut, errorOutLen);
     if (!g_addrGetSlot)
     {
         g_status = "failed: GetSlot sig";
         return false;
     }
-    g_pGetSlot = reinterpret_cast<GetSlot_t>(g_addrGetSlot);
+    g_getSlot = reinterpret_cast<GetSlotT>(g_addrGetSlot);
 
     auto failCleanup = [&](const char* what) -> bool {
         std::snprintf(errorOut, errorOutLen, "%s failed", what);
@@ -234,10 +240,10 @@ void Remove()
     g_installed = false;
     g_status = "not_attempted";
     {
-        std::lock_guard<std::mutex> lk(g_wsToSlotMu);
+        std::scoped_lock lk(g_wsToSlotMu);
         g_wsToBinding.clear();
-        for (int i = 0; i < 64; ++i)
-            g_slotToWs[i] = nullptr;
+        for (auto& slotToWs : g_slotToWs)
+            slotToWs = nullptr;
     }
 }
 
@@ -249,48 +255,52 @@ void* GetSlotAddress() { return g_addrGetSlot; }
 
 // ---- MotionRecorder helpers ----
 
-bool WeaponHooksReady() { return g_installed && g_pGetSlot && g_origSelectItem; }
+bool WeaponHooksReady() { return g_installed && g_getSlot && g_origSelectItem; }
 
 int ReadDefIndex(void* weapon)
 {
     if (!weapon) return -1;
     uint16_t def = 0;
-    return SafeRead(weapon, tg::kWeapon_ItemDefIndex, def) ? def : -1;
+    return SafeRead(weapon, tg::g_weaponItemDefIndex, def) ? def : -1;
 }
 
 // entity -> identity(0x10) -> m_EHandle(0x10), low 15 bits = index.
-static int EntIndexOf(void* entity)
+namespace {
+
+int EntIndexOf(void* entity)
 {
     if (!entity) return -1;
     void* identity = nullptr;
-    if (!GuardedRead(entity, tg::kEnt_Identity, identity)) return -1;
+    if (!GuardedRead(entity, tg::g_entIdentity, identity)) return -1;
     if (!identity) return -1;
     uint32_t h = 0;
-    if (!SafeRead(identity, tg::kEntIdentity_EHandle, h)) return -1;
-    if (h == 0u || h == 0xFFFFFFFFu) return -1;
-    return static_cast<int>(h & 0x7FFFu);
+    if (!SafeRead(identity, tg::g_entIdentityEHandle, h)) return -1;
+    if (h == 0U || h == 0xFFFFFFFFU) return -1;
+    return static_cast<int>(h & 0x7FFFU);
 }
+
+} // namespace
 
 // entity index of a weapon, for cmd.weaponselect on replay.
 int WeaponEntIndex(void* weapon) { return EntIndexOf(weapon); }
 
 int ActiveWeaponDef(void* ws)
 {
-    if (!ws || !g_pGetSlot) return -1;
+    if (!ws || !g_getSlot) return -1;
     // m_hActiveWeapon is a handle; resolve it by matching its entity
     // index against the pointers GetSlot returns
     uint32_t activeH = 0;
-    if (!SafeRead(ws, tg::kWs_ActiveWeapon, activeH)) return -1;
-    if (activeH == 0u || activeH == 0xFFFFFFFFu) return -1;
-    int activeIdx = static_cast<int>(activeH & 0x7FFFu);
+    if (!SafeRead(ws, tg::g_wsActiveWeapon, activeH)) return -1;
+    if (activeH == 0U || activeH == 0xFFFFFFFFU) return -1;
+    int activeIdx = static_cast<int>(activeH & 0x7FFFU);
     for (int slot = 0; slot <= 4; ++slot)
     {
         // GEAR_SLOT_GRENADES (3) holds every grenade type at once
-        unsigned int maxPos = (slot == 3) ? 8u : 1u;
+        unsigned int maxPos = (slot == 3) ? 8U : 1U;
         for (unsigned int pos = 0; pos < maxPos; ++pos)
         {
-            unsigned int posArg = (slot == 3) ? pos : 0xFFFFFFFFu;
-            void* w = g_pGetSlot(ws, slot, posArg);
+            unsigned int posArg = (slot == 3) ? pos : 0xFFFFFFFFU;
+            void* w = g_getSlot(ws, slot, posArg);
             if (w && EntIndexOf(w) == activeIdx)
             {
                 int def = ReadDefIndex(w);
@@ -306,20 +316,20 @@ int ActiveWeaponDef(void* ws)
 
 void* FindWeaponByDef(void* ws, int def)
 {
-    if (!ws || def < 0 || !g_pGetSlot) return nullptr;
+    if (!ws || def < 0 || !g_getSlot) return nullptr;
     // kKnifeDef means "the bot's own slot-2 knife", whatever skin it is.
-    if (def == kKnifeDef) return g_pGetSlot(ws, 2, 0xFFFFFFFFu);
+    if (def == kKnifeDef) return g_getSlot(ws, 2, 0xFFFFFFFFU);
     // Non-grenade gear slots hold one weapon each
     for (int slot = 0; slot <= 4; ++slot)
     {
         if (slot == 3) continue;
-        void* w = g_pGetSlot(ws, slot, 0xFFFFFFFFu);
+        void* w = g_getSlot(ws, slot, 0xFFFFFFFFU);
         if (w && ReadDefIndex(w) == def) return w;
     }
     // GEAR_SLOT_GRENADES (3) holds every grenade type at once
     for (unsigned int pos = 0; pos < 8; ++pos)
     {
-        void* w = g_pGetSlot(ws, 3, pos);
+        void* w = g_getSlot(ws, 3, pos);
         if (w && ReadDefIndex(w) == def) return w;
     }
     return nullptr;
@@ -335,29 +345,29 @@ bool SelectWeaponRaw(void* ws, void* weapon)
 void* WsForSlot(int slot)
 {
     if (slot < 0 || slot >= 64) return nullptr;
-    std::lock_guard<std::mutex> lk(g_wsToSlotMu);
+    std::scoped_lock lk(g_wsToSlotMu);
     return g_slotToWs[slot];
 }
 
 int SwitchToLockTarget(int slot)
 {
-    if (!g_installed || !g_origSelectItem || !g_pGetSlot) return 3;
+    if (!g_installed || !g_origSelectItem || !g_getSlot) return 3;
     if (slot < 0 || slot >= 64) return 3;
-    if (MotionRecorder::IsReplaying(slot)) return 4;
+    if (motion_recorder::IsReplaying(slot)) return 4;
 
-    LockTarget lt = WeaponLockerState::Get(slot);
+    LockTarget lt = weapon_locker_state::Get(slot);
     if (lt == LockTarget::None) return 3;
     int engineSlot = LockTargetToEngineSlot(lt);
     if (engineSlot < 0) return 3;
 
     void* ws = nullptr;
     {
-        std::lock_guard<std::mutex> lk(g_wsToSlotMu);
+        std::scoped_lock lk(g_wsToSlotMu);
         ws = g_slotToWs[slot];
     }
     if (!ws) return 1; // bot hasn't ticked yet; lock will still take effect once AI runs.
 
-    void* target = g_pGetSlot(ws, engineSlot, 0xFFFFFFFFu);
+    void* target = g_getSlot(ws, engineSlot, 0xFFFFFFFFU);
     if (!target) return 2;
 
     // Route through the original (un-hooked) function so we don't
@@ -365,5 +375,5 @@ int SwitchToLockTarget(int slot)
     g_origSelectItem(ws, target, 0);
     return 0;
 }
-} // namespace WeaponLockerHooks
-} // namespace BotController
+} // namespace weapon_locker_hooks
+} // namespace bot_controller

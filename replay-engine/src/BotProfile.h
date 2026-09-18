@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace BotController {
+namespace bot_controller {
 // Mirror of the fields read from BotProfile. Fixed layout for C-ABI / C#.
 #pragma pack(push, 4)
 struct BotProfileData
@@ -24,9 +24,9 @@ struct BotProfileData
 };
 #pragma pack(pop)
 
-namespace BotProfile {
+namespace bot_profile {
 // Read the profile of the bot currently on this slot. Returns false if
 // the slot has no live bot or the profile pointer is null.
 bool ReadProfile(int slot, BotProfileData& out);
-} // namespace BotProfile
-} // namespace BotController
+} // namespace bot_profile
+} // namespace bot_controller

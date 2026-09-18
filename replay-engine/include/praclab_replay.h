@@ -55,12 +55,36 @@ typedef struct PRL_MovementSnapshot {
 // 一个录制的服务器 tick。
 // pre/post 为 ProcessMovement 前/后快照；numSubtick 指示本 tick 关联的
 // subtick 输入数量（对应并行 SubtickMove 缓冲区中的连续段）。
+// event* 字段承载 tick 级事件（如 drop weapon），对应 BotController v0.6.3
+// 的 ReplayEventFlags / ReplayDropVectorFlags；结构总大小 228 字节。
 typedef struct PRL_ReplayTick {
     PRL_MovementSnapshot pre;     // ProcessMovement 前
     PRL_MovementSnapshot post;    // ProcessMovement 后
     int weaponDefIndex;           // 当前武器（-1 = 无）
     unsigned int numSubtick;      // subtick 数量
+    unsigned int eventFlags;      // PRL_ReplayEventFlags 位掩码
+    int eventWeaponDefIndex;      // 事件时的武器（-1 = 无）
+    unsigned int eventDropVectorFlags; // PRL_ReplayDropVectorFlags 位掩码
+    float eventDropTargetX;       // 丢掷目标位置
+    float eventDropTargetY;
+    float eventDropTargetZ;
+    float eventDropVelocityX;     // 丢掷初速度
+    float eventDropVelocityY;
+    float eventDropVelocityZ;
 } PRL_ReplayTick;
+
+// tick 级回放事件标志（对应 BotController::ReplayEventFlags）。
+typedef enum PRL_ReplayEventFlags {
+    PRL_ReplayEventNone = 0,
+    PRL_ReplayEventDrop = 1,      // 本 tick 含丢掷武器事件
+} PRL_ReplayEventFlags;
+
+// 丢掷事件向量标志（对应 BotController::ReplayDropVectorFlags）。
+typedef enum PRL_ReplayDropVectorFlags {
+    PRL_ReplayDropVectorNone = 0,
+    PRL_ReplayDropVectorTarget = 1,    // eventDropTarget* 有效
+    PRL_ReplayDropVectorVelocity = 2,  // eventDropVelocity* 有效
+} PRL_ReplayDropVectorFlags;
 
 // 一个 subtick 输入步。
 // 对应 CSubtickMoveStep（protobuf），在 tick 内的 [0,1) 时间点触发。
@@ -138,6 +162,22 @@ typedef enum PRL_LockKind {
     PRL_LockKind_Aim = 1,     // 仅 Upkeep（视角锁）
     PRL_LockKind_Weapon = 2,  // 武器锁
 } PRL_LockKind;
+
+// 投射物出生对齐诊断状态（36 字节）。
+// 对应 C++ 侧 bot_controller::projectile_birth_align::Status。
+#pragma pack(push, 4)
+typedef struct PRL_ProjectileBirthAlignStatus {
+    int size;                    // 结构大小（由原生侧回填）
+    int configured;              // 偏移是否已配置（1=是）
+    int pending;                 // 当前待写入的投射物数
+    int queued;                  // 累计入队数
+    int applied;                 // 累计成功写入数
+    int expired;                 // 累计过期数
+    int failed;                  // 累计失败数
+    int initialPositionOffset;   // 当前生效的初始位置偏移
+    int initialVelocityOffset;   // 当前生效的初速度偏移
+} PRL_ProjectileBirthAlignStatus;
+#pragma pack(pop)
 
 // ---- 录制 API ----
 // 所有函数返回 int：1 = 成功，0 = 失败。
@@ -233,9 +273,9 @@ typedef struct PRL_DiagnosticCounters {
 // 读取诊断计数器快照。返回 1 成功，0 失败（指针为空）。
 PRL_API int PRL_GetDiagnosticCounters(PRL_DiagnosticCounters *out);
 
-// ---- 扩展 API（v0.2.1+，对应 BotController v0.6.1 ABI 18）----
+// ---- 扩展 API（v0.2.2+，对应 BotController v0.6.3 ABI 20）----
 
-// ABI 版本号。返回 18。
+// ABI 版本号。返回 20。
 PRL_API int PRL_GetAbiVersion(void);
 
 // 加载扩展回放数据（含命令帧 + 移动额外状态）。返回 1 成功，0 失败。
@@ -261,6 +301,32 @@ PRL_API long long PRL_InjectUsercmd(int slot, unsigned long long buttonMask, int
 PRL_API int PRL_CancelUsercmdInjection(int slot, long long injectionId);
 // 抑制指定 usercmd 按钮一段时长。返回 1 成功，0 失败。
 PRL_API int PRL_SuppressUsercmd(int slot, unsigned long long buttonMask, int durationMs);
+
+// ---- Usercmd movement override（BotController v0.6.3 新增）----
+// 创建持续生效的模拟移动覆盖（前进/左移）。返回 movementId，<0 失败。
+PRL_API long long PRL_StartUsercmdMovement(int slot, float forwardMove, float leftMove);
+// 更新一个持续的模拟移动覆盖。返回 1 成功，0 失败。
+PRL_API int PRL_UpdateUsercmdMovement(int slot, long long movementId, float forwardMove, float leftMove);
+// 取消一个持续的模拟移动覆盖。返回 1 成功，0 失败。
+PRL_API int PRL_CancelUsercmdMovement(int slot, long long movementId);
+
+// ---- Persistent usercmd suppression（BotController v0.6.3 新增）----
+// 创建持续生效的 usercmd 按钮抑制。返回 suppressionId，<0 失败。
+PRL_API long long PRL_StartUsercmdSuppression(int slot, unsigned long long buttonMask);
+// 取消一个持续的按钮抑制。返回 1 成功，0 失败。
+PRL_API int PRL_CancelUsercmdSuppression(int slot, long long suppressionId);
+
+// ---- Projectile birth align（BotController v0.6.3 新增）----
+// 配置投射物出生字段的偏移（由 C# 侧 schema 解析后传入）。返回 0 成功，<0 失败。
+PRL_API int PRL_SetProjectileBirthAlignOffsets(int initialPositionOffset, int initialVelocityOffset);
+// 入队一个投射物的录制出生位置与速度。返回 0 成功，<0 失败。
+PRL_API int PRL_QueueProjectileBirthAlign(unsigned long long entityPtr,
+                                          float posX, float posY, float posZ,
+                                          float velX, float velY, float velZ);
+// 清空待写入的投射物对齐队列。返回清除数量。
+PRL_API int PRL_ClearProjectileBirthAlign(void);
+// 读取投射物对齐诊断状态。返回 0 成功，<0 失败（指针为空）。
+PRL_API int PRL_GetProjectileBirthAlignStatus(PRL_ProjectileBirthAlignStatus *out, int size);
 
 // ---- Buy plan ----
 // 设置 bot 购买计划（空格/逗号分隔的别名列表）。返回 0 成功，-2 slot 非法。

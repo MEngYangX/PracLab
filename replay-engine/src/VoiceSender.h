@@ -5,8 +5,8 @@
 class IVEngineServer2;
 class INetworkMessages;
 
-namespace BotController {
-namespace VoiceSender {
+namespace bot_controller {
+namespace voice_sender {
 // Store engine interfaces used to allocate and send voice messages
 void SetInterfaces(IVEngineServer2* engine, INetworkMessages* networkMessages);
 
@@ -32,5 +32,5 @@ int SendVoiceFrame(int recipientSlot,
                    int packetOffsetCount,
                    int tick,
                    int audibleMask);
-} // namespace VoiceSender
-} // namespace BotController
+} // namespace voice_sender
+} // namespace bot_controller

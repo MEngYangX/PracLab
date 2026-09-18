@@ -63,9 +63,10 @@ public partial class PracLab
     }
 
     /// <summary>
-    /// 一个录制的服务器 tick。对应 C++ 侧 PRL_ReplayTick。
+    /// 一个录制的服务器 tick。对应 C++ 侧 PRL_ReplayTick（BotController v0.6.3，228 字节）。
     /// pre/post 为 ProcessMovement 前/后快照；numSubtick 指示本 tick 关联的
     /// subtick 输入数量（对应并行 SubtickMove 缓冲区中的连续段）。
+    /// v0.6.3 新增 tick 级事件字段（丢掷武器事件），旧录制文件反序列化时默认 0（无事件）。
     /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     private struct ReplayTick
@@ -74,6 +75,15 @@ public partial class PracLab
         public MovementSnapshot Post;    // ProcessMovement 后
         public int WeaponDefIndex;       // 当前武器（-1 = 无）
         public uint NumSubtick;          // subtick 数量
+        public uint EventFlags;          // PRL_ReplayEventFlags 位掩码
+        public int EventWeaponDefIndex;  // 事件时的武器（-1 = 无）
+        public uint EventDropVectorFlags;// PRL_ReplayDropVectorFlags 位掩码
+        public float EventDropTargetX;   // 丢掷目标位置
+        public float EventDropTargetY;
+        public float EventDropTargetZ;
+        public float EventDropVelocityX; // 丢掷初速度
+        public float EventDropVelocityY;
+        public float EventDropVelocityZ;
     }
 
     /// <summary>

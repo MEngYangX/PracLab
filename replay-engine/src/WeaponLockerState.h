@@ -2,14 +2,14 @@
 
 #pragma once
 
-namespace BotController {
+namespace bot_controller {
 // Engine weapon slots
 // Slot1 = primary
 // Slot2 = pistol
 // Slot3 = knife/zeus
 // Slot4 = grenades (he/flash/smoke/molotov/decoy)
 // Slot5 = C4
-enum class LockTarget : int
+enum class LockTarget : int // NOLINT(performance-enum-size)
 {
     None = 0,
     Slot1 = 1,
@@ -19,7 +19,7 @@ enum class LockTarget : int
     Slot5 = 5,
 };
 
-namespace WeaponLockerState {
+namespace weapon_locker_state {
 constexpr int kMaxSlots = 64;
 
 LockTarget Get(int slot);
@@ -29,5 +29,5 @@ void ClearAll();
 
 // Returns count of currently locked slots.
 int CountLocked();
-} // namespace WeaponLockerState
-} // namespace BotController
+} // namespace weapon_locker_state
+} // namespace bot_controller
