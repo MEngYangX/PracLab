@@ -27,7 +27,7 @@ class PracLabReplayEnginePlugin : public ISmmPlugin
     const char* GetDescription() override { return "Record & Replay engine for CS2 bots (based on BotController v0.6.3)."; }
     const char* GetURL() override { return ""; }
     const char* GetLicense() override { return "AGPL-3.0"; }
-    const char* GetVersion() override { return "0.2.2"; }
+    const char* GetVersion() override { return "0.3.1"; }
     const char* GetDate() override { return __DATE__; }
     const char* GetLogTag() override { return "PRL"; }
 };
