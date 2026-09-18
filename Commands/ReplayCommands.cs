@@ -366,7 +366,7 @@ public partial class PracLab
 
     /// <summary>
     /// 以完整路径预加载 PracLabReplayEngine 动态库到进程地址空间。
-    /// 路径计算：Server.GameDirectory + addons/PracLabReplayEngine/bin/{platform}/。
+    /// 路径计算：Server.GameDirectory（mod 目录或游戏根目录，见方法内注释）+ addons/PracLabReplayEngine/bin/{platform}/。
     /// 加载后 P/Invoke 的 [DllImport("PracLabReplayEngine")] 通过 basename 匹配即可找到。
     /// 失败不抛异常，仅打印警告（后续 P/Invoke 探测会给出最终结论）。
     /// </summary>
@@ -385,9 +385,16 @@ public partial class PracLab
             // 诊断：打印 GameDirectory 实际值，便于排查路径问题
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Preload GameDirectory={Server.GameDirectory}");
 
-            string dllPath = Path.Combine(
-                Server.GameDirectory,
-                "addons", "PracLabReplayEngine", "bin", platformDir, dllName);
+            // Server.GameDirectory 因部署/启动方式不同可能指向 mod 目录（…/game/csgo）
+            // 或游戏根目录（…/game），依次探测两种布局（GitHub issue #5）：
+            // 1. {GameDirectory}/addons/PracLabReplayEngine/bin/…（GameDirectory 为 mod 目录）
+            // 2. {GameDirectory}/csgo/addons/PracLabReplayEngine/bin/…（GameDirectory 为游戏根目录）
+            string[] candidates =
+            {
+                Path.Combine(Server.GameDirectory, "addons", "PracLabReplayEngine", "bin", platformDir, dllName),
+                Path.Combine(Server.GameDirectory, "csgo", "addons", "PracLabReplayEngine", "bin", platformDir, dllName),
+            };
+            string dllPath = Array.Find(candidates, File.Exists) ?? candidates[0];
 
             if (!File.Exists(dllPath))
             {
@@ -417,7 +424,7 @@ public partial class PracLab
 
     /// <summary>
     /// 确保录制文件存储目录存在。在 Load 时调用。
-    /// 路径计算：Server.GameDirectory + RecordingsDirRelativePath。
+    /// 路径计算：Server.GameDirectory（mod 目录或游戏根目录，见方法内注释）+ RecordingsDirRelativePath。
     /// </summary>
     private void EnsureRecordingsDir()
     {
@@ -425,7 +432,15 @@ public partial class PracLab
 
         try
         {
-            _recordingsDirPath = Path.Combine(Server.GameDirectory, RecordingsDirRelativePath);
+            // 与 PreloadReplayEngineDll 同理（GitHub issue #5）：GameDirectory 可能为
+            // mod 目录（…/game/csgo）或游戏根目录（…/game），优先使用已存在的目录，
+            // 均不存在时按 mod 目录布局创建，保证读写路径一致。
+            string[] candidates =
+            {
+                Path.Combine(Server.GameDirectory, RecordingsDirRelativePath),
+                Path.Combine(Server.GameDirectory, "csgo", RecordingsDirRelativePath),
+            };
+            _recordingsDirPath = Array.Find(candidates, Directory.Exists) ?? candidates[0];
             Directory.CreateDirectory(_recordingsDirPath);
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay recordings dir: {_recordingsDirPath}");
         }
