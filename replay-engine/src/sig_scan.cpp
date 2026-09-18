@@ -1,32 +1,42 @@
 // Cross-platform sig scanning + gamedata.json loader
 
 #include "sig_scan.h"
+#include <ios>
+#include <vector>
+#include <cstdint>
 #include "ccsbot_slot.h"
+#include "nlohmann/json.hpp"
 
-#if defined(_WIN32)
-#include <Windows.h>
+#ifdef _WIN32
+#include <Windows.h> // NOLINT(misc-include-cleaner)
+#include <libloaderapi.h>
+#include <memoryapi.h>
+#include <minwindef.h>
+#include <processthreadsapi.h>
 #include <psapi.h>
+#include <winnt.h>
 #else
+#include <algorithm>
 #include <dlfcn.h>
 #include <link.h>
 #include <strings.h>
 #endif
 
-#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <string>
 
-namespace BotController::Sig {
+namespace bot_controller::sig {
 namespace {
 const char* BaseName(const char* path)
 {
     if (!path) return "";
     const char* slash = std::strrchr(path, '/');
     const char* backslash = std::strrchr(path, '\\');
-    const char* base = slash && backslash ? std::max(slash, backslash) : (slash ? slash : backslash);
+    const char* base = slash;
+    if (backslash && (!base || backslash > base)) base = backslash;
     return base ? base + 1 : path;
 }
 
@@ -38,7 +48,7 @@ void SetError(char* out, size_t outLen, const char* fmt, const char* a, const ch
         std::snprintf(out, outLen, fmt, a);
 }
 
-#if defined(_WIN32)
+#ifdef _WIN32
 ModuleInfo ModuleFromHandle(HMODULE handle)
 {
     ModuleInfo out;
@@ -47,9 +57,9 @@ ModuleInfo ModuleFromHandle(HMODULE handle)
     MODULEINFO mi{};
     if (!GetModuleInformation(GetCurrentProcess(), handle, &mi, sizeof(mi))) return out;
 
-    out.Base = static_cast<unsigned char*>(mi.lpBaseOfDll);
-    out.Size = static_cast<size_t>(mi.SizeOfImage);
-    out.Segments.push_back({ out.Base, out.Size });
+    out.base = static_cast<unsigned char*>(mi.lpBaseOfDll);
+    out.size = static_cast<size_t>(mi.SizeOfImage);
+    out.segments.push_back({ .base = out.base, .size = out.size });
     return out;
 }
 #else
@@ -65,7 +75,7 @@ void FillModuleFromPhdr(dl_phdr_info* info, ModuleInfo& out)
 {
     uintptr_t minAddr = UINTPTR_MAX;
     uintptr_t maxAddr = 0;
-    out.Segments.clear();
+    out.segments.clear();
 
     for (int i = 0; i < info->dlpi_phnum; ++i)
     {
@@ -74,7 +84,7 @@ void FillModuleFromPhdr(dl_phdr_info* info, ModuleInfo& out)
 
         auto* segBase = reinterpret_cast<unsigned char*>(info->dlpi_addr + ph.p_vaddr);
         size_t segSize = static_cast<size_t>(ph.p_memsz);
-        out.Segments.push_back({ segBase, segSize });
+        out.segments.push_back({ segBase, segSize });
 
         uintptr_t start = reinterpret_cast<uintptr_t>(segBase);
         uintptr_t end = start + segSize;
@@ -84,8 +94,8 @@ void FillModuleFromPhdr(dl_phdr_info* info, ModuleInfo& out)
 
     if (minAddr != UINTPTR_MAX && maxAddr > minAddr)
     {
-        out.Base = reinterpret_cast<unsigned char*>(minAddr);
-        out.Size = static_cast<size_t>(maxAddr - minAddr);
+        out.base = reinterpret_cast<unsigned char*>(minAddr);
+        out.size = static_cast<size_t>(maxAddr - minAddr);
     }
 }
 
@@ -148,7 +158,7 @@ bool LoadGamedata(const char* path, nlohmann::json& out)
 
 const char* PlatformName()
 {
-#if defined(_WIN32)
+#ifdef _WIN32
     return "windows";
 #else
     return "linux";
@@ -199,7 +209,7 @@ bool ParseSigString(const std::string& sigStr, std::vector<uint8_t>& outBytes, s
             continue;
         }
         char* end = nullptr;
-        unsigned long v = std::strtoul(p, &end, 16);
+        const auto v = std::strtoul(p, &end, 16);
         if (end == p || end - p > 2 || v > 0xFF) return false;
         outBytes.push_back(static_cast<uint8_t>(v));
         outWild.push_back(false);
@@ -213,22 +223,22 @@ void* FindPatternIn(const ModuleInfo& module, const std::vector<uint8_t>& patter
     if (!module || pattern.empty() || pattern.size() != wild.size()) return nullptr;
 
     const size_t plen = pattern.size();
-    for (const ModuleSegment& segment : module.Segments)
+    for (const ModuleSegment& segment : module.segments)
     {
-        if (!segment.Base || segment.Size < plen) continue;
+        if (!segment.base || segment.size < plen) continue;
 
-        for (size_t i = 0; i + plen <= segment.Size; ++i)
+        for (size_t i = 0; i + plen <= segment.size; ++i)
         {
             bool match = true;
             for (size_t j = 0; j < plen; ++j)
             {
-                if (!wild[j] && segment.Base[i + j] != pattern[j])
+                if (!wild[j] && segment.base[i + j] != pattern[j])
                 {
                     match = false;
                     break;
                 }
             }
-            if (match) return segment.Base + i;
+            if (match) return segment.base + i;
         }
     }
     return nullptr;
@@ -236,7 +246,7 @@ void* FindPatternIn(const ModuleInfo& module, const std::vector<uint8_t>& patter
 
 ModuleInfo ModuleFromName(const char* moduleName)
 {
-#if defined(_WIN32)
+#ifdef _WIN32
     return ModuleFromHandle(GetModuleHandleA(moduleName));
 #else
     FindByNameCtx ctx{};
@@ -252,7 +262,7 @@ ModuleInfo ModuleFromInterfacePtr(void* interfacePtr)
     void* vtable = nullptr;
     if (!GuardedRead(interfacePtr, 0, vtable) || !vtable) return {};
 
-#if defined(_WIN32)
+#ifdef _WIN32
     MEMORY_BASIC_INFORMATION mbi{};
     if (!VirtualQuery(vtable, &mbi, sizeof(mbi))) return {};
     if (mbi.Type != MEM_IMAGE) return {};
@@ -288,4 +298,4 @@ void* ResolveSig(const nlohmann::json& gamedata, const ModuleInfo& module, const
     }
     return addr;
 }
-} // namespace BotController::Sig
+} // namespace bot_controller::sig

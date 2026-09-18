@@ -4,29 +4,35 @@
 
 #include <array>
 #include <mutex>
+#include <vector>
+#include <string>
 
-namespace BotController {
-namespace BuyControllerState {
+namespace bot_controller {
+namespace buy_controller_state {
+
+namespace {
 struct Entry
 {
     bool present = false;
     BuyPlan plan;
 };
 
-static std::array<Entry, kMaxSlots> g_plans{};
-static std::mutex g_mu;
+std::array<Entry, kMaxSlots> g_plans{};
+std::mutex g_mu;
+
+} // namespace
 
 bool HasPlan(int slot)
 {
     if (slot < 0 || slot >= kMaxSlots) return false;
-    std::lock_guard<std::mutex> lk(g_mu);
+    std::scoped_lock lk(g_mu);
     return g_plans[slot].present;
 }
 
 void Set(int slot, const std::vector<std::string>& items, bool skip)
 {
     if (slot < 0 || slot >= kMaxSlots) return;
-    std::lock_guard<std::mutex> lk(g_mu);
+    std::scoped_lock lk(g_mu);
     g_plans[slot].present = true;
     g_plans[slot].plan.skip = skip;
     g_plans[slot].plan.items = items;
@@ -35,7 +41,7 @@ void Set(int slot, const std::vector<std::string>& items, bool skip)
 bool Copy(int slot, BuyPlan& out)
 {
     if (slot < 0 || slot >= kMaxSlots) return false;
-    std::lock_guard<std::mutex> lk(g_mu);
+    std::scoped_lock lk(g_mu);
     if (!g_plans[slot].present) return false;
     out = g_plans[slot].plan;
     return true;
@@ -44,13 +50,13 @@ bool Copy(int slot, BuyPlan& out)
 void Clear(int slot)
 {
     if (slot < 0 || slot >= kMaxSlots) return;
-    std::lock_guard<std::mutex> lk(g_mu);
+    std::scoped_lock lk(g_mu);
     g_plans[slot] = Entry{};
 }
 
 void ClearAll()
 {
-    std::lock_guard<std::mutex> lk(g_mu);
+    std::scoped_lock lk(g_mu);
     for (auto& e : g_plans)
         e = Entry{};
 }
@@ -58,18 +64,18 @@ void ClearAll()
 int ItemCount(int slot)
 {
     if (slot < 0 || slot >= kMaxSlots) return -1;
-    std::lock_guard<std::mutex> lk(g_mu);
+    std::scoped_lock lk(g_mu);
     if (!g_plans[slot].present) return -1;
     return static_cast<int>(g_plans[slot].plan.items.size());
 }
 
 int CountPlans()
 {
-    std::lock_guard<std::mutex> lk(g_mu);
+    std::scoped_lock lk(g_mu);
     int n = 0;
     for (auto& e : g_plans)
         if (e.present) ++n;
     return n;
 }
-} // namespace BuyControllerState
-} // namespace BotController
+} // namespace buy_controller_state
+} // namespace bot_controller

@@ -1,18 +1,22 @@
 // Cross-platform self-module path
 
 #include "platform.h"
+#include <string>
 
-#if defined(_WIN32)
-#include <Windows.h>
+#ifdef _WIN32
+#include <Windows.h> // NOLINT(misc-include-cleaner)
+#include <libloaderapi.h>
+#include <minwindef.h>
+#include <winnt.h>
 #else
 #include <dlfcn.h>
 #endif
 
-namespace BotController {
+namespace bot_controller {
 // Resolve the on-disk path of the module containing this function
 std::string SelfModulePath()
 {
-#if defined(_WIN32)
+#ifdef _WIN32
     HMODULE mod = nullptr;
     if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                             reinterpret_cast<LPCSTR>(&SelfModulePath), &mod))
@@ -26,4 +30,4 @@ std::string SelfModulePath()
     return std::string(info.dli_fname);
 #endif
 }
-} // namespace BotController
+} // namespace bot_controller

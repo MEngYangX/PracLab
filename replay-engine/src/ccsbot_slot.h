@@ -7,7 +7,7 @@
 #include <cstring>
 #include <type_traits>
 
-namespace BotController {
+namespace bot_controller {
 struct PawnControllerHandles
 {
     uint32_t controllerHandle;
@@ -57,7 +57,7 @@ template <typename T> bool SafeRead(const void* base, int offset, T& out)
     static_assert(std::is_trivially_copyable_v<T>);
     alignas(T) std::byte value[sizeof(T)]{};
     if (!TryReadMemory(base, offset, value, sizeof(T))) return false;
-    std::memcpy(&out, value, sizeof(T));
+    std::memcpy(static_cast<void*>(&out), static_cast<const void*>(value), sizeof(T));
     return true;
 }
 
@@ -67,7 +67,7 @@ template <typename T> bool GuardedRead(const void* base, int offset, T& out)
     static_assert(std::is_trivially_copyable_v<T>);
     alignas(T) std::byte value[sizeof(T)]{};
     if (!TryReadMemoryGuarded(base, offset, value, sizeof(T))) return false;
-    std::memcpy(&out, value, sizeof(T));
+    std::memcpy(static_cast<void*>(&out), static_cast<const void*>(value), sizeof(T));
     return true;
 }
 
@@ -85,4 +85,4 @@ PawnControllerHandles ReadPawnControllerHandles(void* pawn);
 
 // CCSPlayerController* (PhysicsSimulate arg0) -> slot via its own ehandle.
 int ControllerToSlot(void* controller);
-} // namespace BotController
+} // namespace bot_controller

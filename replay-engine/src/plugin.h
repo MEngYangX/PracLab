@@ -1,6 +1,6 @@
 // PracLabReplayEngine Metamod:Source plugin entry point.
 //
-// Wraps the BotController v0.6.1 record/replay engine under the
+// Wraps the BotController v0.6.3 record/replay engine under the
 // PracLab::ReplayEngine namespace and exposes PRL_* C-ABI exports for
 // the CounterStrikeSharp managed plugin to P/Invoke.
 
@@ -24,10 +24,10 @@ class PracLabReplayEnginePlugin : public ISmmPlugin
 
     const char* GetAuthor() override { return "PracLab"; }
     const char* GetName() override { return "PracLabReplayEngine"; }
-    const char* GetDescription() override { return "Record & Replay engine for CS2 bots (based on BotController v0.6.1)."; }
+    const char* GetDescription() override { return "Record & Replay engine for CS2 bots (based on BotController v0.6.3)."; }
     const char* GetURL() override { return ""; }
     const char* GetLicense() override { return "AGPL-3.0"; }
-    const char* GetVersion() override { return "0.2.1"; }
+    const char* GetVersion() override { return "0.2.2"; }
     const char* GetDate() override { return __DATE__; }
     const char* GetLogTag() override { return "PRL"; }
 };

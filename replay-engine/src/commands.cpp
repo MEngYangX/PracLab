@@ -2,14 +2,14 @@
 
 #include "commands.h"
 #include "dispatch.h"
-#include "WeaponLocker.h"
-#include "BotController.h"
-#include "InputInjector.h"
+#include "WeaponLocker.h" // NOLINT(misc-include-cleaner)
+#include "BotController.h" // NOLINT(misc-include-cleaner)
+#include "InputInjector.h" // NOLINT(misc-include-cleaner)
 #include "WeaponLockerState.h"
-#include "BotControllerState.h"
-#include "MotionRecorder.h"
-#include "BuyControllerState.h"
-#include "BuyController.h"
+#include "BotControllerState.h" // NOLINT(misc-include-cleaner)
+#include "MotionRecorder.h" // NOLINT(misc-include-cleaner)
+#include "BuyControllerState.h" // NOLINT(misc-include-cleaner)
+#include "BuyController.h" // NOLINT(misc-include-cleaner)
 #include "BotProfile.h"
 
 #include <tier0/dbg.h>
@@ -21,13 +21,15 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <vector> // NOLINT(misc-include-cleaner)
+#include <string> // NOLINT(misc-include-cleaner)
 
-namespace BotController {
-namespace Commands {
-IVEngineServer2* g_pEngine = nullptr;
+namespace bot_controller {
+namespace commands {
+IVEngineServer2* g_engine = nullptr;
 
 // ClientPrintf to the calling player, or server log if from console.
-void PrintToCaller(const CCommandContext& context, const char* fmt, ...)
+void PrintToCaller(const CCommandContext& context, const char* fmt, ...) // NOLINT(modernize-avoid-variadic-functions)
 {
     char buf[1024];
     va_list args;
@@ -36,13 +38,15 @@ void PrintToCaller(const CCommandContext& context, const char* fmt, ...)
     va_end(args);
 
     const CPlayerSlot slot = context.GetPlayerSlot();
-    if (g_pEngine && slot.IsValid()) g_pEngine->ClientPrintf(slot, buf);
+    if (g_engine && slot.IsValid()) g_engine->ClientPrintf(slot, buf);
     else
         Msg("%s", buf);
 }
 
+namespace {
+
 // Parse kind string into LockKind.
-static bool ParseKind(const char* s, LockKind& out)
+bool ParseKind(const char* s, LockKind& out)
 {
     if (!s) return false;
     if (std::strcmp(s, "all") == 0)
@@ -64,7 +68,7 @@ static bool ParseKind(const char* s, LockKind& out)
 }
 
 // Parse "slotN" into LockTarget.
-static LockTarget ParseTarget(const char* s)
+LockTarget ParseTarget(const char* s)
 {
     if (!s) return LockTarget::None;
     if (std::strcmp(s, "slot1") == 0) return LockTarget::Slot1;
@@ -75,7 +79,7 @@ static LockTarget ParseTarget(const char* s)
     return LockTarget::None;
 }
 
-static const char* TargetName(LockTarget t)
+const char* TargetName(LockTarget t)
 {
     switch (t)
     {
@@ -94,7 +98,7 @@ static const char* TargetName(LockTarget t)
     }
 }
 
-static const char* KindName(LockKind k)
+const char* KindName(LockKind k)
 {
     switch (k)
     {
@@ -107,221 +111,171 @@ static const char* KindName(LockKind k)
     }
     return "?";
 }
-} // namespace Commands
-} // namespace BotController
+} // namespace
+} // namespace commands
+} // namespace bot_controller
 
-CON_COMMAND_F(bc_lock,
+namespace {
+
+namespace commands = bot_controller::commands;
+namespace dispatch = bot_controller::dispatch;
+namespace bot_controller_state = bot_controller::bot_controller_state;
+namespace bot_profile = bot_controller::bot_profile;
+namespace buy_controller_hooks = bot_controller::buy_controller_hooks;
+namespace buy_controller_state = bot_controller::buy_controller_state;
+namespace bot_controller_hooks = bot_controller::bot_controller_hooks;
+namespace input_injector = bot_controller::input_injector;
+namespace motion_recorder = bot_controller::motion_recorder;
+namespace weapon_locker_hooks = bot_controller::weapon_locker_hooks;
+namespace weapon_locker_state = bot_controller::weapon_locker_state;
+using bot_controller::BotProfileData;
+using bot_controller::LockKind;
+using bot_controller::LockTarget;
+
+CON_COMMAND_F(bc_lock, // NOLINT(bugprone-throwing-static-initialization)
               "bc_lock <all|aim|weapon> <slot> [slot1..slot5]  "
               "Lock a bot. weapon mode requires the weapon slot.",
               FCVAR_NONE)
 {
-    using namespace BotController;
-
     if (args.ArgC() < 3)
     {
-        Commands::PrintToCaller(context, "usage: bc_lock <all|aim|weapon> <slot> [slot1..slot5]\n");
+        commands::PrintToCaller(context, "usage: bc_lock <all|aim|weapon> <slot> [slot1..slot5]\n");
         return;
     }
 
     LockKind kind;
-    if (!Commands::ParseKind(args.Arg(1), kind))
+    if (!commands::ParseKind(args.Arg(1), kind))
     {
-        Commands::PrintToCaller(context, "[BC] error: kind must be all|aim|weapon\n");
+        commands::PrintToCaller(context, "[BC] error: kind must be all|aim|weapon\n");
         return;
     }
 
-    const int slot = std::atoi(args.Arg(2));
+    const int slot = std::atoi(args.Arg(2)); // NOLINT(bugprone-unchecked-string-to-number-conversion)
     int arg = 0;
 
-    if (kind == LockKind::Weapon)
+    if (kind == LockKind::Weapon) // NOLINT(bugprone-branch-clone)
     {
         if (args.ArgC() < 4)
         {
-            Commands::PrintToCaller(context, "usage: bc_lock weapon <slot> <slot1..slot5>\n");
+            commands::PrintToCaller(context, "usage: bc_lock weapon <slot> <slot1..slot5>\n");
             return;
         }
-        const auto tgt = Commands::ParseTarget(args.Arg(3));
+        const auto tgt = commands::ParseTarget(args.Arg(3));
         if (tgt == LockTarget::None)
         {
-            Commands::PrintToCaller(context, "[BC] error: weapon target must be slot1..slot5\n");
+            commands::PrintToCaller(context, "[BC] error: weapon target must be slot1..slot5\n");
             return;
         }
         arg = static_cast<int>(tgt);
     }
 
-    int rc = Dispatch::Lock(slot, kind, arg);
-    if (rc == 0)
+    int rc = dispatch::Lock(slot, kind, arg);
+    if (rc == 0) // NOLINT(bugprone-branch-clone)
     {
         if (kind == LockKind::Weapon)
-            Commands::PrintToCaller(context, "[BC] locked slot %d weapon -> %s\n", slot,
-                                    Commands::TargetName(static_cast<LockTarget>(arg)));
+            commands::PrintToCaller(context, "[BC] locked slot %d weapon -> %s\n", slot,
+                                    commands::TargetName(static_cast<LockTarget>(arg)));
         else
-            Commands::PrintToCaller(context, "[BC] locked slot %d (%s)\n", slot, Commands::KindName(kind));
+            commands::PrintToCaller(context, "[BC] locked slot %d (%s)\n", slot, commands::KindName(kind));
     }
     else
     {
-        Commands::PrintToCaller(context, "[BC] error: lock failed (rc=%d)\n", rc);
+        commands::PrintToCaller(context, "[BC] error: lock failed (rc=%d)\n", rc);
     }
 }
 
-CON_COMMAND_F(bc_unlock, "bc_unlock <all|aim|weapon> <slot>  Release one lock on a bot.", FCVAR_NONE)
+CON_COMMAND_F(bc_unlock, // NOLINT(bugprone-throwing-static-initialization)
+              "bc_unlock <all|aim|weapon> <slot>  Release one lock on a bot.",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-
     if (args.ArgC() < 3)
     {
-        Commands::PrintToCaller(context, "usage: bc_unlock <all|aim|weapon> <slot>\n");
+        commands::PrintToCaller(context, "usage: bc_unlock <all|aim|weapon> <slot>\n");
         return;
     }
 
     LockKind kind;
-    if (!Commands::ParseKind(args.Arg(1), kind))
+    if (!commands::ParseKind(args.Arg(1), kind))
     {
-        Commands::PrintToCaller(context, "[BC] error: kind must be all|aim|weapon\n");
+        commands::PrintToCaller(context, "[BC] error: kind must be all|aim|weapon\n");
         return;
     }
 
-    const int slot = std::atoi(args.Arg(2));
-    int rc = Dispatch::Unlock(slot, kind);
-    if (rc == 0) Commands::PrintToCaller(context, "[BC] unlocked slot %d (%s)\n", slot, Commands::KindName(kind));
+    const int slot = std::atoi(args.Arg(2)); // NOLINT(bugprone-unchecked-string-to-number-conversion)
+    int rc = dispatch::Unlock(slot, kind);
+    if (rc == 0) commands::PrintToCaller(context, "[BC] unlocked slot %d (%s)\n", slot, commands::KindName(kind));
     else
-        Commands::PrintToCaller(context, "[BC] error: unlock failed (rc=%d)\n", rc);
+        commands::PrintToCaller(context, "[BC] error: unlock failed (rc=%d)\n", rc);
 }
 
-CON_COMMAND_F(bc_unlock_all, "bc_unlock_all <all|aim|weapon>  Release every lock of that kind.", FCVAR_NONE)
+CON_COMMAND_F(bc_unlock_all, // NOLINT(bugprone-throwing-static-initialization)
+              "bc_unlock_all <all|aim|weapon>  Release every lock of that kind.",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-
     if (args.ArgC() < 2)
     {
-        Commands::PrintToCaller(context, "usage: bc_unlock_all <all|aim|weapon>\n");
+        commands::PrintToCaller(context, "usage: bc_unlock_all <all|aim|weapon>\n");
         return;
     }
 
     LockKind kind;
-    if (!Commands::ParseKind(args.Arg(1), kind))
+    if (!commands::ParseKind(args.Arg(1), kind))
     {
-        Commands::PrintToCaller(context, "[BC] error: kind must be all|aim|weapon\n");
+        commands::PrintToCaller(context, "[BC] error: kind must be all|aim|weapon\n");
         return;
     }
 
-    int rc = Dispatch::UnlockAll(kind);
-    if (rc == 0) Commands::PrintToCaller(context, "[BC] unlocked all (%s)\n", Commands::KindName(kind));
+    int rc = dispatch::UnlockAll(kind);
+    if (rc == 0) commands::PrintToCaller(context, "[BC] unlocked all (%s)\n", commands::KindName(kind));
     else
-        Commands::PrintToCaller(context, "[BC] error: unlock_all failed (rc=%d)\n", rc);
+        commands::PrintToCaller(context, "[BC] error: unlock_all failed (rc=%d)\n", rc);
 }
 
-CON_COMMAND_F(bc_status, "bc_status  Print hook status and every per-slot lock.", FCVAR_NONE)
+CON_COMMAND_F(bc_status, // NOLINT(bugprone-throwing-static-initialization,misc-unused-parameters)
+              "bc_status  Print a concise BotController status summary.",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-
-    // Hooks
-    Commands::PrintToCaller(context, "[BC] weapon hooks: %s | EquipBest=%p EquipPistol=%p SelectItem=%p GetSlot=%p\n",
-                            WeaponLockerHooks::Status(), WeaponLockerHooks::EquipBestWeaponAddress(),
-                            WeaponLockerHooks::EquipPistolAddress(), WeaponLockerHooks::SelectItemAddress(),
-                            WeaponLockerHooks::GetSlotAddress());
-
-    Commands::PrintToCaller(context, "[BC] bot hooks:    %s | Update=%p Upkeep=%p\n", BotControllerHooks::Status(),
-                            BotControllerHooks::UpdateAddress(), BotControllerHooks::UpkeepAddress());
-
-    Commands::PrintToCaller(context, "[BC] input inject: %s | ProcessUsercmd=%p\n", InputInjector::Status(),
-                            InputInjector::ProcessUsercmdAddress());
-
-    Commands::PrintToCaller(context, "[BC] process movement hook fired: %llu times | last slot=%d\n",
-                            (unsigned long long)InputInjector::HookCallCount(), InputInjector::LastResolvedSlot());
-
-    Commands::PrintToCaller(context, "[BC] movement detail: finish=%llu runCmd=%llu physics=%llu lastPhysicsSlot=%d commits=%llu\n",
-                            (unsigned long long)InputInjector::FinishMoveCallCount(),
-                            (unsigned long long)InputInjector::PlayerRunCommandCallCount(),
-                            (unsigned long long)InputInjector::PhysicsSimulateCallCount(), InputInjector::LastPhysicsSlot(),
-                            (unsigned long long)InputInjector::ReplayCommitCount());
-
-    Commands::PrintToCaller(
-        context,
-        "[BC] slot resolve: calls=%llu failures=%llu last services=%p pawn=%p ownerSlot=%d ctrl=0x%08X idx=%d orig=0x%08X idx=%d\n",
-        (unsigned long long)InputInjector::SlotResolveCallCount(), (unsigned long long)InputInjector::SlotResolveFailureCount(),
-        reinterpret_cast<void*>(InputInjector::LastServices()), reinterpret_cast<void*>(InputInjector::LastPawn()),
-        InputInjector::LastOwnerSlot(), InputInjector::LastControllerHandle(), InputInjector::LastControllerIndex(),
-        InputInjector::LastOriginalControllerHandle(), InputInjector::LastOriginalControllerIndex());
+    commands::PrintToCaller(context, "[BC] hooks: weapon=%s bot=%s input=%s drop=%s buy=%s\n", weapon_locker_hooks::Status(),
+                            bot_controller_hooks::Status(), input_injector::Status(), motion_recorder::DropHookReady() ? "ok" : "failed",
+                            buy_controller_hooks::Status());
 
     bool printedReplayHeader = false;
-    for (int s = 0; s < MotionRecorder::kMaxSlots; ++s)
+    for (int s = 0; s < motion_recorder::kMaxSlots; ++s)
     {
-        int cursor = MotionRecorder::ReplayCursor(s);
-        int total = MotionRecorder::ReplayTotal(s);
+        int cursor = motion_recorder::ReplayCursor(s);
+        int total = motion_recorder::ReplayTotal(s);
         if (cursor >= 0 || total > 0)
         {
             if (!printedReplayHeader)
             {
-                Commands::PrintToCaller(context, "[BC] replay slots:\n");
+                commands::PrintToCaller(context, "[BC] replay slots:\n");
                 printedReplayHeader = true;
             }
-            Commands::PrintToCaller(context, "[BC]   replay slot %2d cursor=%d total=%d\n", s, cursor, total);
+            commands::PrintToCaller(context, "[BC]   replay slot %2d cursor=%d total=%d\n", s, cursor, total);
         }
     }
+    if (!printedReplayHeader) commands::PrintToCaller(context, "[BC] replay: none\n");
 
-    // All lock
-    int nAll = BotControllerState::CountAll();
-    Commands::PrintToCaller(context, "[BC] all-locked count:    %d\n", nAll);
-    if (nAll > 0)
-    {
-        for (int s = 0; s < BotControllerState::kMaxSlots; ++s)
-            if (BotControllerState::GetAll(s)) Commands::PrintToCaller(context, "[BC]   all   slot %2d\n", s);
-    }
-
-    // Aim lock
-    int nAim = BotControllerState::CountAim();
-    Commands::PrintToCaller(context, "[BC] aim-locked count:    %d\n", nAim);
-    if (nAim > 0)
-    {
-        for (int s = 0; s < BotControllerState::kMaxSlots; ++s)
-            if (BotControllerState::GetAim(s)) Commands::PrintToCaller(context, "[BC]   aim   slot %2d\n", s);
-    }
-
-    // Weapon lock
-    int nWp = WeaponLockerState::CountLocked();
-    Commands::PrintToCaller(context, "[BC] weapon-locked count: %d\n", nWp);
-    if (nWp > 0)
-    {
-        for (int s = 0; s < WeaponLockerState::kMaxSlots; ++s)
-        {
-            auto t = WeaponLockerState::Get(s);
-            if (t != LockTarget::None) Commands::PrintToCaller(context, "[BC]   weapon slot %2d -> %s\n", s, Commands::TargetName(t));
-        }
-    }
-
-    // Buy plans
-    Commands::PrintToCaller(context, "[BC] buy hooks:       %s | OnUpdate=%p\n", BuyControllerHooks::Status(),
-                            BuyControllerHooks::OnUpdateAddress());
-    int nBuy = BuyControllerState::CountPlans();
-    Commands::PrintToCaller(context, "[BC] buy-plan count:      %d\n", nBuy);
-    if (nBuy > 0)
-    {
-        for (int s = 0; s < BuyControllerState::kMaxSlots; ++s)
-        {
-            BuyPlan plan;
-            if (!BuyControllerState::Copy(s, plan)) continue;
-            if (plan.skip) Commands::PrintToCaller(context, "[BC]   buy slot %2d -> skip\n", s);
-            else
-                Commands::PrintToCaller(context, "[BC]   buy slot %2d -> %d items\n", s, static_cast<int>(plan.items.size()));
-        }
-    }
+    commands::PrintToCaller(context, "[BC] state: locks(all=%d aim=%d weapon=%d) buyPlans=%d\n", bot_controller_state::CountAll(),
+                            bot_controller_state::CountAim(), weapon_locker_state::CountLocked(), buy_controller_state::CountPlans());
+    commands::PrintToCaller(context, "[BC] drop: captured=%llu attempts=%llu commands=%llu\n", motion_recorder::DropCaptureCount(),
+                            motion_recorder::DropReplayAttemptCount(), motion_recorder::DropReplayNativeCallCount());
 }
 
-CON_COMMAND_F(bc_buy, "bc_buy <slot> <alias> [alias...]  Force a bot's buy plan for each round.", FCVAR_NONE)
+CON_COMMAND_F(bc_buy, // NOLINT(bugprone-throwing-static-initialization)
+              "bc_buy <slot> <alias> [alias...]  Force a bot's buy plan for each round.",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-
     if (args.ArgC() < 3)
     {
-        Commands::PrintToCaller(context, "usage: bc_buy <slot> <alias> [alias...]\n");
+        commands::PrintToCaller(context, "usage: bc_buy <slot> <alias> [alias...]\n");
         return;
     }
 
-    const int slot = std::atoi(args.Arg(1));
-    if (slot < 0 || slot >= BuyControllerState::kMaxSlots)
+    const int slot = std::atoi(args.Arg(1)); // NOLINT(bugprone-unchecked-string-to-number-conversion)
+    if (slot < 0 || slot >= buy_controller_state::kMaxSlots)
     {
-        Commands::PrintToCaller(context, "[BC] error: slot out of range\n");
+        commands::PrintToCaller(context, "[BC] error: slot out of range\n");
         return;
     }
 
@@ -329,88 +283,91 @@ CON_COMMAND_F(bc_buy, "bc_buy <slot> <alias> [alias...]  Force a bot's buy plan 
     for (int i = 2; i < args.ArgC(); ++i)
         items.emplace_back(args.Arg(i));
 
-    BuyControllerState::Set(slot, items, false);
-    Commands::PrintToCaller(context, "[BC] buy plan set slot %d (%d items)\n", slot, static_cast<int>(items.size()));
+    buy_controller_state::Set(slot, items, false);
+    commands::PrintToCaller(context, "[BC] buy plan set slot %d (%d items)\n", slot, static_cast<int>(items.size()));
 }
 
-CON_COMMAND_F(bc_buy_skip, "bc_buy_skip <slot>  Force a bot to buy nothing each round.", FCVAR_NONE)
+CON_COMMAND_F(bc_buy_skip, // NOLINT(bugprone-throwing-static-initialization)
+              "bc_buy_skip <slot>  Force a bot to buy nothing each round.",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-
     if (args.ArgC() < 2)
     {
-        Commands::PrintToCaller(context, "usage: bc_buy_skip <slot>\n");
+        commands::PrintToCaller(context, "usage: bc_buy_skip <slot>\n");
         return;
     }
 
-    const int slot = std::atoi(args.Arg(1));
-    if (slot < 0 || slot >= BuyControllerState::kMaxSlots)
+    const int slot = std::atoi(args.Arg(1)); // NOLINT(bugprone-unchecked-string-to-number-conversion)
+    if (slot < 0 || slot >= buy_controller_state::kMaxSlots)
     {
-        Commands::PrintToCaller(context, "[BC] error: slot out of range\n");
+        commands::PrintToCaller(context, "[BC] error: slot out of range\n");
         return;
     }
 
-    BuyControllerState::Set(slot, {}, true);
-    Commands::PrintToCaller(context, "[BC] buy plan set slot %d -> skip\n", slot);
+    buy_controller_state::Set(slot, {}, true);
+    commands::PrintToCaller(context, "[BC] buy plan set slot %d -> skip\n", slot);
 }
 
-CON_COMMAND_F(bc_unbuy, "bc_unbuy <slot>  Remove a bot's buy plan (back to vanilla).", FCVAR_NONE)
+CON_COMMAND_F(bc_unbuy, // NOLINT(bugprone-throwing-static-initialization)
+              "bc_unbuy <slot>  Remove a bot's buy plan (back to vanilla).",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-
     if (args.ArgC() < 2)
     {
-        Commands::PrintToCaller(context, "usage: bc_unbuy <slot>\n");
+        commands::PrintToCaller(context, "usage: bc_unbuy <slot>\n");
         return;
     }
 
-    const int slot = std::atoi(args.Arg(1));
-    if (slot < 0 || slot >= BuyControllerState::kMaxSlots)
+    const int slot = std::atoi(args.Arg(1)); // NOLINT(bugprone-unchecked-string-to-number-conversion)
+    if (slot < 0 || slot >= buy_controller_state::kMaxSlots)
     {
-        Commands::PrintToCaller(context, "[BC] error: slot out of range\n");
+        commands::PrintToCaller(context, "[BC] error: slot out of range\n");
         return;
     }
 
-    BuyControllerState::Clear(slot);
-    Commands::PrintToCaller(context, "[BC] buy plan cleared slot %d\n", slot);
+    buy_controller_state::Clear(slot);
+    commands::PrintToCaller(context, "[BC] buy plan cleared slot %d\n", slot);
 }
 
-CON_COMMAND_F(bc_unbuy_all, "bc_unbuy_all  Remove every bot buy plan.", FCVAR_NONE)
+CON_COMMAND_F(bc_unbuy_all, // NOLINT(bugprone-throwing-static-initialization,misc-unused-parameters)
+              "bc_unbuy_all  Remove every bot buy plan.",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-    BuyControllerState::ClearAll();
-    Commands::PrintToCaller(context, "[BC] all buy plans cleared\n");
+    buy_controller_state::ClearAll();
+    commands::PrintToCaller(context, "[BC] all buy plans cleared\n");
 }
 
-CON_COMMAND_F(bc_profile, "bc_profile <slot>  Print a bot's BotProfile (skill/aim/weapon prefs).", FCVAR_NONE)
+CON_COMMAND_F(bc_profile, // NOLINT(bugprone-throwing-static-initialization)
+              "bc_profile <slot>  Print a bot's BotProfile (skill/aim/weapon prefs).",
+              FCVAR_NONE)
 {
-    using namespace BotController;
-
     if (args.ArgC() < 2)
     {
-        Commands::PrintToCaller(context, "usage: bc_profile <slot>\n");
+        commands::PrintToCaller(context, "usage: bc_profile <slot>\n");
         return;
     }
 
-    const int slot = std::atoi(args.Arg(1));
+    const int slot = std::atoi(args.Arg(1)); // NOLINT(bugprone-unchecked-string-to-number-conversion)
     BotProfileData d;
-    if (!BotProfile::ReadProfile(slot, d))
+    if (!bot_profile::ReadProfile(slot, d))
     {
-        Commands::PrintToCaller(context, "[BC] error: no live bot on slot %d (it must have ticked once)\n", slot);
+        commands::PrintToCaller(context, "[BC] error: no live bot on slot %d (it must have ticked once)\n", slot);
         return;
     }
 
-    Commands::PrintToCaller(context, "[BC] profile slot %d: skill=%.2f aggression=%.2f teamwork=%.2f\n", slot, d.skill, d.aggression,
+    commands::PrintToCaller(context, "[BC] profile slot %d: skill=%.2f aggression=%.2f teamwork=%.2f\n", slot, d.skill, d.aggression,
                             d.teamwork);
-    Commands::PrintToCaller(context, "[BC]   reaction=%.3f attackDelay=%.3f cost=%d difficulty=0x%X\n", d.reactionTime, d.attackDelay,
+    commands::PrintToCaller(context, "[BC]   reaction=%.3f attackDelay=%.3f cost=%d difficulty=0x%X\n", d.reactionTime, d.attackDelay,
                             d.cost, d.difficulty);
-    Commands::PrintToCaller(context, "[BC]   lookAtk accel=%.1f stiff=%.1f damp=%.1f\n", d.lookAccelAtk, d.lookStiffAtk, d.lookDampAtk);
+    commands::PrintToCaller(context, "[BC]   lookAtk accel=%.1f stiff=%.1f damp=%.1f\n", d.lookAccelAtk, d.lookStiffAtk, d.lookDampAtk);
 
     // Weapon preference: item def indices in priority order
     char line[256];
     int n = std::snprintf(line, sizeof(line), "[BC]   weaponPref(%d):", d.weaponPrefCount);
-    for (int i = 0; i < d.weaponPrefCount && n < (int)sizeof(line) - 8; ++i)
+    for (int i = 0; i < d.weaponPrefCount && n < static_cast<int>(sizeof(line)) - 8; ++i)
         n += std::snprintf(line + n, sizeof(line) - n, " %u", d.weaponPref[i]);
     std::snprintf(line + n, sizeof(line) - n, "\n");
-    Commands::PrintToCaller(context, "%s", line);
+    commands::PrintToCaller(context, "%s", line);
 }
+
+} // namespace

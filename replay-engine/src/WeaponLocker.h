@@ -7,12 +7,12 @@
 #include <nlohmann/json.hpp>
 #include "sig_scan.h"
 
-namespace BotController {
-namespace WeaponLockerHooks {
+namespace bot_controller {
+namespace weapon_locker_hooks {
 // Sentinel def index meaning any knife
 constexpr int kKnifeDef = 9001;
 
-bool Install(const nlohmann::json& gd, const Sig::ModuleInfo& serverModule, char* errorOut, size_t errorOutLen);
+bool Install(const nlohmann::json& gd, const sig::ModuleInfo& serverModule, char* errorOut, size_t errorOutLen);
 
 void Remove();
 
@@ -49,5 +49,5 @@ bool SelectWeaponRaw(void* ws, void* weapon);
 
 // Cached WeaponServices* for a bot slot
 void* WsForSlot(int slot);
-} // namespace WeaponLockerHooks
-} // namespace BotController
+} // namespace weapon_locker_hooks
+} // namespace bot_controller

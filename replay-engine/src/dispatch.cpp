@@ -7,37 +7,36 @@
 #include "MotionRecorder.h"
 
 #include <eiface.h>
-#include <playerslot.h>
 
-namespace BotController {
-namespace Dispatch {
-IVEngineServer2* g_pEngine = nullptr;
-ISource2GameClients* g_pGameClients = nullptr;
+namespace bot_controller {
+namespace dispatch {
+IVEngineServer2* g_engine = nullptr;
+ISource2GameClients* g_gameClients = nullptr;
 
 // Set lock; Weapon also triggers a one-shot switch.
 int Lock(int slot, LockKind kind, int arg)
 {
-    if (MotionRecorder::IsReplaying(slot)) return -3;
+    if (motion_recorder::IsReplaying(slot)) return -3;
 
     switch (kind)
     {
         case LockKind::All:
-            if (slot < 0 || slot >= BotControllerState::kMaxSlots) return -2;
-            BotControllerState::SetAll(slot, true);
+            if (slot < 0 || slot >= bot_controller_state::kMaxSlots) return -2;
+            bot_controller_state::SetAll(slot, true);
             return 0;
 
         case LockKind::Aim:
-            if (slot < 0 || slot >= BotControllerState::kMaxSlots) return -2;
-            BotControllerState::SetAim(slot, true);
+            if (slot < 0 || slot >= bot_controller_state::kMaxSlots) return -2;
+            bot_controller_state::SetAim(slot, true);
             return 0;
 
         case LockKind::Weapon:
         {
-            if (slot < 0 || slot >= WeaponLockerState::kMaxSlots) return -2;
+            if (slot < 0 || slot >= weapon_locker_state::kMaxSlots) return -2;
             const auto tgt = static_cast<LockTarget>(arg);
             if (tgt == LockTarget::None) return -2;
-            WeaponLockerState::Set(slot, tgt);
-            (void)WeaponLockerHooks::SwitchToLockTarget(slot);
+            weapon_locker_state::Set(slot, tgt);
+            (void)weapon_locker_hooks::SwitchToLockTarget(slot);
             return 0;
         }
     }
@@ -50,18 +49,18 @@ int Unlock(int slot, LockKind kind)
     switch (kind)
     {
         case LockKind::All:
-            if (slot < 0 || slot >= BotControllerState::kMaxSlots) return -2;
-            BotControllerState::SetAll(slot, false);
+            if (slot < 0 || slot >= bot_controller_state::kMaxSlots) return -2;
+            bot_controller_state::SetAll(slot, false);
             return 0;
 
         case LockKind::Aim:
-            if (slot < 0 || slot >= BotControllerState::kMaxSlots) return -2;
-            BotControllerState::SetAim(slot, false);
+            if (slot < 0 || slot >= bot_controller_state::kMaxSlots) return -2;
+            bot_controller_state::SetAim(slot, false);
             return 0;
 
         case LockKind::Weapon:
-            if (slot < 0 || slot >= WeaponLockerState::kMaxSlots) return -2;
-            WeaponLockerState::Clear(slot);
+            if (slot < 0 || slot >= weapon_locker_state::kMaxSlots) return -2;
+            weapon_locker_state::Clear(slot);
             return 0;
     }
     return -2;
@@ -73,13 +72,13 @@ int UnlockAll(LockKind kind)
     switch (kind)
     {
         case LockKind::All:
-            BotControllerState::ClearAllAll();
+            bot_controller_state::ClearAllAll();
             return 0;
         case LockKind::Aim:
-            BotControllerState::ClearAllAim();
+            bot_controller_state::ClearAllAim();
             return 0;
         case LockKind::Weapon:
-            WeaponLockerState::ClearAll();
+            weapon_locker_state::ClearAll();
             return 0;
     }
     return -2;
@@ -91,13 +90,13 @@ int IsLocked(int slot, LockKind kind)
     switch (kind)
     {
         case LockKind::All:
-            return BotControllerState::GetAll(slot) ? 1 : 0;
+            return bot_controller_state::GetAll(slot) ? 1 : 0;
         case LockKind::Aim:
-            return BotControllerState::GetAim(slot) ? 1 : 0;
+            return bot_controller_state::GetAim(slot) ? 1 : 0;
         case LockKind::Weapon:
-            return static_cast<int>(WeaponLockerState::Get(slot));
+            return static_cast<int>(weapon_locker_state::Get(slot));
     }
     return 0;
 }
-} // namespace Dispatch
-} // namespace BotController
+} // namespace dispatch
+} // namespace bot_controller

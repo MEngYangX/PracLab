@@ -30,7 +30,7 @@ English | [中文](README.md)
     <img src="https://img.shields.io/badge/C%23-14-239120" alt="C# 14">
   </a>
   <a href="#">
-    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.372+-blue" alt="CounterStrikeSharp 1.0.372+">
+    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.374+-blue" alt="CounterStrikeSharp 1.0.374+">
   </a>
 </p>
 
@@ -55,7 +55,7 @@ Full documentation is available at: https://mengyangx.github.io/PracLab
 
 This project drew inspiration from the following open-source projects during development:
 
-- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Replay engine integrated from upstream v0.6.1, including bot control (`CCSBot::Update`/`Upkeep` hooks), movement recording and playback (`ProcessMovement`/`PlayerRunCommand`), weapon locking, purchase control, voice chat, and `BotProfile` modules.
+- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Replay engine integrated from upstream v0.6.3, including bot control (`CCSBot::Update`/`Upkeep` hooks), movement recording and playback (`ProcessMovement`/`PlayerRunCommand`), weapon locking, purchase control, voice chat, `BotProfile`, and drop-weapon event playback modules.
 - [MatchZy](https://github.com/shobhit-pathak/MatchZy) — Reference for project structure, documentation organization, and CS2 plugin engineering practices.
 
 ## License

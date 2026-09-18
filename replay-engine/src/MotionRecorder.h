@@ -4,7 +4,7 @@
 
 #include <cstdint>
 
-namespace BotController {
+namespace bot_controller {
 // State of the player at one boundary of a movement tick. Captured twice
 // per tick: pre (before the mover runs) and post (after).
 #pragma pack(push, 4)
@@ -15,7 +15,7 @@ struct MovementSnapshot
     float pitch, yaw, roll; // view angles
     uint32_t entityFlags; // m_fFlags (bit0 = FL_ONGROUND, bit1 = FL_DUCKING)
     uint8_t moveType; // m_MoveType (MoveType_t)
-    uint8_t _pad[3]; // keep 4-byte alignment explicit
+    uint8_t pad[3]; // keep 4-byte alignment explicit
     uint64_t buttons; // services button states[0] (pressed)
     uint64_t buttons1; // states[1]
     uint64_t buttons2; // states[2]
@@ -38,6 +38,36 @@ struct ReplayTick
     MovementSnapshot post;
     int32_t weaponDefIndex; // active weapon item-def index, -1 = none
     uint32_t numSubtick; // subtick moves for this tick, 0..36
+    uint32_t eventFlags; // ReplayEventFlags bitmask
+    int32_t eventWeaponDefIndex; // active item captured for the event, -1 = none
+    uint32_t eventDropVectorFlags; // ReplayDropVectorFlags bitmask
+    float eventDropTargetX;
+    float eventDropTargetY;
+    float eventDropTargetZ;
+    float eventDropVelocityX;
+    float eventDropVelocityY;
+    float eventDropVelocityZ;
+};
+
+enum ReplayEventFlags : uint32_t // NOLINT(performance-enum-size)
+{
+    ReplayEventNone = 0,
+    ReplayEventDrop = 1U << 0,
+};
+
+enum ReplayDropVectorFlags : uint32_t // NOLINT(performance-enum-size)
+{
+    ReplayDropVectorNone = 0,
+    ReplayDropVectorTarget = 1U << 0,
+    ReplayDropVectorVelocity = 1U << 1,
+};
+
+struct ReplayDropEvent
+{
+    int weaponDefIndex;
+    uint32_t vectorFlags;
+    float target[3];
+    float velocity[3];
 };
 
 struct SubtickMove
@@ -68,7 +98,7 @@ struct ReplayCommandFrameData
     int32_t weaponSelect;
     uint32_t fields;
     uint8_t leftHandDesired;
-    uint8_t _pad[3];
+    uint8_t pad[3];
 };
 
 // Optional movement-service state captured for one replay tick
@@ -91,10 +121,40 @@ struct ReplayMovementExtra
 
 static_assert(sizeof(ReplayCommandFrameData) == 68);
 static_assert(sizeof(ReplayMovementExtra) == 48);
+static_assert(sizeof(ReplayTick) == 228);
 
-namespace MotionRecorder {
+namespace motion_recorder {
 constexpr int kMaxSlots = 64;
 constexpr int kMaxSubtickPerTick = 36;
+constexpr uint32_t kCommandFieldForwardMove = 1U << 0;
+constexpr uint32_t kCommandFieldLeftMove = 1U << 1;
+constexpr uint32_t kCommandFieldUpMove = 1U << 2;
+constexpr uint32_t kCommandFieldViewAngles = 1U << 3;
+constexpr uint32_t kCommandFieldButtons = 1U << 4;
+constexpr uint32_t kCommandFieldMouse = 1U << 5;
+constexpr uint32_t kCommandFieldWeaponSelect = 1U << 6;
+constexpr uint32_t kCommandFieldLeftHand = 1U << 7;
+
+// Complete replay input frame assembled for PlayerRunCommand
+struct ReplayCommandFrame
+{
+    ReplayTick tick;
+    SubtickMove subticks[kMaxSubtickPerTick];
+    int32_t subtickCount;
+    int32_t weaponSelect;
+    MovementSnapshot commandView;
+    uint64_t buttons0;
+    uint64_t buttons1;
+    uint64_t buttons2;
+    uint32_t commandFields;
+    float forwardMove;
+    float leftMove;
+    float upMove;
+    int32_t mouseDx;
+    int32_t mouseDy;
+    int32_t rawWeaponSelect;
+    uint8_t leftHandDesired;
+};
 
 // ---- recording ----
 bool StartRecord(int slot); // clears old buffer, begins capture
@@ -102,6 +162,7 @@ bool StopRecord(int slot); // stops
 bool IsRecording(int slot);
 int RecordedTickCount(int slot); // <0 on bad slot
 int RecordedSubtickCount(int slot); // <0 on bad slot
+int RecordedCommandCount(int slot); // <0 on bad slot
 
 // ProcessMovement hook: capture pre snapshot
 void OnCapturePre(int slot, void* services, void* cmd);
@@ -109,7 +170,8 @@ void OnCapturePre(int slot, void* services, void* cmd);
 void OnCapturePost(int slot, void* services, void* cmd);
 // PlayerRunCommand hook: stash this tick's subtick moves (pending).
 void OnCaptureSubticks(int slot, const SubtickMove* moves, int count);
-
+// PlayerRunCommand hook: stash this tick's complete command frame
+void OnCaptureCommand(int slot, const ReplayCommandFrameData& command);
 // Track which WeaponServices* maps to this recording slot
 void SetLiveWs(int slot, void* ws);
 void* LiveWs(int slot);
@@ -119,6 +181,7 @@ void SetCurrentDef(int slot, int defIndex);
 // Copy recorded data out to caller buffers; returns elements written.
 int CopyTicks(int slot, ReplayTick* out, int maxTicks);
 int CopySubticks(int slot, SubtickMove* out, int maxSubticks);
+int CopyCommands(int slot, ReplayCommandFrameData* out, int maxCommands);
 
 // ---- replay ----
 // Load legacy replay arrays through the extended loader
@@ -141,6 +204,8 @@ int ReplayTotal(int slot); // loaded tick count
 
 // Current tick being applied this server tick
 bool CurrentReplayTick(int slot, ReplayTick& out);
+// Assemble all replay input fields for the next simulated tick
+bool ReplayCommandFrameForSimulation(int slot, ReplayCommandFrame& out);
 // Command view angles for the tick currently being simulated.
 bool ReplayCommandViewSnapshot(int slot, MovementSnapshot& out);
 // Copy the current tick's subtick moves into out
@@ -158,11 +223,45 @@ bool SwitchBotWeaponByDef(int slot, int defIndex);
 // -1 if no ws / no active weapon. For C# to reconcile replay weapon.
 int BotActiveWeaponDef(int slot);
 
+// Treats CT and T fire grenades as the same replay weapon type
+bool ReplayWeaponDefsMatch(int firstDef, int secondDef);
+
 // Entity index to write into cmd.weaponselect this replay tick
 int CurrentReplayWeaponSelect(int slot);
 int CurrentReplayWeaponDef(int slot);
+// Consumes the current tick's drop event once
+bool TakeCurrentReplayDrop(int slot, ReplayDropEvent& event);
+// Drops the recorded item through the bot pawn's native weapon service
+bool DropReplayEventWeapon(int slot, void* services, const ReplayDropEvent& event);
+
+// Drop-event diagnostics exposed through bc_status
+uint64_t DropHookCallCount();
+uint64_t DropHookRecordingCallCount();
+uint64_t DropHookPhysicalDropCount();
+uint64_t DropHookInvalidDefCount();
+uint64_t DropCaptureCount();
+uint64_t DropReplayAttemptCount();
+uint64_t DropReplayHookCallCount();
+uint64_t DropReplayVectorOverrideCount();
+uint64_t DropReplayDetachedCount();
+uint64_t DropReplayNativeCallCount();
+bool DropHookReady();
+void* DropHookAddress();
+int LastDropCaptureSlot();
+uint32_t LastDropCaptureVectorFlags();
+int LastDropHookSlot();
+int LastDropHookWeaponDef();
+bool LastDropHookWasRecording();
+void* LastDropHookPawn();
+void* LastDropHookTarget();
+void* LastDropHookVelocity();
+int LastDropReplaySlot();
+int LastDropReplayWeaponDef();
+uint32_t LastDropReplayVectorFlags();
 
 // ---- replay write hooks ----
+// PlayerRunCommand (pre): seed pawn state consumed by weapon and grenade logic
+void OnReplayCommandPre(int slot, void* services, const ReplayTick& tick, const MovementSnapshot& commandView);
 // ProcessMovement (pre): write pre snapshot into CMoveData + pawn velocity + entity moveType
 void OnReplayPre(int slot, void* services, void* moveData);
 // FinishMove (pre): write post snapshot into CMoveData + scene-node origin.
@@ -171,5 +270,5 @@ void OnReplayFinishMove(int slot, void* services, void* moveData);
 void OnReplayCommit(int slot, void* services);
 
 void ClearAll(); // wipe all record + replay buffers (on unload)
-} // namespace MotionRecorder
-} // namespace BotController
+} // namespace motion_recorder
+} // namespace bot_controller

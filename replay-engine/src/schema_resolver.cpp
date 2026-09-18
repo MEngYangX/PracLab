@@ -3,28 +3,31 @@
 #include "schema_resolver.h"
 
 #include <schemasystem/schemasystem.h>
+#include "schemasystem/schematypes.h"
 
-#if defined(_WIN32)
-#include <Windows.h>
+#ifdef _WIN32
+#include <libloaderapi.h>
+#include <minwindef.h>
 #else
 #include <dlfcn.h>
 #include <link.h>
 #endif
 
 #include <cstdio>
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <unordered_map>
 
-namespace BotController::Schema {
+namespace bot_controller::schema {
 using CreateInterfaceFn = void* (*)(const char*, int*);
 
 namespace {
 ISchemaSystem* g_schemaSystem = nullptr;
 CSchemaSystemTypeScope* g_serverScope = nullptr;
-std::unordered_map<std::string, int> g_offsetCache;
+std::unordered_map<std::string, int> g_offsetCache; // NOLINT(bugprone-throwing-static-initialization)
 
-#if defined(_WIN32)
+#ifdef _WIN32
 constexpr const char* kSchemaModuleName = "schemasystem.dll";
 constexpr const char* kServerScopeName = "server.dll";
 #else
@@ -84,7 +87,7 @@ bool Init(char* errorOut, size_t errorOutLen)
     if (g_schemaSystem && g_serverScope) return true;
     Reset();
 
-#if defined(_WIN32)
+#ifdef _WIN32
     HMODULE module = GetModuleHandleA(kSchemaModuleName);
     if (!module) return Fail(errorOut, errorOutLen, "schemasystem.dll is not loaded");
     auto createInterface = reinterpret_cast<CreateInterfaceFn>(GetProcAddress(module, "CreateInterface"));
@@ -96,14 +99,14 @@ bool Init(char* errorOut, size_t errorOutLen)
 
     if (!createInterface)
     {
-#if !defined(_WIN32)
+#ifndef _WIN32
         dlclose(module);
 #endif
         return Fail(errorOut, errorOutLen, "schemasystem CreateInterface export is unavailable");
     }
 
     g_schemaSystem = static_cast<ISchemaSystem*>(createInterface(SCHEMASYSTEM_INTERFACE_VERSION, nullptr));
-#if !defined(_WIN32)
+#ifndef _WIN32
     dlclose(module);
 #endif
     if (!g_schemaSystem) return Fail(errorOut, errorOutLen, "SchemaSystem_001 is unavailable");
@@ -138,7 +141,7 @@ int GetFieldOffset(const char* className, const char* fieldName)
         return -1;
     }
 
-    for (uint16 i = 0; i < classInfo->m_nFieldCount; ++i)
+    for (uint16_t i = 0; i < classInfo->m_nFieldCount; ++i)
     {
         const SchemaClassFieldData_t& field = classInfo->m_pFields[i];
         if (!field.m_pszName || std::strcmp(field.m_pszName, fieldName) != 0) continue;
@@ -161,4 +164,4 @@ void Reset()
     g_schemaSystem = nullptr;
 }
 
-} // namespace BotController::Schema
+} // namespace bot_controller::schema

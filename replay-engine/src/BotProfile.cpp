@@ -5,40 +5,41 @@
 #include "ccsbot_slot.h"
 #include "version_targets.h"
 
+#include <algorithm>
 #include <cstring>
 
-namespace tg = BotController::targets;
+namespace tg = bot_controller::targets;
 
-namespace BotController {
-namespace BotProfile {
+namespace bot_controller {
+namespace bot_profile {
 // Read profile members off a live bot for this slot
 bool ReadProfile(int slot, BotProfileData& out)
 {
-    void* bot = BotControllerHooks::BotForSlot(slot);
+    void* bot = bot_controller_hooks::BotForSlot(slot);
     if (!bot) return false;
     // Guard against a stale pointer: it must still resolve to this slot
     if (CCSBotToSlot(bot) != slot) return false;
 
     void* prof = nullptr;
-    if (!GuardedRead(bot, tg::kBot_Profile, prof)) return false;
+    if (!GuardedRead(bot, tg::g_botProfile, prof)) return false;
     if (!prof) return false;
 
     std::memset(&out, 0, sizeof(out));
-    if (!SafeRead(prof, tg::kProf_Aggression, out.aggression) || !SafeRead(prof, tg::kProf_Skill, out.skill) ||
-        !SafeRead(prof, tg::kProf_Teamwork, out.teamwork) || !SafeRead(prof, tg::kProf_ReactionTime, out.reactionTime) ||
-        !SafeRead(prof, tg::kProf_AttackDelay, out.attackDelay) || !SafeRead(prof, tg::kProf_LookAccelAtk, out.lookAccelAtk) ||
-        !SafeRead(prof, tg::kProf_LookStiffAtk, out.lookStiffAtk) || !SafeRead(prof, tg::kProf_LookDampAtk, out.lookDampAtk) ||
-        !SafeRead(prof, tg::kProf_Cost, out.cost) || !SafeRead(prof, tg::kProf_Difficulty, out.difficulty))
+    if (!SafeRead(prof, tg::g_profAggression, out.aggression) || !SafeRead(prof, tg::g_profSkill, out.skill) ||
+        !SafeRead(prof, tg::g_profTeamwork, out.teamwork) || !SafeRead(prof, tg::g_profReactionTime, out.reactionTime) ||
+        !SafeRead(prof, tg::g_profAttackDelay, out.attackDelay) || !SafeRead(prof, tg::g_profLookAccelAtk, out.lookAccelAtk) ||
+        !SafeRead(prof, tg::g_profLookStiffAtk, out.lookStiffAtk) || !SafeRead(prof, tg::g_profLookDampAtk, out.lookDampAtk) ||
+        !SafeRead(prof, tg::g_profCost, out.cost) || !SafeRead(prof, tg::g_profDifficulty, out.difficulty))
         return false;
 
     int count = 0;
-    if (!SafeRead(prof, tg::kProf_WeaponPrefCount, count)) return false;
-    if (count < 0) count = 0;
-    if (count > 16) count = 16;
+    if (!SafeRead(prof, tg::g_profWeaponPrefCount, count)) return false;
+    count = std::max(count, 0);
+    count = std::min(count, 16);
     out.weaponPrefCount = count;
     for (int i = 0; i < count; ++i)
-        if (!SafeRead(prof, tg::kProf_WeaponPref + i * 2, out.weaponPref[i])) return false;
+        if (!SafeRead(prof, tg::g_profWeaponPref + (i * 2), out.weaponPref[i])) return false;
     return true;
 }
-} // namespace BotProfile
-} // namespace BotController
+} // namespace bot_profile
+} // namespace bot_controller

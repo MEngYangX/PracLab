@@ -8,13 +8,13 @@
 #include <nlohmann/json.hpp>
 #include "sig_scan.h"
 
-namespace BotController {
-namespace InputInjector {
+namespace bot_controller {
+namespace input_injector {
 // Max bots we track per-slot state for.
 static constexpr int kMaxSlots = 64;
 
 // Resolve sigs and install the movement hooks.
-bool Install(const nlohmann::json& gd, const Sig::ModuleInfo& serverModule, char* errorOut, size_t errorOutLen);
+bool Install(const nlohmann::json& gd, const sig::ModuleInfo& serverModule, char* errorOut, size_t errorOutLen);
 
 // Disable + remove the hooks.
 void Remove();
@@ -39,8 +39,23 @@ int64_t InjectUsercmd(int slot, uint64_t buttonMask, int durationMs);
 // Cancels one usercmd injection by its token
 bool CancelUsercmdInjection(int slot, int64_t injectionId);
 
+// Creates an independently cancellable persistent analog movement override
+int64_t StartUsercmdMovement(int slot, float forwardMove, float leftMove);
+
+// Updates one persistent analog movement override
+bool UpdateUsercmdMovement(int slot, int64_t movementId, float forwardMove, float leftMove);
+
+// Cancels one persistent analog movement override
+bool CancelUsercmdMovement(int slot, int64_t movementId);
+
 // Suppresses selected usercmd buttons for a fixed duration
 bool SuppressUsercmd(int slot, uint64_t buttonMask, int durationMs);
+
+// Creates an independently cancellable persistent usercmd suppression
+int64_t StartUsercmdSuppression(int slot, uint64_t buttonMask);
+
+// Cancels one persistent usercmd suppression by its token
+bool CancelUsercmdSuppression(int slot, int64_t suppressionId);
 
 // Clears every pending and active usercmd injection for one slot
 void ClearUsercmdInjections(int slot);
@@ -50,6 +65,10 @@ uint64_t HookCallCount();
 int LastResolvedSlot();
 uint64_t FinishMoveCallCount();
 uint64_t PlayerRunCommandCallCount();
+uint64_t UsercmdMovementApplyCount();
+int LastUsercmdMovementSlot();
+int LastUsercmdForwardMove();
+int LastUsercmdLeftMove();
 uint64_t PhysicsSimulateCallCount();
 int LastPhysicsSlot();
 uint64_t ReplayCommitCount();
@@ -62,5 +81,5 @@ uint32_t LastOriginalControllerHandle();
 int LastControllerIndex();
 int LastOriginalControllerIndex();
 int LastOwnerSlot();
-} // namespace InputInjector
-} // namespace BotController
+} // namespace input_injector
+} // namespace bot_controller

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace BotController {
+namespace bot_controller {
 /* One bot's buy plan: skip=true means buy nothing this round */
 struct BuyPlan
 {
@@ -13,7 +13,7 @@ struct BuyPlan
     std::vector<std::string> items; // ordered buy aliases
 };
 
-namespace BuyControllerState {
+namespace buy_controller_state {
 constexpr int kMaxSlots = 64;
 
 // True if this slot has any plan set (skip or item list)
@@ -33,5 +33,5 @@ int ItemCount(int slot);
 
 // Count of slots with a plan
 int CountPlans();
-} // namespace BuyControllerState
-} // namespace BotController
+} // namespace buy_controller_state
+} // namespace bot_controller

@@ -1,53 +1,58 @@
 // Override structure offsets from gamedata.json (platform-aware)
 
 #include "version_targets.h"
+#include "nlohmann/json.hpp"
 #include "schema_resolver.h"
 #include "sig_scan.h"
 
 #include <cstdint>
 #include <cstdio>
 
-namespace BotController::targets {
+namespace bot_controller::targets {
 // Each offset: gamedata[name].offsets[platform], else keep code default
 void LoadFromGamedata(const nlohmann::json& gd)
 {
-    kBot_Profile = Sig::FindPlatformOffset(gd, "CCSBot::Profile", kBot_Profile);
-    kProf_Aggression = Sig::FindPlatformOffset(gd, "BotProfile::Aggression", kProf_Aggression);
-    kProf_Skill = Sig::FindPlatformOffset(gd, "BotProfile::Skill", kProf_Skill);
-    kProf_Teamwork = Sig::FindPlatformOffset(gd, "BotProfile::Teamwork", kProf_Teamwork);
-    kProf_WeaponPref = Sig::FindPlatformOffset(gd, "BotProfile::WeaponPref", kProf_WeaponPref);
-    kProf_WeaponPrefCount = Sig::FindPlatformOffset(gd, "BotProfile::WeaponPrefCount", kProf_WeaponPrefCount);
-    kProf_Cost = Sig::FindPlatformOffset(gd, "BotProfile::Cost", kProf_Cost);
-    kProf_Difficulty = Sig::FindPlatformOffset(gd, "BotProfile::Difficulty", kProf_Difficulty);
-    kProf_ReactionTime = Sig::FindPlatformOffset(gd, "BotProfile::ReactionTime", kProf_ReactionTime);
-    kProf_AttackDelay = Sig::FindPlatformOffset(gd, "BotProfile::AttackDelay", kProf_AttackDelay);
-    kProf_LookAccelAtk = Sig::FindPlatformOffset(gd, "BotProfile::LookAngleMaxAccelAttacking", kProf_LookAccelAtk);
-    kProf_LookStiffAtk = Sig::FindPlatformOffset(gd, "BotProfile::LookAngleStiffnessAttacking", kProf_LookStiffAtk);
-    kProf_LookDampAtk = Sig::FindPlatformOffset(gd, "BotProfile::LookAngleDampingAttacking", kProf_LookDampAtk);
-    kBuy_InitialDelay = Sig::FindPlatformOffset(gd, "BuyState::InitialDelay", kBuy_InitialDelay);
-    kBuy_DoneBuying = Sig::FindPlatformOffset(gd, "BuyState::DoneBuying", kBuy_DoneBuying);
-    kEntIdentity_EHandle = Sig::FindPlatformOffset(gd, "CEntityIdentity::EHandle", kEntIdentity_EHandle);
-    kServices_Pawn = Sig::FindPlatformOffset(gd, "CCSPlayer_MovementServices::Pawn", kServices_Pawn);
-    kMove_Velocity = Sig::FindPlatformOffset(gd, "CMoveData::Velocity", kMove_Velocity);
-    kMove_AbsOrigin = Sig::FindPlatformOffset(gd, "CMoveData::AbsOrigin", kMove_AbsOrigin);
-    kVtIdx_PlayerRunCommand = Sig::FindPlatformOffset(gd, "vtidx::PlayerRunCommand", kVtIdx_PlayerRunCommand);
-    kVtIdx_FinishMove = Sig::FindPlatformOffset(gd, "vtidx::FinishMove", kVtIdx_FinishMove);
+    g_botProfile = sig::FindPlatformOffset(gd, "CCSBot::Profile", g_botProfile);
+    g_profAggression = sig::FindPlatformOffset(gd, "BotProfile::Aggression", g_profAggression);
+    g_profSkill = sig::FindPlatformOffset(gd, "BotProfile::Skill", g_profSkill);
+    g_profTeamwork = sig::FindPlatformOffset(gd, "BotProfile::Teamwork", g_profTeamwork);
+    g_profWeaponPref = sig::FindPlatformOffset(gd, "BotProfile::WeaponPref", g_profWeaponPref);
+    g_profWeaponPrefCount = sig::FindPlatformOffset(gd, "BotProfile::WeaponPrefCount", g_profWeaponPrefCount);
+    g_profCost = sig::FindPlatformOffset(gd, "BotProfile::Cost", g_profCost);
+    g_profDifficulty = sig::FindPlatformOffset(gd, "BotProfile::Difficulty", g_profDifficulty);
+    g_profReactionTime = sig::FindPlatformOffset(gd, "BotProfile::ReactionTime", g_profReactionTime);
+    g_profAttackDelay = sig::FindPlatformOffset(gd, "BotProfile::AttackDelay", g_profAttackDelay);
+    g_profLookAccelAtk = sig::FindPlatformOffset(gd, "BotProfile::LookAngleMaxAccelAttacking", g_profLookAccelAtk);
+    g_profLookStiffAtk = sig::FindPlatformOffset(gd, "BotProfile::LookAngleStiffnessAttacking", g_profLookStiffAtk);
+    g_profLookDampAtk = sig::FindPlatformOffset(gd, "BotProfile::LookAngleDampingAttacking", g_profLookDampAtk);
+    g_buyInitialDelay = sig::FindPlatformOffset(gd, "BuyState::InitialDelay", g_buyInitialDelay);
+    g_buyDoneBuying = sig::FindPlatformOffset(gd, "BuyState::DoneBuying", g_buyDoneBuying);
+    g_entIdentityEHandle = sig::FindPlatformOffset(gd, "CEntityIdentity::EHandle", g_entIdentityEHandle);
+    g_servicesPawn = sig::FindPlatformOffset(gd, "CCSPlayer_MovementServices::Pawn", g_servicesPawn);
+    g_moveVelocity = sig::FindPlatformOffset(gd, "CMoveData::Velocity", g_moveVelocity);
+    g_moveAbsOrigin = sig::FindPlatformOffset(gd, "CMoveData::AbsOrigin", g_moveAbsOrigin);
+    g_vtIdxPlayerRunCommand = sig::FindPlatformOffset(gd, "vtidx::PlayerRunCommand", g_vtIdxPlayerRunCommand);
+    g_vtIdxFinishMove = sig::FindPlatformOffset(gd, "vtidx::FinishMove", g_vtIdxFinishMove);
+    g_vtIdxDropWeapon = sig::FindPlatformOffset(gd, "vtidx::DropWeapon", g_vtIdxDropWeapon);
 }
 
+namespace {
+
 // Resolves one required Schema field into its runtime target
-static bool ResolveRequired(int& target, const char* className, const char* fieldName, char* errorOut, size_t errorOutLen)
+bool ResolveRequired(int& target, const char* className, const char* fieldName, char* errorOut, size_t errorOutLen)
 {
-    const int offset = Schema::GetFieldOffset(className, fieldName);
+    const int offset = schema::GetFieldOffset(className, fieldName);
     if (offset >= 0)
     {
         target = offset;
         return true;
     }
 
-    if (errorOut && errorOutLen > 0)
-        std::snprintf(errorOut, errorOutLen, "Required Schema field missing: %s::%s", className, fieldName);
+    if (errorOut && errorOutLen > 0) std::snprintf(errorOut, errorOutLen, "Required Schema field missing: %s::%s", className, fieldName);
     return false;
 }
+
+} // namespace
 
 // Resolves every required Schema-backed target or reports the first failure
 bool LoadFromSchema(char* errorOut, size_t errorOutLen)
@@ -60,31 +65,33 @@ bool LoadFromSchema(char* errorOut, size_t errorOutLen)
     };
 
     const RequiredField fields[] = {
-        { &kBot_AiTickedFlag, "CCSBot", "m_bEyeAnglesUnderPathFinderControl" },
-        { &kBot_Pawn, "CBot", "m_pPlayer" },
-        { &kEnt_Identity, "CEntityInstance", "m_pEntity" },
-        { &kEnt_MoveType, "CBaseEntity", "m_MoveType" },
-        { &kEnt_ActualMoveType, "CBaseEntity", "m_nActualMoveType" },
-        { &kEnt_Flags, "CBaseEntity", "m_fFlags" },
-        { &kEnt_AbsVelocity, "CBaseEntity", "m_vecAbsVelocity" },
-        { &kEnt_BodyComponent, "CBaseEntity", "m_CBodyComponent" },
-        { &kBody_SceneNode, "CBodyComponent", "m_pSceneNode" },
-        { &kNode_AbsOrigin, "CGameSceneNode", "m_vecAbsOrigin" },
-        { &kPawn_WeaponServices, "CBasePlayerPawn", "m_pWeaponServices" },
-        { &kPawn_MovementServices, "CBasePlayerPawn", "m_pMovementServices" },
-        { &kPawn_Controller, "CBasePlayerPawn", "m_hController" },
-        { &kPawn_OriginalController, "CCSPlayerPawnBase", "m_hOriginalController" },
-        { &kPawn_ViewAngle, "CBasePlayerPawn", "v_angle" },
-        { &kPawn_ViewAnglePrevious, "CBasePlayerPawn", "v_anglePrevious" },
-        { &kPawn_ServerViewAngleChanges, "CBasePlayerPawn", "m_ServerViewAngleChanges" },
-        { &kPawn_EyeAngles, "CCSPlayerPawn", "m_angEyeAngles" },
-        { &kWs_ActiveWeapon, "CPlayer_WeaponServices", "m_hActiveWeapon" },
-        { &kServices_LadderNormal, "CCSPlayer_MovementServices", "m_vecLadderNormal" },
-        { &kServices_Ducked, "CCSPlayer_MovementServices", "m_bDucked" },
-        { &kServices_DuckAmount, "CCSPlayer_MovementServices", "m_flDuckAmount" },
-        { &kServices_DuckSpeed, "CCSPlayer_MovementServices", "m_flDuckSpeed" },
-        { &kServices_DesiresDuck, "CCSPlayer_MovementServices", "m_bDesiresDuck" },
-        { &kServices_Ducking, "CCSPlayer_MovementServices", "m_bDucking" },
+        { .target = &g_botAiTickedFlag, .className = "CCSBot", .fieldName = "m_bEyeAnglesUnderPathFinderControl" },
+        { .target = &g_botPawn, .className = "CBot", .fieldName = "m_pPlayer" },
+        { .target = &g_entIdentity, .className = "CEntityInstance", .fieldName = "m_pEntity" },
+        { .target = &g_entMoveType, .className = "CBaseEntity", .fieldName = "m_MoveType" },
+        { .target = &g_entActualMoveType, .className = "CBaseEntity", .fieldName = "m_nActualMoveType" },
+        { .target = &g_entFlags, .className = "CBaseEntity", .fieldName = "m_fFlags" },
+        { .target = &g_entAbsVelocity, .className = "CBaseEntity", .fieldName = "m_vecAbsVelocity" },
+        { .target = &g_entBodyComponent, .className = "CBaseEntity", .fieldName = "m_CBodyComponent" },
+        { .target = &g_bodySceneNode, .className = "CBodyComponent", .fieldName = "m_pSceneNode" },
+        { .target = &g_nodeAbsOrigin, .className = "CGameSceneNode", .fieldName = "m_vecAbsOrigin" },
+        { .target = &g_pawnWeaponServices, .className = "CBasePlayerPawn", .fieldName = "m_pWeaponServices" },
+        { .target = &g_pawnItemServices, .className = "CBasePlayerPawn", .fieldName = "m_pItemServices" },
+        { .target = &g_pawnMovementServices, .className = "CBasePlayerPawn", .fieldName = "m_pMovementServices" },
+        { .target = &g_pawnController, .className = "CBasePlayerPawn", .fieldName = "m_hController" },
+        { .target = &g_pawnOriginalController, .className = "CCSPlayerPawnBase", .fieldName = "m_hOriginalController" },
+        { .target = &g_pawnViewAngle, .className = "CBasePlayerPawn", .fieldName = "v_angle" },
+        { .target = &g_pawnViewAnglePrevious, .className = "CBasePlayerPawn", .fieldName = "v_anglePrevious" },
+        { .target = &g_pawnServerViewAngleChanges, .className = "CBasePlayerPawn", .fieldName = "m_ServerViewAngleChanges" },
+        { .target = &g_pawnEyeAngles, .className = "CCSPlayerPawn", .fieldName = "m_angEyeAngles" },
+        { .target = &g_wsActiveWeapon, .className = "CPlayer_WeaponServices", .fieldName = "m_hActiveWeapon" },
+        { .target = &g_servicesLadderNormal, .className = "CCSPlayer_MovementServices", .fieldName = "m_vecLadderNormal" },
+        { .target = &g_servicesOldViewAngles, .className = "CPlayer_MovementServices", .fieldName = "m_vecOldViewAngles" },
+        { .target = &g_servicesDucked, .className = "CCSPlayer_MovementServices", .fieldName = "m_bDucked" },
+        { .target = &g_servicesDuckAmount, .className = "CCSPlayer_MovementServices", .fieldName = "m_flDuckAmount" },
+        { .target = &g_servicesDuckSpeed, .className = "CCSPlayer_MovementServices", .fieldName = "m_flDuckSpeed" },
+        { .target = &g_servicesDesiresDuck, .className = "CCSPlayer_MovementServices", .fieldName = "m_bDesiresDuck" },
+        { .target = &g_servicesDucking, .className = "CCSPlayer_MovementServices", .fieldName = "m_bDucking" },
     };
 
     for (const RequiredField& field : fields)
@@ -99,16 +106,21 @@ bool LoadFromSchema(char* errorOut, size_t errorOutLen)
         !ResolveRequired(item, "CAttributeContainer", "m_Item", errorOut, errorOutLen) ||
         !ResolveRequired(itemDefinitionIndex, "CEconItemView", "m_iItemDefinitionIndex", errorOut, errorOutLen))
         return false;
-    kWeapon_ItemDefIndex = attributeManager + item + itemDefinitionIndex;
+    g_weaponItemDefIndex = attributeManager + item + itemDefinitionIndex;
 
     int buttonState = -1;
     int buttonStates = -1;
     if (!ResolveRequired(buttonState, "CPlayer_MovementServices", "m_nButtons", errorOut, errorOutLen) ||
         !ResolveRequired(buttonStates, "CInButtonState", "m_pButtonStates", errorOut, errorOutLen))
         return false;
-    kServices_Buttons = buttonState + buttonStates;
-    kServices_Buttons1 = kServices_Buttons + static_cast<int>(sizeof(uint64_t));
-    kServices_Buttons2 = kServices_Buttons1 + static_cast<int>(sizeof(uint64_t));
+    g_servicesButtons = buttonState + buttonStates;
+    g_servicesButtons1 = g_servicesButtons + static_cast<int>(sizeof(uint64_t));
+    g_servicesButtons2 = g_servicesButtons1 + static_cast<int>(sizeof(uint64_t));
+
+    const int initialPosition = schema::GetFieldOffset("CBaseCSGrenadeProjectile", "m_vInitialPosition");
+    const int initialVelocity = schema::GetFieldOffset("CBaseCSGrenadeProjectile", "m_vInitialVelocity");
+    if (initialPosition >= 0) g_projectileInitialPosition = initialPosition;
+    if (initialVelocity >= 0) g_projectileInitialVelocity = initialVelocity;
     return true;
 }
-} // namespace BotController::targets
+} // namespace bot_controller::targets
