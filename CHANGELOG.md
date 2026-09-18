@@ -4,6 +4,16 @@
 
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.3.1] - 2026-09-18
+
+### Fixed
+
+- **ReplayEngine 预加载路径错误（GitHub Issue #5）**：CSSharp v1.0.372 的 `Server.GameDirectory` 返回游戏根目录（`…/game`）而非 mod 目录（`…/game/csgo`），`PreloadReplayEngineDll` 拼接的 DLL 路径缺少 `csgo` 一级，控制台报 `ReplayEngine DLL not found` 警告（功能不受阻断，引擎仍由 Metamod 经 vdf 加载）。改为双路径探测（`{GD}/addons/…` 与 `{GD}/csgo/addons/…`，命中即用）；`EnsureRecordingsDir` 录制目录存在同类拼接问题，同步改为双路径探测。
+
+### Changed
+
+- **回放引擎更新至 BotController v0.6.3**：同步上游 [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) v0.6.1 → v0.6.3（ABI 18 → 20，引擎版本 0.2.2）。新增：丢掷武器（drop weapon）事件的 tick 级录制与回放（`ReplayTick` 结构扩展 10 个事件字段至 228 字节，C# 侧 P/Invoke 结构同步）、`ProjectileBirthAlign` 投掷物出生对齐模块、`UsercmdMovement` / `UsercmdSuppression` API（PracLab C# 层暂未使用，保持 ABI 一致并预留）、回放时可用 CT 燃烧弹替代 T 莫洛托夫；命名空间重构（`BotController::` → `bot_controller::`）；gamedata 追加 `vtidx::DropWeapon` 偏移；控制台输出精简与全量代码格式化。
+
 ## [0.3.0] - 2026-08-19
 
 ### Fixed

@@ -55,7 +55,7 @@
 
 本项目在开发过程中参考了以下开源项目：
 
-- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — 回放引擎基于 v0.6.1 上游代码集成，包含 Bot 控制（CCSBot::Update/Upkeep Hook）、移动录制与回放（ProcessMovement/PlayerRunCommand）、武器锁定、购买控制、语音发送、BotProfile 等模块。
+- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — 回放引擎基于 v0.6.3 上游代码集成，包含 Bot 控制（CCSBot::Update/Upkeep Hook）、移动录制与回放（ProcessMovement/PlayerRunCommand）、武器锁定、购买控制、语音发送、BotProfile、丢掷武器事件回放等模块。
 - [MatchZy](https://github.com/shobhit-pathak/MatchZy) — 项目结构、文档组织与 CS2 插件工程实践的参考。
 
 ## 许可证
