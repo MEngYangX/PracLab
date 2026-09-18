@@ -86,8 +86,10 @@ jobs:
       - name: Clone HL2SDK CS2
         run: git clone --depth 1 --branch cs2 https://github.com/alliedmodders/hl2sdk.git deps/hl2sdk-cs2
 
-      - name: Clone Metamod:Source
-        run: git clone --depth 1 https://github.com/alliedmodders/metamod-source.git deps/metamod-source
+      # 锁定含 SourceHook 的最新 tag：master 已移除 core/sourcehook，
+      # 且 CSSharp 仍依赖 SourceHook，引擎须与其共存于同一 MMS 实例
+      - name: Clone Metamod:Source (pinned tag with SourceHook)
+        run: git clone --depth 1 --branch 2.0.0.1411 https://github.com/alliedmodders/metamod-source.git deps/metamod-source
 
       - name: Download protoc 3.21.8
         run: |
@@ -125,8 +127,10 @@ jobs:
       - name: Clone HL2SDK CS2
         run: git clone --depth 1 --branch cs2 https://github.com/alliedmodders/hl2sdk.git deps/hl2sdk-cs2
 
-      - name: Clone Metamod:Source
-        run: git clone --depth 1 https://github.com/alliedmodders/metamod-source.git deps/metamod-source
+      # 锁定含 SourceHook 的最新 tag：master 已移除 core/sourcehook，
+      # 且 CSSharp 仍依赖 SourceHook，引擎须与其共存于同一 MMS 实例
+      - name: Clone Metamod:Source (pinned tag with SourceHook)
+        run: git clone --depth 1 --branch 2.0.0.1411 https://github.com/alliedmodders/metamod-source.git deps/metamod-source
 
       - name: Download protoc 3.21.8
         shell: pwsh
