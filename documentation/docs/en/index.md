@@ -2,20 +2,28 @@
 
 > A CS2 (Counter-Strike 2) practice-mode plugin built on [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) and [Metamod:Source](https://www.sourcemm.net/), providing a complete set of utility commands for grenade/spawn/bot/replay training scenarios.
 
-- **Target framework**: .NET 10 + CounterStrikeSharp.API 1.0.371
-- **Supported maps**: Inferno, Mirage, Nuke, Ancient, Vertigo, Anubis, Dust II, Train, Cache
-
 ## Feature Overview
 
 | Category | Description |
 | --- | --- |
-| **Map management** | Quick switch between 9 active/reserve maps (`.inferno`, `.mirage`, etc.) |
+| **Map management** | Quick map switching (`.inferno`, `.mirage`, etc.) |
 | **Bots** | Spawn a bot at the player position (standing/crouching), auto-managed collision, crosshair-targeted kick |
 | **Spawn points** | 9 teleport commands (same-team/CT/T × numbered/nearest/farthest) + box visualization + E-key aim teleport |
+| **Grenade inverse search** | Grid-searches aim angles that land in the target region across throw modes × strengths; 6 item types × 3 accuracy tiers |
 | **Grenade rethrow** | 7 commands to rethrow the last grenade of any type, plus return-to-throw-position |
 | **Dryrun** | Temporarily switch from prac to competitive config for one round, auto-revert to prac when round ends |
 | **Replay system** | Record player movement trajectories and play them back via bots; supports parallel playback, playback-by-Id, list management |
 | **Localization** | Chinese (zh-CN, default) and English (en); all player-visible text is driven by localization files |
+
+## Installation
+
+Download the latest release archive from [Releases](https://github.com/MEngYangX/PracLab/releases) and extract it into the CS2 server's `game/csgo/` directory (keep the `addons/` structure inside the archive):
+
+- **PracLab-x.x.x-with-cssharp-\<platform\>.zip** — pick this one for a first-time install; it bundles the CounterStrikeSharp runtime
+- **PracLab-x.x.x.zip** — plugin only; requires installing [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) and [Metamod:Source](https://www.sourcemm.net/) yourself
+- **PracLabReplayEngine-x.x.x.zip** — optional replay engine (Metamod C++ plugin) providing the `.record/.replay` command family
+
+For detailed steps, see the [Installation guide](installation.md).
 
 ## Architecture
 
@@ -37,10 +45,10 @@
 
 **Two-layer architecture**:
 
-- **L1 — PracLab CSSharp C#**: player commands, chat UI, config loading, localization, JSON read/write for recording files.
-- **L2 — PracLabReplayEngine C++ Metamod**: hooks engine functions to implement frame-level movement recording and playback; exports the `PRL_*` C API for C# P/Invoke.
+- **Layer 1 — PracLab CSSharp C#**: player commands, chat UI, config loading, localization, JSON read/write for recording files.
+- **Layer 2 — PracLabReplayEngine C++ Metamod**: hooks engine functions to implement frame-level movement recording and playback; exports the `PRL_*` C API for C# P/Invoke.
 
-The cross-language ABI contract is documented in [`replay-engine/include/praclab_replay.h`](../../replay-engine/include/praclab_replay.h). **When L 2 is not deployed**: the main plugin still works; only `.record/.replay` family commands show a "replay engine not loaded" message to players.
+The cross-language ABI contract is documented in [`replay-engine/include/praclab_replay.h`](../../replay-engine/include/praclab_replay.h). **When Layer 2 is not deployed**: the main plugin still works; only `.record/.replay` family commands show a "replay engine not loaded" message to players.
 
 ## Project Structure
 
@@ -73,7 +81,7 @@ PracLab/
 ├── lang/                     # Localization
 │   ├── zh-CN.json
 │   └── en.json
-├── replay-engine/            # L2 C++ Metamod plugin
+├── replay-engine/            # Layer 2 C++ Metamod plugin
 │   ├── src/                      # record/playback/hook implementations
 │   ├── include/praclab_replay.h  # Cross-language ABI header
 │   ├── configs/                  # Metamod VDF + gamedata.json
@@ -89,7 +97,7 @@ PracLab/
 
 This project drew inspiration from the following open-source projects during development:
 
-- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Reference for the replay engine's bot control, `CCSBot::Update` hook, and `PlayerRunCommand` recording.
+- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Replay engine integrated from upstream, including bot control (`CCSBot::Update`/`Upkeep` hooks), movement recording and playback (`ProcessMovement`/`PlayerRunCommand`), weapon locking, purchase control, voice chat, `BotProfile`, and drop-weapon event playback modules.
 - [MatchZy](https://github.com/shobhit-pathak/MatchZy) — Reference for project structure, documentation organization, and CS2 plugin engineering practices.
 
 ## License

@@ -9,38 +9,46 @@ PracLab consists of two independent layers that can be deployed on demand:
 
 ## 1. Prerequisites
 
-| Dependency | Version |
-| --- | --- |
-| CS2 server | Latest |
-| [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) | 1.0.371+ |
-| [Metamod:Source](https://www.sourcemm.net/) | Latest stable |
+| Dependency |
+| --- |
+| CS2 server |
+| [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) |
+| [Metamod:Source](https://www.sourcemm.net/) |
 
-## 2. Deploy Layer 1 to the CS2 server
+## 2. Deploy Metamod:Source and CounterStrikeSharp
 
-Assume the CS2 server root directory is `<CS2>` (the directory that contains `csgo/`):
+The two layers of PracLab rely on these frameworks respectively: Layer 2 (the C++ engine plugin) is loaded by [Metamod:Source](https://www.sourcemm.net/), and Layer 1 (the C# plugin) runs on [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp). If they are not installed yet, follow the official guide first:
 
-### 2.1 Copy plugin files
+- [CounterStrikeSharp Getting Started](https://docs.cssharp.dev/docs/guides/getting-started.html)
+
+After deployment, run `meta list` in the server console — CounterStrikeSharp should appear in the output.
+
+## 3. Deploy Layer 1 to the CS2 server
+
+Assume the CS2 server root directory is `<CS2>`:
+
+### 3.1 Copy plugin files
 
 ```
-<CS2>/csgo/addons/counterstrikesharp/plugins/PracLab/
+<CS2>/game/csgo/addons/counterstrikesharp/plugins/PracLab/
 ├── PracLab.dll
 └── lang/
     ├── zh-CN.json
     └── en.json
 ```
 
-### 2.2 Copy config files
+### 3.2 Copy config files
 
 ```
-<CS2>/csgo/cfg/PracLab/
-├── config.cfg                 # Master toggle + default language
-├── prac.cfg                   # Practice-mode ConVars
-└── dryrun.cfg                 # Competitive-mode ConVars (used by .dryrun)
+<CS2>/game/csgo/cfg/PracLab/
+├── config.cfg                 # Plugin config
+├── prac.cfg                   # Practice-mode config
+└── dryrun.cfg                 # Competitive-mode config
 ```
 
 The repository's `cfg/PracLab/` directory already contains default configs — simply copy the whole directory.
 
-### 2.3 Start the server
+### 3.3 Start the server
 
 On startup, the console should show:
 
@@ -52,33 +60,31 @@ On startup, the console should show:
 
 Players can type `.prac` in chat to enable practice mode.
 
-## 3. Deploy Layer 2 to the CS2 server
+## 4. Deploy Layer 2 to the CS2 server
 
-### 3.1 Copy the shared library
+### 4.1 Download the Release package and extract
 
-**Windows**:
-
-```
-<CS2>/csgo/addons/PracLabReplayEngine/bin/win64/PracLabReplayEngine.dll
-```
-
-**Linux**:
+Download `PracLabReplayEngine.zip` from [GitHub Releases](https://github.com/MEngYangX/PracLab/releases/latest) and extract it into `<CS2>/game/csgo/` (the archive already contains the `addons/` directory structure):
 
 ```
-<CS2>/csgo/addons/PracLabReplayEngine/bin/linuxsteamrt64/PracLabReplayEngine.so
+<CS2>/game/csgo/addons/PracLabReplayEngine/
+├── gamedata.json                               # Signature scan config
+└── bin/
+    ├── win64/PracLabReplayEngine.dll           # Windows
+    └── linuxsteamrt64/PracLabReplayEngine.so   # Linux
+<CS2>/game/csgo/addons/metamod/
+├── PracLabReplayEngine.vdf                     # Windows
+└── PracLabReplayEngine.linux.vdf               # Linux
 ```
 
-### 3.2 Copy the Metamod VDF and gamedata
+### 4.2 Remove the VDF for the other platform
 
-The repository's [`replay-engine/configs/`](../../replay-engine/configs/) directory provides ready-made files:
+The archive ships VDFs for both platforms, and Metamod loads every `*.vdf` under `addons/metamod/` — a wrong VDF causes load errors. Delete the one that does not match your platform:
 
-```
-<CS2>/csgo/addons/metamod/PracLabReplayEngine.vdf         # Windows
-<CS2>/csgo/addons/metamod/PracLabReplayEngine.linux.vdf   # Linux (rename to .vdf)
-<CS2>/csgo/addons/PracLabReplayEngine/gamedata.json       # Signature scan config
-```
+- **Windows**: keep `PracLabReplayEngine.vdf`, delete `PracLabReplayEngine.linux.vdf`
+- **Linux**: keep `PracLabReplayEngine.linux.vdf`, delete `PracLabReplayEngine.vdf`
 
-### 3.3 Verify
+### 4.3 Verify
 
 Start the server; the console should show:
 
@@ -88,7 +94,7 @@ Start the server; the console should show:
 
 Or run `.currentrecord` in the PracLab console — if it says "replay engine not loaded", Layer 2 is not properly deployed.
 
-## 4. Upgrade & Rollback
+## 5. Upgrade & Rollback
 
 | Operation | Steps |
 | --- | --- |

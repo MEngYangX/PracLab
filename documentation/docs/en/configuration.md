@@ -1,10 +1,10 @@
 # Configuration
 
-PracLab's config files all live under the server's `<CS2>/csgo/cfg/PracLab/` directory. The repository's [`cfg/PracLab/`](../../cfg/PracLab/) provides default templates. After editing, restart the plugin or the server for changes to take effect.
+PracLab's config files all live under the server's `<CS2>/game/csgo/cfg/PracLab/` directory. The repository's [`cfg/PracLab/`](../../cfg/PracLab/) provides default templates. After editing, restart the plugin or the server for changes to take effect.
 
 ## 1. `config.cfg` — Master Toggle
 
-**Path**: `<CS2>/csgo/cfg/PracLab/config.cfg`
+**Path**: `<CS2>/game/csgo/cfg/PracLab/config.cfg`
 **Format**: One ConVar per line; `key value` separated by a space; `//` starts a comment.
 
 | ConVar | Type | Default | Description |
@@ -14,7 +14,7 @@ PracLab's config files all live under the server's `<CS2>/csgo/cfg/PracLab/` dir
 
 ## 2. Recordings Directory
 
-**Path**: `<CS2>/csgo/cfg/PracLab/recordings/`
+**Path**: `<CS2>/game/csgo/cfg/PracLab/recordings/`
 
 JSON recording files saved by `.record` are stored here, with the filename pattern `<Id>_<PlayerName>.json`. `.clearrecord <Id>` and `.clearrecordall` delete both the file and the in-memory entry.
 

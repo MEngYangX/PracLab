@@ -53,7 +53,7 @@ PracLab intercepts global chat (`say`) and team chat (`say_team`) to recognize p
 | Command        | Alias | Description                                                                   |
 | -------------- | ----- | ----------------------------------------------------------------------------- |
 | `.fastforward` | `.ff` | Start 10× server time fast-forward for 20 seconds, then auto-revert |
-| `.noflash`     | —     | Toggle flashbang immunity for the player (event-driven, other players unaffected) |
+| `.noflash`     | —     | Toggle flashbang immunity for the player |
 | `.god`         | —     | Toggle god mode for the player                                                |
 
 ### Spawn Point Teleport

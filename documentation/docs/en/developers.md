@@ -4,14 +4,14 @@ This page describes how to build both layers of PracLab from source, along with 
 
 ## 1. Build Dependencies
 
-### 1.1 L1 (C# plugin)
+### 1.1 Layer 1 (C# plugin)
 
 | Dependency | Version | Notes |
 | --- | --- | --- |
 | [.NET SDK](https://dotnet.microsoft.com/download) | 10.0+ | To build Layer 1 |
 | [CounterStrikeSharp.API](https://www.nuget.org/packages/CounterStrikeSharp.API) | 1.0.371+ | Auto-restored via NuGet |
 
-### 1.2 L2 (C++ Metamod plugin)
+### 1.2 Layer 2 (C++ Metamod plugin)
 
 | Dependency | Version | Notes |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ This page describes how to build both layers of PracLab from source, along with 
 | funchook | v1.1.3 | CMake FetchContent (or local source) |
 | nlohmann/json | v3.11.3 | CMake FetchContent (or local source) |
 
-## 2. Build L1 (PracLab C# plugin)
+## 2. Build Layer 1 (PracLab C# plugin)
 
 ```powershell
 # Run from the repository root
@@ -41,7 +41,7 @@ bin/Release/net10.0/
     └── en.json                # English localization
 ```
 
-## 3. Build L2 (PracLabReplayEngine C++ plugin)
+## 3. Build Layer 2 (PracLabReplayEngine C++ plugin)
 
 ### 3.1 Prepare the SDKs
 

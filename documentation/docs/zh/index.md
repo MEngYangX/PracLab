@@ -2,20 +2,28 @@
 
 > CS2（Counter-Strike 2）练习模式插件，基于 [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) 与 [Metamod:Source](https://www.sourcemm.net/)，为竞技训练场景提供完整的道具/出生点/Bot/回放辅助命令。
 
-- **目标框架**：.NET 10 + CounterStrikeSharp.API 1.0.371
-- **支持地图**：Inferno、Mirage、Nuke、Ancient、Vertigo、Anubis、Dust II、Train、Cache
-
 ## 功能概览
 
-| 分类 | 说明 |
-| --- | --- |
-| **地图管理** | 9 张现役/备用地图快速切换（`.inferno`、`.mirage` 等） |
-| **机器人** | 在玩家位置生成 Bot（站/蹲），自动管理碰撞，准星指向踢出 |
-| **出生点** | 9 条传送命令（同队/CT/T × 编号/最近/最远）+ 方框可视化 + E 键瞄准传送 |
-| **道具重投** | 7 条命令重投任意类型的最后投掷物，并支持回到投掷位置 |
-| **Dryrun** | 从 prac 临时切换到竞技配置打一个回合，结束自动回到 prac |
-| **回放系统** | 录制玩家移动轨迹并由 Bot 复现，支持并行回放、按 Id 回放、列表管理 |
-| **多语言** | 中文（zh-CN，默认）与英文（en），所有玩家可见文本走本地化文件 |
+| 分类          | 说明                                           |
+| ----------- | -------------------------------------------- |
+| **地图管理**    | 地图快速切换（`.inferno`、`.mirage` 等）               |
+| **机器人**     | 在玩家位置生成 Bot（站/蹲），自动管理碰撞，准星指向踢出               |
+| **出生点**     | 9 条传送命令（同队/CT/T × 编号/最近/最远）+ 方框可视化 + E 键瞄准传送 |
+| **投掷物反解搜索** | 按投掷方式 × 力度网格搜索可投进目标区域的描点角度，6 种道具类型 × 3 档精度   |
+| **道具重投**    | 7 条命令重投任意类型的最后投掷物，并支持回到投掷位置                  |
+| **Dryrun**  | 从 prac 临时切换到竞技配置打一个回合，结束自动回到 prac            |
+| **回放系统**    | 录制玩家移动轨迹并由 Bot 复现，支持并行回放、按 Id 回放、列表管理        |
+| **多语言**     | 中文（zh-CN，默认）与英文（en），所有玩家可见文本走本地化文件           |
+
+## 安装
+
+从 [Releases](https://github.com/MEngYangX/PracLab/releases) 下载最新版本压缩包，解压到 CS2 服务器 `game/csgo/` 目录（保留压缩包内 `addons/` 结构）：
+
+- **PracLab-x.x.x-with-cssharp-\<platform\>.zip** — 首次安装请选择此版本，已内含 CounterStrikeSharp 运行时
+- **PracLab-x.x.x.zip** — 仅插件本体，需自行安装 [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) 与 [Metamod:Source](https://www.sourcemm.net/)
+- **PracLabReplayEngine-x.x.x.zip** — 可选的回放引擎（Metamod C++ 插件），提供 `.record/.replay` 系列功能
+
+详细安装步骤见[安装部署](安装.md)。
 
 ## 架构
 
@@ -35,12 +43,14 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
+
+
 **两层架构**：
 
-- **L1 — PracLab CSSharp C#**：玩家命令、聊天 UI、配置加载、本地化、录制文件 JSON 读写。
-- **L2 — PracLabReplayEngine C++ Metamod**：通过 Hook 引擎函数实现帧级移动录制与回放，导出 `PRL_*` C API 供 C# P/Invoke 调用。
+- **Layer 1 — PracLab CSSharp C#**：玩家命令、聊天 UI、配置加载、本地化、录制文件 JSON 读写。
+- **Layer 2 — PracLabReplayEngine C++ Metamod**：通过 Hook 引擎函数实现帧级移动录制与回放，导出 `PRL_*` C API 供 C# P/Invoke 调用。
 
-跨语言 ABI 契约见 [`replay-engine/include/praclab_replay.h`](../../replay-engine/include/praclab_replay.h)。**未部署 L2 时**：插件主体功能仍可用，仅 `.record/.replay` 系列命令向玩家提示「回放引擎未加载」。
+跨语言 ABI 契约见 [`replay-engine/include/praclab_replay.h`](../../replay-engine/include/praclab_replay.h)。**未部署 Layer 2 时**：插件主体功能仍可用，仅 `.record/.replay` 系列命令向玩家提示「回放引擎未加载」。
 
 ## 项目结构
 
@@ -73,7 +83,7 @@ PracLab/
 ├── lang/                     # 本地化
 │   ├── zh-CN.json
 │   └── en.json
-├── replay-engine/            # L2 C++ Metamod 插件
+├── replay-engine/            # Layer 2 C++ Metamod 插件
 │   ├── src/                      # 录制/回放/hook 实现
 │   ├── include/praclab_replay.h  # 跨语言 ABI 头文件
 │   ├── configs/                  # Metamod VDF + gamedata.json
@@ -89,7 +99,7 @@ PracLab/
 
 本项目在开发过程中参考了以下开源项目：
 
-- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — 回放引擎的 Bot 控制、`CCSBot::Update` Hook、`PlayerRunCommand` 录制等核心思路参考。
+- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — 回放引擎基于上游代码集成，包含 Bot 控制（CCSBot::Update/Upkeep Hook）、移动录制与回放（ProcessMovement/PlayerRunCommand）、武器锁定、购买控制、语音发送、BotProfile、丢掷武器事件回放等模块。
 - [MatchZy](https://github.com/shobhit-pathak/MatchZy) — 项目结构、文档组织与 CS2 插件工程实践的参考。
 
 ## 许可证
