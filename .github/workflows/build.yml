@@ -243,7 +243,7 @@ jobs:
             echo "| \`PracLab-${{ env.PRACLAB_VERSION }}.zip\` | C# 插件（仅 PracLab，需已安装 CSSharp）/ C# plugin only (requires CSSharp pre-installed) |"
             echo "| \`PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip\` | C# 插件 + CSSharp Linux 运行时 / C# plugin + CSSharp Linux runtime |"
             echo "| \`PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip\` | C# 插件 + CSSharp Windows 运行时 / C# plugin + CSSharp Windows runtime |"
-            echo "| \`PracLabReplayEngine-${{ env.PRACLAB_VERSION }}.zip\` | C++ 回放引擎（L2，可选）/ C++ replay engine (L2, optional) |"
+            echo "| \`PracLabReplayEngine-${{ env.PRACLAB_VERSION }}.zip\` | C++ 回放引擎（Layer 2，可选）/ C++ replay engine (Layer 2, optional) |"
           } >> release_notes.md
 
       - name: Create Release
