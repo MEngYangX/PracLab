@@ -9,6 +9,11 @@ on:
       - ".github/**"
   workflow_dispatch:
 
+# 根部最小权限：未显式声明的 job（三个 build job）只读；
+# release job 需创建 Release，自行声明 contents: write 覆盖
+permissions:
+  contents: read
+
 jobs:
   build-csharp:
     name: Build C# Plugin
