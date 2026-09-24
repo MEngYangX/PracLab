@@ -118,7 +118,7 @@ public partial class PracLab : BasePlugin
 
     public override string ModuleName => "PracLab Plugin";
 
-    public override string ModuleVersion => "0.3.1";
+    public override string ModuleVersion => "0.4.0";
 
     /// <summary>
     /// 插件加载入口。加载配置、设置默认语言、注册聊天监听器、构建路由表、注册事件监听器。
@@ -210,6 +210,12 @@ public partial class PracLab : BasePlugin
 
         // 确保录制文件存储目录存在（csgo/cfg/PracLab/recordings/）
         EnsureRecordingsDir();
+
+        // 练习 HUD 初始化：加载 hud.cfg（推送经 CSSharp 内置 CCSCustomHudLayoutExtensions，无需签名扫描）
+        InitPracticeHud();
+
+        // 注册 HUD OnTick 采样监听器（仅注册一次，回调内按会话开关短路）
+        RegisterHudTickListener();
     }
 
     /// <summary>
@@ -355,6 +361,15 @@ public partial class PracLab : BasePlugin
         AddRoute(new CommandRoute("nadelist", ["nl"], HandleNadeList, RequiresPracMode: true));
         AddRoute(new CommandRoute("nadeclearlist", ["ncl"], HandleNadeClearList, RequiresPracMode: true));
         AddRoute(new CommandRoute("nadegoto", ["ng"], HandleNadeGoto, RequiresPracMode: true));
+
+        // —— T17 练习 HUD（5 条）——
+        // 四模块独立 toggle（复刻 cs-match-hud 判定算法 + CCSCustomHudLayout 原生 HUD），
+        // .hudreset 清空当前玩家全部 HUD 统计。实现见 Commands/PracticeHud/。
+        AddRoute(new CommandRoute("strafe", [], (p, a) => HandleHudModuleToggle(p, PracticeHudModule.Strafe, "strafe"), RequiresPracMode: true));
+        AddRoute(new CommandRoute("shot", [], (p, a) => HandleHudModuleToggle(p, PracticeHudModule.Shot, "shot"), RequiresPracMode: true));
+        AddRoute(new CommandRoute("sync", [], (p, a) => HandleHudModuleToggle(p, PracticeHudModule.Sync, "sync"), RequiresPracMode: true));
+        AddRoute(new CommandRoute("recoil", [], (p, a) => HandleHudModuleToggle(p, PracticeHudModule.Recoil, "recoil"), RequiresPracMode: true));
+        AddRoute(new CommandRoute("hudreset", [], HandleHudReset, RequiresPracMode: true));
     }
 
     /// <summary>
