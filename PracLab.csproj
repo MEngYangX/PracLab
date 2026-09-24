@@ -10,11 +10,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.374" />
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.375" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="lang\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <!-- hud.cfg 默认配置随构建输出（部署时复制到 csgo/cfg/PracLab/） -->
+    <None Update="cfg\PracLab\hud.cfg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
