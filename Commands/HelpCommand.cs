@@ -90,6 +90,15 @@ public partial class PracLab
             ("dryrun", "help.cmd.dryrun"),
             ("restartround", "help.cmd.restartround"),
         ]),
+        ("help.cat.hud", [
+            ("strafe", "help.cmd.strafe"),
+            ("shot", "help.cmd.shot"),
+            ("sync", "help.cmd.sync"),
+            ("hudreset", "help.cmd.hudreset"),
+        ]),
+        ("help.cat.trace", [
+            ("recoil", "help.cmd.recoil"),
+        ]),
         ("help.cat.replay", [
             ("record", "help.cmd.record"),
             ("stoprecord", "help.cmd.stoprecord"),

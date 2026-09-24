@@ -79,6 +79,9 @@ public partial class PracLab
             // 清空全部搜索状态（进行中 Job、结果列表与可视化实体）
             ClearAllSearchState();
 
+            // 练习 HUD：清空会话与布局实体引用（实体随地图销毁，下次开启模块时重建）
+            ResetPracticeHudForMapChange();
+
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Core map changed to {mapName}, all states reset");
         }
         catch (Exception ex)
@@ -325,6 +328,9 @@ public partial class PracLab
 
             // 清理 .nadetest 待测意图与按键追踪状态
             ClearNadeTestState(steamId);
+
+            // 清理练习 HUD 会话（全部玩家模块关闭时销毁 HUD 实体）
+            RemoveHudSession(player);
 
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Player {player.PlayerName} disconnected, search state cleared ({cleared} results)");
         }
