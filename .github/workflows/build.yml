@@ -76,6 +76,20 @@ jobs:
             PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip
             PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip
 
+  validate-hud:
+    name: Validate HUD Sources
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 静态校验 hud/ 的 VXML/VCSS 与 C# 侧协议一致性（面板 id / dialog variables / 选择器白名单）。
+      # 完整编译产出 prac_hud.vpk 需要 Windows + Steam 客户端 + Workshop Tools DLC 登录，
+      # CI 无法提供，故 VPK 由本地构建（见开发者文档「构建 HUD VPK 资源」）。
+      - name: Validate HUD Sources
+        shell: pwsh
+        run: .\tools\build_hud_resources.ps1 -Action Validate
+
   build-cpp-linux:
     name: Build C++ Replay Engine (Linux)
     runs-on: ubuntu-latest
@@ -164,7 +178,7 @@ jobs:
 
   release:
     name: Create Release
-    needs: [build-csharp, build-cpp-linux, build-cpp-windows]
+    needs: [build-csharp, validate-hud, build-cpp-linux, build-cpp-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -249,6 +263,7 @@ jobs:
             echo "| \`PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip\` | C# 插件 + CSSharp Linux 运行时 / C# plugin + CSSharp Linux runtime |"
             echo "| \`PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip\` | C# 插件 + CSSharp Windows 运行时 / C# plugin + CSSharp Windows runtime |"
             echo "| \`PracLabReplayEngine-${{ env.PRACLAB_VERSION }}.zip\` | C++ 回放引擎（Layer 2，可选）/ C++ replay engine (Layer 2, optional) |"
+            echo "| \`prac_hud.vpk\` | 练习 HUD 面板资源（复制到客户端 game/csgo/overrides/ 或发布创意工坊）/ Practice HUD panel resource (client game/csgo/overrides/ or Workshop) |"
           } >> release_notes.md
 
       - name: Create Release
@@ -266,3 +281,4 @@ jobs:
             release/PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-linux.zip
             release/PracLab-${{ env.PRACLAB_VERSION }}-with-cssharp-windows.zip
             PracLabReplayEngine-${{ env.PRACLAB_VERSION }}.zip
+            dist/prac_hud.vpk
