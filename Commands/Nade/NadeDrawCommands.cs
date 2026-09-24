@@ -789,7 +789,8 @@ public partial class PracLab
     /// <param name="start">起点世界坐标。</param>
     /// <param name="end">终点世界坐标。</param>
     /// <param name="color">线段颜色。</param>
-    private void AddDrawBeam(List<CEntityInstance> registry, Vector start, Vector end, Color color)
+    /// <param name="width">线宽（默认 1，.nadedraw 保持原值；弹道轨迹折线传 2 提升可见性）。</param>
+    private void AddDrawBeam(List<CEntityInstance> registry, Vector start, Vector end, Color color, float width = 1f)
     {
         var beam = Utilities.CreateEntityByName<CBeam>("beam");
         if (beam == null || !beam.IsValid)
@@ -799,7 +800,7 @@ public partial class PracLab
         }
 
         beam.LifeState = 1;       // 保持存活
-        beam.Width = 1;           // 线宽
+        beam.Width = width;       // 线宽
         beam.Render = color;
 
         // 设置起点
