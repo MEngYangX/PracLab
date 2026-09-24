@@ -8,12 +8,12 @@
 
 ### Fixed
 
-- **ReplayEngine 预加载路径错误（GitHub Issue #5）**：CSSharp v1.0.372 的 `Server.GameDirectory` 返回游戏根目录（`…/game`）而非 mod 目录（`…/game/csgo`），`PreloadReplayEngineDll` 拼接的 DLL 路径缺少 `csgo` 一级，控制台报 `ReplayEngine DLL not found` 警告（功能不受阻断，引擎仍由 Metamod 经 vdf 加载）。改为双路径探测（`{GD}/addons/…` 与 `{GD}/csgo/addons/…`，命中即用）；`EnsureRecordingsDir` 录制目录存在同类拼接问题，同步改为双路径探测。
+- **ReplayEngine DLL 预加载路径错误**：兼容 CSSharp v1.0.372 `GameDirectory` 路径变更，改为双路径探测，[Issue #5](https://github.com/MEngYangX/PracLab/issues/5)。
 
 ### Changed
 
-- **回放引擎更新至 BotController v0.6.3**：同步上游 [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) v0.6.1 → v0.6.3（ABI 18 → 20，引擎版本 0.2.2）。新增：丢掷武器（drop weapon）事件的 tick 级录制与回放（`ReplayTick` 结构扩展 10 个事件字段至 228 字节，C# 侧 P/Invoke 结构同步）、`ProjectileBirthAlign` 投掷物出生对齐模块、`UsercmdMovement` / `UsercmdSuppression` API（PracLab C# 层暂未使用，保持 ABI 一致并预留）；命名空间重构（`BotController::` → `bot_controller::`）；gamedata 追加 `vtidx::DropWeapon` 偏移；控制台输出精简与全量代码格式化。
-- **CSSharp 依赖升级**：`PracLab.csproj` 中 `CounterStrikeSharp.API` 版本由 1.0.372 升级到 1.0.374。v1.0.374。
+- **回放引擎更新至 BotController v0.6.3**：新增丢掷武器录制回放与投掷物出生对齐模块，ABI 18 → 20。
+- **CSSharp 依赖升级**：1.0.372 → 1.0.374，详见 [v1.0.374](https://github.com/roflmuffin/CounterStrikeSharp/releases/tag/v1.0.374)。
 
 ## [0.3.0] - 2026-08-19
 
