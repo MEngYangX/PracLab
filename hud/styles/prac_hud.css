@@ -1,0 +1,115 @@
+/*
+ * PracLab 练习 HUD 样式（Panorama VCSS，老版语法，参照 CCSCustomHudLayout 受限模型）。
+ * 仅使用参考实现（SwiftOnlineMusicPlayerSW2）中验证过的属性，不引入 VJS/HTML/audio。
+ *
+ * 颜色约定（与 PracLab 消息颜色规范对齐）：
+ *   判定完美/稳定 = 绿 #4be04b，优秀 = 黄 #ffd24b，偏早/偏晚/超差 = 红 #ff5a5a
+ *   标题提示色 = LightBlue #8fd3ff
+ */
+
+/* 服务器 SetHasClassForPlayer 切换的显隐开关（面板初始 class 含 hidden） */
+.hidden
+{
+    visibility: collapse;
+}
+
+/* 根面板：铺满全屏、不拦截输入，子面板从左上角开始垂直堆叠 */
+.PracHudRoot
+{
+    width: 100%;
+    height: 100%;
+    flow-children: down;
+    padding: 44px 0px 0px 44px;
+}
+
+/* 各模块面板：半透明深色圆角背景条 */
+.PracHudPanel
+{
+    width: 300px;
+    height: fit-children;
+    flow-children: down;
+    margin-bottom: 8px;
+    padding: 8px 12px 10px 12px;
+    background-color: #101418d9;
+    border-radius: 8px;
+    border: 1px solid #ffffff14;
+    box-shadow: #00000099 0px 4px 10px 0px;
+    overflow: clip;
+}
+
+/* 面板标题（固定文案，写在 VXML 中） */
+.PracHudTitle
+{
+    width: 100%;
+    height: 18px;
+    margin-bottom: 2px;
+    font-family: Stratum2, 'Arial Unicode MS';
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 0.6px;
+    color: #8fd3ff;
+    text-shadow: 0px 1px 3px 1.5 #000000e6;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 主判定/主数值行（急停判定、开枪标签、当前同步率、当前弹序） */
+.PracHudVerdict
+{
+    width: 100%;
+    height: 28px;
+    margin-top: 2px;
+    font-family: Stratum2, 'Arial Unicode MS';
+    font-size: 21px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0px 2px 4px 2.0 #000000f5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 次行（平均差/误差/平均同步率/弹道偏移串） */
+.PracHudDetail
+{
+    width: 100%;
+    height: 20px;
+    font-family: Stratum2, 'Arial Unicode MS';
+    font-size: 15px;
+    color: #ffffffcc;
+    text-shadow: 0px 1px 3px 1.5 #000000e6;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 统计行（成功率/占比/最佳值等小字） */
+.PracHudStats
+{
+    width: 100%;
+    height: 16px;
+    margin-top: 2px;
+    font-family: Stratum2, 'Arial Unicode MS';
+    font-size: 11px;
+    color: #ffffff88;
+    text-shadow: 0px 1px 2px 1.5 #000000cc;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/*
+ * 急停判定色钩子：服务器对 strafe-panel 叠加以下互斥 class，
+ * 控制判定行文本颜色（完美=绿、优秀=黄、偏早/偏晚=红）。不叠加时保持默认白色。
+ */
+.strafe-perfect .PracHudVerdict
+{
+    color: #4be04b;
+}
+
+.strafe-good .PracHudVerdict
+{
+    color: #ffd24b;
+}
+
+.strafe-bad .PracHudVerdict
+{
+    color: #ff5a5a;
+}

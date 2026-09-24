@@ -1,0 +1,48 @@
+<root>
+  <styles>
+    <include src="s2r://panorama/styles/custom_game/prac_hud.vcss_c" />
+  </styles>
+
+  <!--
+    PracLab 练习 HUD（CCSCustomHudLayout 受限资源模型：纯 VXML/VCSS，无 VJS/HTML/audio）。
+
+    服务器 -> HUD 协议（与 C# 侧 Commands/PracticeHud 保持一致）：
+      dialog variables（{s:name} 引用，由 SetDialogVariableStringForPlayer 逐玩家推送）：
+        strafe-panel : strafe-label / strafe-diff / strafe-stats
+        shot-panel   : shot-label   / shot-error  / shot-stats
+        sync-panel   : sync-current / sync-avg    / sync-best
+      CSS classes（由 SetHasClassForPlayer 逐玩家切换）：
+        strafe-panel : hidden，另可叠加判定色钩子 strafe-perfect / strafe-good / strafe-bad
+        shot-panel   : hidden
+        sync-panel   : hidden
+      注意：根面板不允许携带 id（CCSCustomHudLayout 编译约束），
+      根面板恒显示、恒不拦截输入，显隐全部由子面板的 hidden class 控制。
+      弹道追踪（.recoil）无 HUD 面板：压枪轨迹仅以世界空间 beam 绘制（复用 .nadedraw 基建）。
+    所有面板初始折叠（hidden），由服务器按玩家逐个显示；面板本身 hittest=false（纯被动显示，无指针交互）。
+  -->
+  <Panel class="PracHudRoot" hittest="false">
+    <!-- 急停评估：同轴移动键切换时序判定 -->
+    <Panel id="strafe-panel" class="PracHudPanel hidden" hittest="false">
+      <Label class="PracHudTitle" text="急停评估" hittest="false" />
+      <Label class="PracHudVerdict" text="{s:strafe-label}" hittest="false" />
+      <Label class="PracHudDetail" text="{s:strafe-diff}" hittest="false" />
+      <Label class="PracHudStats" text="{s:strafe-stats}" hittest="false" />
+    </Panel>
+
+    <!-- 开枪稳定：IN_ATTACK 边沿水平速度误差 -->
+    <Panel id="shot-panel" class="PracHudPanel hidden" hittest="false">
+      <Label class="PracHudTitle" text="开枪稳定" hittest="false" />
+      <Label class="PracHudVerdict" text="{s:shot-label}" hittest="false" />
+      <Label class="PracHudDetail" text="{s:shot-error}" hittest="false" />
+      <Label class="PracHudStats" text="{s:shot-stats}" hittest="false" />
+    </Panel>
+
+    <!-- 空中同步：空中 strafe 同步率 -->
+    <Panel id="sync-panel" class="PracHudPanel hidden" hittest="false">
+      <Label class="PracHudTitle" text="空中同步" hittest="false" />
+      <Label class="PracHudVerdict" text="{s:sync-current}" hittest="false" />
+      <Label class="PracHudDetail" text="{s:sync-avg}" hittest="false" />
+      <Label class="PracHudStats" text="{s:sync-best}" hittest="false" />
+    </Panel>
+  </Panel>
+</root>
