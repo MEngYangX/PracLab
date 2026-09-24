@@ -9,11 +9,11 @@ PracLab consists of two independent layers that can be deployed on demand:
 
 ## 1. Prerequisites
 
-| Dependency |
-| --- |
-| CS2 server |
+| Dependency                                                             |
+| ---                                                                    |
+| CS2 server                                                             |
 | [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) |
-| [Metamod:Source](https://www.sourcemm.net/) |
+| [Metamod:Source](https://www.sourcemm.net/)                            |
 
 ## 2. Deploy Metamod:Source and CounterStrikeSharp
 
@@ -94,10 +94,28 @@ Start the server; the console should show:
 
 Or run `.currentrecord` in the PracLab console — if it says "replay engine not loaded", Layer 2 is not properly deployed.
 
-## 5. Upgrade & Rollback
+## 5. Practice HUD Resource (Optional)
 
-| Operation | Steps |
-| --- | --- |
-| Upgrade Layer 1 | Overwrite `PracLab.dll` and `lang/*.json` etc. |
+The in-game HUD panels (`.strafe` / `.shot` / `.sync`) require the client to load the VPK resource `prac_hud.vpk` (the `.recoil` spray trace is drawn in world space and does not depend on this resource). Its sources live in the repository's [`hud/`](../../hud/) directory; see the [developer guide](developers.md) for how to build it.
+
+**Without this resource, plugin-side functionality is unaffected**: judgment and statistics still work server-side (commands toggle normally, stats keep accumulating) — players simply don't see the HUD panels.
+
+Two distribution paths:
+
+**① Steam Workshop (recommended for public servers)**: publish `prac_hud.vpk` to the Steam Workshop; players who subscribe load it automatically, no manual steps needed.
+
+**② Local overrides (local dev / self-hosted servers)**: copy `prac_hud.vpk` into `<CS2>/game/csgo/overrides/` on both the client and the server, and add the following line to both `gameinfo.gi` files (above the `Game csgo` line):
+
+```
+Game  csgo/overrides/prac_hud.vpk
+```
+
+Restart the client and the server for the change to take effect.
+
+## 6. Upgrade & Rollback
+
+| Operation       | Steps                                                                                                                    |
+| ---             | ---                                                                                                                      |
+| Upgrade Layer 1 | Overwrite `PracLab.dll` and `lang/*.json` etc.                                                                           |
 | Upgrade Layer 2 | Stop the server → overwrite `PracLabReplayEngine.dll/.so` → start the server (Metamod plugins do not support hot reload) |
-| Rollback | Replace with the older files; config files are backward compatible |
+| Rollback        | Replace with the older files; config files are backward compatible                                                       |

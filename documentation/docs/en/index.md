@@ -4,16 +4,17 @@
 
 ## Feature Overview
 
-| Category | Description |
-| --- | --- |
-| **Map management** | Quick map switching (`.inferno`, `.mirage`, etc.) |
-| **Bots** | Spawn a bot at the player position (standing/crouching), auto-managed collision, crosshair-targeted kick |
-| **Spawn points** | 9 teleport commands (same-team/CT/T × numbered/nearest/farthest) + box visualization + E-key aim teleport |
-| **Grenade inverse search** | Grid-searches aim angles that land in the target region across throw modes × strengths; 6 item types × 3 accuracy tiers |
-| **Grenade rethrow** | 7 commands to rethrow the last grenade of any type, plus return-to-throw-position |
-| **Dryrun** | Temporarily switch from prac to competitive config for one round, auto-revert to prac when round ends |
-| **Replay system** | Record player movement trajectories and play them back via bots; supports parallel playback, playback-by-Id, list management |
-| **Localization** | Chinese (zh-CN, default) and English (en); all player-visible text is driven by localization files |
+| Category                   | Description                                                                                                                                           |
+| ---                        | ---                                                                                                                                                   |
+| **Map management**         | Quick map switching (`.inferno`, `.mirage`, etc.)                                                                                                     |
+| **Bots**                   | Spawn a bot at the player position (standing/crouching), auto-managed collision, crosshair-targeted kick                                              |
+| **Spawn points**           | 9 teleport commands (same-team/CT/T × numbered/nearest/farthest) + box visualization + E-key aim teleport                                             |
+| **Grenade inverse search** | Grid-searches aim angles that land in the target region across throw modes × strengths; 6 item types × 3 accuracy tiers                               |
+| **Grenade rethrow**        | 7 commands to rethrow the last grenade of any type, plus return-to-throw-position                                                                     |
+| **Dryrun**                 | Temporarily switch from prac to competitive config for one round, auto-revert to prac when round ends                                                 |
+| **Replay system**          | Record player movement trajectories and play them back via bots; supports parallel playback, playback-by-Id, list management                          |
+| **Practice HUD**           | In-game real-time training feedback: counter-strafe assessment, shot stability, air strafe sync, recoil trace (requires the client-side VPK resource) |
+| **Localization**           | Chinese (zh-CN, default) and English (en); all player-visible text is driven by localization files                                                    |
 
 ## Installation
 

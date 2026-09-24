@@ -1,13 +1,13 @@
 # PracLab
 
-[English](README_EN.md) | 中文
+English | [中文](README_CN.md)
 
 <p align="center">
-  CS2（Counter-Strike 2）练习模式插件，基于 CounterStrikeSharp 与 Metamod:Source
+  A CS2 (Counter-Strike 2) practice-mode plugin built on CounterStrikeSharp and Metamod:Source, providing a complete set of utility commands for grenade/spawn/bot/replay training scenarios.
 </p>
 
 <p align="center">
-  <sub><i>注：本项目部分文档与代码由 AI 辅助生成。</i></sub>
+  <sub><i>Note: Some documentation and code in this project were generated with AI assistance.</i></sub>
 </p>
 
 <p align="center">
@@ -30,44 +30,51 @@
     <img src="https://img.shields.io/badge/C%23-14-239120" alt="C# 14">
   </a>
   <a href="#">
-    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.374+-blue" alt="CounterStrikeSharp 1.0.374+">
+    <img src="https://img.shields.io/badge/CounterStrikeSharp-1.0.375+-blue" alt="CounterStrikeSharp 1.0.375+">
   </a>
 </p>
 
-## 功能概览
+## Feature Overview
 
-| 分类          | 说明                                           |
-| ----------- | -------------------------------------------- |
-| **地图管理**    | 地图快速切换（`.inferno`、`.mirage` 等）               |
-| **机器人**     | 在玩家位置生成 Bot（站/蹲），自动管理碰撞，准星指向踢出               |
-| **出生点**     | 9 条传送命令（同队/CT/T × 编号/最近/最远）+ 方框可视化 + E 键瞄准传送 |
-| **投掷物反解搜索** | 按投掷方式 × 力度网格搜索可投进目标区域的描点角度，6 种道具类型 × 3 档精度   |
-| **道具重投**    | 7 条命令重投任意类型的最后投掷物，并支持回到投掷位置                  |
-| **Dryrun**  | 从 prac 临时切换到竞技配置打一个回合，结束自动回到 prac            |
-| **回放系统**    | 录制玩家移动轨迹并由 Bot 复现，支持并行回放、按 Id 回放、列表管理        |
-| **多语言**     | 中文（zh-CN，默认）与英文（en），所有玩家可见文本走本地化文件           |
+| Category | Description |
+| --- | --- |
+| **Map management** | Quick map switching (`.inferno`, `.mirage`, etc.) |
+| **Bots** | Spawn a bot at the player position (standing/crouching), auto-managed collision, crosshair-targeted kick |
+| **Spawn points** | 9 teleport commands (same-team/CT/T × numbered/nearest/farthest) + box visualization + E-key aim teleport |
+| **Grenade inverse search** | Grid-searches aim angles that land in the target region across throw modes × strengths; 6 item types × 3 accuracy tiers |
+| **Grenade rethrow** | 7 commands to rethrow the last grenade of any type, plus return-to-throw-position |
+| **Dryrun** | Temporarily switch from prac to competitive config for one round, auto-revert to prac when round ends |
+| **Replay system** | Record player movement trajectories and play them back via bots; supports parallel playback, playback-by-Id, list management |
+| **Practice HUD** | In-game real-time training feedback: counter-strafe assessment, shot stability, air strafe sync, spray trace (the former three require the client-side VPK resource; the spray trace is drawn in world space) |
+| **Localization** | Chinese (zh-CN, default) and English (en); all player-visible text is driven by localization files |
 
-## 安装
+## Installation
 
-从 [Releases](https://github.com/MEngYangX/PracLab/releases) 下载最新版本压缩包，解压到 CS2 服务器 `game/csgo/` 目录（保留压缩包内 `addons/` 结构）：
+Download the latest release archive from [Releases](https://github.com/MEngYangX/PracLab/releases) and extract it into the CS2 server's `game/csgo/` directory (keep the `addons/` structure inside the archive):
 
-- **PracLab-x.x.x-with-cssharp-\<platform\>.zip** — 首次安装请选择此版本，已内含 CounterStrikeSharp 运行时
-- **PracLab-x.x.x.zip** — 仅插件本体，需自行安装 [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) 与 [Metamod:Source](https://www.sourcemm.net/)
-- **PracLabReplayEngine-x.x.x.zip** — 可选的回放引擎（Metamod C++ 插件），提供 `.record/.replay` 系列功能
+- **PracLab-x.x.x-with-cssharp-\<platform\>.zip** — pick this one for a first-time install; it bundles the CounterStrikeSharp runtime
+- **PracLab-x.x.x.zip** — plugin only; requires installing [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) and [Metamod:Source](https://www.sourcemm.net/) yourself
+- **PracLabReplayEngine-x.x.x.zip** — optional replay engine (Metamod C++ plugin) providing the `.record/.replay` command family
 
-详细安装步骤见[安装文档](https://mengyangx.github.io/PracLab/zh/安装/)。
+The Practice HUD (`.strafe`/`.shot`/`.sync`) panel display requires the client to install the optional `prac_hud.vpk` resource; judgment and statistics still work without it. The spray trace (`.recoil`) is drawn in world space and does not depend on this resource. See the "Practice HUD Resource" section of the [installation guide](https://mengyangx.github.io/PracLab/en/installation/).
 
-## 文档
+For detailed steps, see the [installation guide](https://mengyangx.github.io/PracLab/en/installation/).
 
-完整文档请访问：<https://mengyangx.github.io/PracLab>
+## Documentation
 
-## 致谢
+Full documentation is available at: https://mengyangx.github.io/PracLab
 
-本项目在开发过程中参考了以下开源项目：
+## Credits
 
-- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — 回放引擎基于上游代码集成，包含 Bot 控制（CCSBot::Update/Upkeep Hook）、移动录制与回放（ProcessMovement/PlayerRunCommand）、武器锁定、购买控制、语音发送、BotProfile、丢掷武器事件回放等模块。
-- [MatchZy](https://github.com/shobhit-pathak/MatchZy) — 项目结构、文档组织与 CS2 插件工程实践的参考。
+This project drew inspiration from the following open-source projects during development:
 
-## 许可证
+- [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) — The C# plugin framework this project runs on (Layer 1).
+- [Metamod:Source](https://github.com/alliedmodders/metamod-source/) — The Metamod framework loading the C++ engine plugin (Layer 2).
+- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Replay engine integrated from upstream, including bot control (`CCSBot::Update`/`Upkeep` hooks), movement recording and playback (`ProcessMovement`/`PlayerRunCommand`), weapon locking, purchase control, voice chat, `BotProfile`, and drop-weapon event playback modules.
+- [MatchZy](https://github.com/shobhit-pathak/MatchZy) — Reference for project structure, documentation organization, and CS2 plugin engineering practices.
+- [cs-match-hud](https://github.com/qianjiachun/cs-match-hud) — Product design and data-organization reference for the Practice HUD (counter-strafe assessment / shot stability / air sync / spray trace).
+- [cs2kz-metamod](https://github.com/KZGlobalTeam/cs2kz-metamod) — The air-sync rate algorithm is ported from its jumpstats module (speed-gain tick detection).
 
-参见 [LICENSE](LICENSE)。
+## License
+
+See [LICENSE](LICENSE).

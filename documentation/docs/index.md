@@ -8,8 +8,8 @@ Built on [CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp) 
 
 ***
 
-| 语言 / Language              |
+| 语言 / Language            |
 | -------------------------- |
-| **[中文](zh/index.md)**      |
+| **[中文](zh/index.md)**    |
 | **[English](en/index.md)** |
 
