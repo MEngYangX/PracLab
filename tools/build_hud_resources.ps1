@@ -54,11 +54,19 @@ $outVpk = Join-Path $distRoot "$addonName.vpk"
 # 弹道追踪（.recoil）无 HUD 面板：压枪轨迹仅以世界空间 beam 绘制，故无 recoil-panel/recoil-* 协议项
 $panelIds = @("strafe-panel", "shot-panel", "sync-panel")
 $dialogVariables = @(
-    "strafe-label", "strafe-diff", "strafe-stats",
-    "shot-label", "shot-error", "shot-stats",
-    "sync-current", "sync-avg", "sync-best"
+    "strafe-title", "strafe-label", "strafe-diff", "strafe-stats",
+    "shot-title", "shot-label", "shot-error", "shot-stats",
+    "sync-title", "sync-current", "sync-avg", "sync-best"
 )
 $strafeHooks = @("strafe-perfect", "strafe-good", "strafe-bad")
+
+# 移动编辑模式（.hudmove）：网格面板初始 hidden，9 个格子 id 与九宫格位置 class
+$hudMoveFixedIds = @("hudmove-grid")
+$hudMoveSlotIds = @(0..2 | ForEach-Object { $r = $_; 0..2 | ForEach-Object { "hudmove-slot-r${r}c${_}" } })
+$hudMovePosClasses = @(0..2 | ForEach-Object { $r = $_; 0..2 | ForEach-Object { ".pos-r${r}c${_}" } })
+
+# 面板内容按钮（*-select）：包裹面板内容供编辑模式点击，恒显示
+$panelSelectIds = @("strafe-select", "shot-select", "sync-select")
 
 function Write-Log {
     param([string]$Message)
@@ -146,11 +154,14 @@ function Test-HudSources {
     [xml]$layout = Read-TextUtf8 -Path $layoutPath
 
     # 受限元素/属性白名单：无 scripts、无 VJS/HTML/audio 等任何受限模型之外的节点
+    # Button：仅用于 .hudmove 交互（内容热区与网格格子/完成按钮），点击经 OnCustomHudClicked 回传；
+    # 客户端 CustomHud 校验不允许 Button 携带 hittest 属性（会导致整个布局拒绝渲染），故只允许 id/class
     $allowedNodes = @{
         "root"    = @()
         "styles"  = @()
         "include" = @("src")
         "Panel"   = @("id", "class", "hittest")
+        "Button"  = @("id", "class")
         "Label"   = @("id", "class", "hittest", "text")
     }
     foreach ($node in $layout.SelectNodes("//*")) {
@@ -184,6 +195,31 @@ function Test-HudSources {
         }
     }
 
+    # 面板内容按钮（*-select）：必须为功能面板的直接子 Button（编辑模式点击热区）
+    foreach ($selectId in $panelSelectIds) {
+        $button = $layout.SelectSingleNode("//Button[@id='$selectId']")
+        if (-not $button) { throw "HUD layout is missing select button: $selectId" }
+        $parent = $button.ParentNode
+        if ($parent.Name -ne "Panel" -or $panelIds -notcontains $parent.GetAttribute("id")) {
+            throw "Select button '$selectId' must be a direct child of a functional panel."
+        }
+    }
+
+    # 移动编辑模式元素：网格面板/完成按钮初始 hidden，9 个格子 id 齐全
+    foreach ($moveId in $hudMoveFixedIds) {
+        $node = $layout.SelectSingleNode("//Panel[@id='$moveId'] | //Button[@id='$moveId']")
+        if (-not $node) { throw "HUD layout is missing move-mode element id: $moveId" }
+        $class = $node.GetAttribute("class")
+        if ($class -notmatch '(^|\s)hidden(\s|$)') {
+            throw "Move-mode element '$moveId' must start with the 'hidden' class."
+        }
+    }
+    foreach ($slotId in $hudMoveSlotIds) {
+        if (-not $layout.SelectSingleNode("//Button[@id='$slotId']")) {
+            throw "HUD layout is missing move-mode slot button: $slotId"
+        }
+    }
+
     # dialog variable 引用（{s:name} 绑定写法，与参考实现一致）
     $layoutText = $layout.OuterXml
     foreach ($variable in $dialogVariables) {
@@ -192,10 +228,12 @@ function Test-HudSources {
         }
     }
 
-    # 样式表关键选择器：显隐开关、面板结构与判定色钩子
+    # 样式表关键选择器：显隐开关、面板结构、判定色钩子与移动编辑模式（网格/格子/完成/九宫格位置）
     $style = Read-TextUtf8 -Path $stylePath
-    $requiredSelectors = @(".hidden", ".PracHudRoot", ".PracHudPanel", ".PracHudTitle",
-                           ".PracHudVerdict", ".PracHudDetail", ".PracHudStats") + $strafeHooks
+    $requiredSelectors = @(".hidden", ".PracHudRoot", ".PracHudPanel", ".PracHudSelectArea", ".PracHudTitle",
+                           ".PracHudVerdict", ".PracHudDetail", ".PracHudStats",
+                           ".HudMoveGrid", ".HudMoveRow", ".HudMoveSlot",
+                           ".move-selected") + $strafeHooks + $hudMovePosClasses
     foreach ($selector in $requiredSelectors) {
         if ($style -notmatch [regex]::Escape($selector)) {
             throw "Stylesheet is missing required selector: $selector"

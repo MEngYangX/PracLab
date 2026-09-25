@@ -370,6 +370,8 @@ public partial class PracLab : BasePlugin
         AddRoute(new CommandRoute("sync", [], (p, a) => HandleHudModuleToggle(p, PracticeHudModule.Sync, "sync"), RequiresPracMode: true));
         AddRoute(new CommandRoute("recoil", [], (p, a) => HandleHudModuleToggle(p, PracticeHudModule.Recoil, "recoil"), RequiresPracMode: true));
         AddRoute(new CommandRoute("hudreset", [], HandleHudReset, RequiresPracMode: true));
+        // .hudmove 面板移动编辑模式：释放鼠标点选面板与 3×3 网格位置放置，Tab/完成按钮退出
+        AddRoute(new CommandRoute("hudmove", [], HandleHudMove, RequiresPracMode: true));
     }
 
     /// <summary>

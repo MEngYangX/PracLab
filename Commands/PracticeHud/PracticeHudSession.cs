@@ -66,6 +66,23 @@ internal sealed class PracticeHudSession
     /// <summary>各模块开关（独立记忆，互不影响）。</summary>
     private readonly bool[] _moduleEnabled = new bool[4];
 
+    /// <summary>
+    /// 是否处于 .hudmove 移动编辑模式（输入捕获开启、可点击面板选中和放置）。
+    /// 退出路径：放置完成 / Tab 键（Scoreboard 位）/ 再次 .hudmove / 断线 / 地图切换。
+    /// </summary>
+    public bool IsMoveEditMode;
+
+    /// <summary>移动编辑模式中已选中的面板（null = 尚未选中，网格层不可见）。</summary>
+    public PracticeHudModule? MoveSelectedModule;
+
+    /// <summary>
+    /// 各模块面板当前位置（位置索引 = 行*3+列；行 0-2、列 0-2，共 3×3=9 档九宫格）。
+    /// 默认为左列三点（strafe=r0c0、shot=r1c0、sync=r2c0，即纵向均匀分布），与 VXML/CSS 初始布局一致；
+    /// 位置互斥：目标格被占用时交换。仅会话内记忆：换图/重连后回到默认位置。
+    /// Recoil 无 HUD 面板，对应槽位恒为 null。
+    /// </summary>
+    public readonly int?[] PanelPositions = { 0, 3, 6, null };
+
     /// <summary>dialog variable 差量推送缓存（键 = panelId|variableName）。</summary>
     private readonly Dictionary<string, string> _dialogCache = new(StringComparer.Ordinal);
 

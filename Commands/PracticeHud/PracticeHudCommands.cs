@@ -25,6 +25,33 @@ public partial class PracLab
     /// <summary>空中同步面板 ID。</summary>
     private const string HudSyncPanelId = "sync-panel";
 
+    /// <summary>急停面板内容按钮 ID（.hudmove 编辑模式点击热区）。</summary>
+    private const string HudStrafeSelectId = "strafe-select";
+
+    /// <summary>开枪稳定面板内容按钮 ID。</summary>
+    private const string HudShotSelectId = "shot-select";
+
+    /// <summary>空中同步面板内容按钮 ID。</summary>
+    private const string HudSyncSelectId = "sync-select";
+
+    /// <summary>移动编辑模式网格面板 ID（3×3 九宫格）。</summary>
+    private const string HudMoveGridPanelId = "hudmove-grid";
+
+    /// <summary>移动编辑模式网格格子 ID 前缀（完整 id 形如 hudmove-slot-r{行}c{列}）。</summary>
+    private const string HudMoveSlotPrefix = "hudmove-slot-r";
+
+    /// <summary>面板位置 class 前缀（完整 class 形如 pos-r{行}c{列}，九宫格）。</summary>
+    private const string HudMovePosClassPrefix = "pos-r";
+
+    /// <summary>移动编辑模式选中态 class 名。</summary>
+    private const string HudMoveSelectedClass = "move-selected";
+
+    /// <summary>
+    /// Tab（记分板）键位：CSSharp PlayerButtons 为 UInt64 位域，Scoreboard 位于 bit 33
+    /// （1&lt;&lt;16 是 Speed），用于 .hudmove 编辑模式的快速退出。
+    /// </summary>
+    private const PlayerButtons HudMoveExitButton = PlayerButtons.Scoreboard;
+
     // 弹道追踪（.recoil）无 HUD 面板：压枪轨迹仅以世界空间 beam 绘制（复用 .nadedraw 基建）
 
     /// <summary>弹道轨迹 beam 折线颜色（亮绿，对应 cs-match-hud 弹道轨迹曲线配色）。</summary>
@@ -54,6 +81,9 @@ public partial class PracLab
     /// <summary>HUD OnTick 监听器是否已注册（RegisterListener 无法注销，用标志守卫）。</summary>
     private bool _hudTickRegistered;
 
+    /// <summary>HUD 点击监听器是否已注册（RegisterListener 无法注销，用标志守卫）。</summary>
+    private bool _hudClickListenerRegistered;
+
     // ==================== 初始化 ====================
 
     /// <summary>
@@ -78,6 +108,34 @@ public partial class PracLab
 
         // 注册 weapon_fire 事件（压枪轨迹逐发序列判定，覆盖全自动连发）
         RegisterPracticeHudRecoilEvents();
+
+        // 注册 HUD 点击监听（.hudmove 编辑模式：点击面板选中、点击网格放置、点击完成退出）
+        RegisterHudClickListener();
+    }
+
+    /// <summary>
+    /// 注册 OnCustomHudClicked 监听器（仅一次；热重载后由 _hudClickListenerRegistered 守卫）。
+    /// 点击事件仅在输入捕获开启（.hudmove 编辑模式）时产生，其余情况忽略。
+    /// </summary>
+    private void RegisterHudClickListener()
+    {
+        if (_hudClickListenerRegistered)
+            return;
+
+        RegisterListener<Listeners.OnCustomHudClicked>((player, layout, buttonId) =>
+        {
+            try
+            {
+                HandleHudClick(player, buttonId);
+            }
+            catch (Exception ex)
+            {
+                Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error PracticeHud click handler failed - {ex.Message}");
+            }
+        });
+
+        _hudClickListenerRegistered = true;
+        Server.PrintToConsole("[PracLab] PracticeHud click listener registered");
     }
 
     // ==================== 命令处理 ====================
@@ -99,6 +157,10 @@ public partial class PracLab
 
         var newValue = !session.IsModuleEnabled(module);
         session.SetModuleEnabled(module, newValue);
+
+        // 兜底：移动编辑模式中关闭任意模块即终止编辑（选中面板可能刚被隐藏，且避免状态叠加）
+        if (session.IsMoveEditMode)
+            ExitHudMoveMode(player, session, notify: false);
 
         // 关闭弹道追踪：清除世界空间轨迹折线（开启时不清理，继续延长当前轨迹）
         if (!newValue && module == PracticeHudModule.Recoil)
@@ -164,6 +226,254 @@ public partial class PracLab
         player.PrintToChat(Localizer.ForPlayer(player, "hud.reset"));
         Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD stats reset for {player.PlayerName} slot={player.Slot}");
     }
+
+    // ==================== .hudmove 面板移动编辑模式 ====================
+
+    /// <summary>
+    /// .hudmove — 进入/退出面板移动编辑模式：
+    /// 进入后开启输入捕获（释放鼠标），点击要移动的面板选中，再点击 3×3 网格位置放置；
+    /// 放置完成 / Tab 键 / 再次 .hudmove 均退出并收回鼠标。
+    /// </summary>
+    private void HandleHudMove(CCSPlayerController player, string args)
+    {
+        Server.PrintToConsole("[PracLab] HandleHudMove: executing...");
+
+        var session = GetOrCreateHudSession(player);
+        if (session == null)
+        {
+            player.PrintToChat(Localizer.ForPlayer(player, "spawn.no_pawn"));
+            return;
+        }
+
+        // 编辑模式中再次执行：退出（与完成按钮等效）
+        if (session.IsMoveEditMode)
+        {
+            ExitHudMoveMode(player, session, notify: true);
+            return;
+        }
+
+        // 无任何可见面板（Recoil 无 HUD 面板，不计入）时无可移动对象
+        if (!session.IsModuleEnabled(PracticeHudModule.Strafe)
+            && !session.IsModuleEnabled(PracticeHudModule.Shot)
+            && !session.IsModuleEnabled(PracticeHudModule.Sync))
+        {
+            player.PrintToChat(Localizer.ForPlayer(player, "hud.hudmove.no_modules"));
+            return;
+        }
+
+        // 编辑模式需要实体推送网格/选中态；实体重建后差量缓存失效全量重推
+        if (!_hudManager.EnsureLayout())
+        {
+            player.PrintToChat(Localizer.ForPlayer(player, "hud.not_ready"));
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Error PracticeHud layout entity unavailable, {player.PlayerName} .hudmove rejected");
+            return;
+        }
+
+        if (_hudManager.LayoutWasRecreated)
+        {
+            foreach (var s in _hudSessions.Values)
+                s.InvalidateCaches();
+        }
+
+        session.IsMoveEditMode = true;
+        session.MoveSelectedModule = null;
+
+        // 开启输入捕获（释放鼠标指针）；此后玩家无法转视角，直到退出编辑模式
+        _hudManager.SetInputCapture(session, enabled: true);
+
+        player.PrintToChat(Localizer.ForPlayer(player, "hud.hudmove.enter"));
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD move edit mode entered for {player.PlayerName} slot={player.Slot}");
+    }
+
+    /// <summary>
+    /// 处理 HUD 点击回调（OnCustomHudClicked）。仅在移动编辑模式中响应：
+    /// 点击功能面板 = 选中/取消选中；点击网格格子 = 放置；点击完成按钮 = 退出。
+    /// </summary>
+    /// <param name="player">点击的玩家。</param>
+    /// <param name="buttonId">被点击按钮的 VXML id。</param>
+    private void HandleHudClick(CCSPlayerController player, string buttonId)
+    {
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD click received: buttonId='{buttonId}' slot={player.Slot}");
+
+        if (string.IsNullOrEmpty(buttonId))
+            return;
+
+        var session = _hudSessions.TryGetValue(player.Slot, out var s) ? s : null;
+        if (session == null || !session.IsMoveEditMode)
+            return;
+
+        // 功能面板点击：选中 / 取消选中
+        var module = HudModuleByPanelId(buttonId);
+        if (module.HasValue)
+        {
+            SelectHudPanelForMove(player, session, module.Value);
+            return;
+        }
+
+        // 网格格子点击：放置已选面板
+        if (buttonId.StartsWith(HudMoveSlotPrefix, StringComparison.Ordinal))
+        {
+            if (session.MoveSelectedModule.HasValue)
+                PlaceHudPanel(player, session, session.MoveSelectedModule.Value, buttonId);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// 编辑模式中选中/取消选中面板：选中时面板高亮并显示 3×3 网格；
+    /// 再次点击已选中面板则取消选中（可改选其他面板）。
+    /// 注意：必须使用点击事件携带的 player——OnCustomHudClicked 回调上下文中
+    /// Utilities.GetPlayers() 不可靠，FindControllerBySlot 会返回 null。
+    /// </summary>
+    private void SelectHudPanelForMove(CCSPlayerController player, PracticeHudSession session, PracticeHudModule module)
+    {
+        var panelId = HudPanelIdByModule(module);
+
+        // 重复点击已选中面板：取消选中，隐藏网格等待改选
+        if (session.MoveSelectedModule == module)
+        {
+            session.MoveSelectedModule = null;
+            _hudManager.PushClass(session, panelId, HudMoveSelectedClass, hasClass: false);
+            _hudManager.PushClass(session, HudMoveGridPanelId, HudHiddenClass, hasClass: true);
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD move selection cleared ({panelId}) slot={session.Slot}");
+            return;
+        }
+
+        // 清除旧选中高亮
+        if (session.MoveSelectedModule.HasValue)
+            _hudManager.PushClass(session, HudPanelIdByModule(session.MoveSelectedModule.Value), HudMoveSelectedClass, hasClass: false);
+
+        session.MoveSelectedModule = module;
+        _hudManager.PushClass(session, panelId, HudMoveSelectedClass, hasClass: true);
+        _hudManager.PushClass(session, HudMoveGridPanelId, HudHiddenClass, hasClass: false);
+
+        player.PrintToChat(Localizer.ForPlayer(player, "hud.hudmove.selected",
+            Localizer.ForPlayer(player, HudPanelNameKey(module))));
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD move selection: {panelId} slot={session.Slot}");
+    }
+
+    /// <summary>
+    /// 将已选面板放置到网格对应位置（6 行 × 3 列，差量切换 pos-r{行} + pos-c{列} class），随后退出编辑模式。
+    /// 目标位置被其他功能面板占用时两者交换（被占面板移到本面板原位置），保证面板永不重叠。
+    /// player 为点击事件携带的控制器（原因同 SelectHudPanelForMove）。
+    /// </summary>
+    /// <param name="player">点击的玩家。</param>
+    /// <param name="session">玩家会话。</param>
+    /// <param name="module">被移动的模块。</param>
+    /// <param name="slotButtonId">网格格子按钮 id（hudmove-slot-r{行}c{列}）。</param>
+    private void PlaceHudPanel(CCSPlayerController player, PracticeHudSession session, PracticeHudModule module, string slotButtonId)
+    {
+        // 解析格子 id 中的行列（r{0-2}c{0-2}），防御非法值
+        var rowPart = slotButtonId.AsSpan(HudMoveSlotPrefix.Length);
+        var cIndex = rowPart.IndexOf('c');
+        if (cIndex < 0 || !int.TryParse(rowPart[..cIndex], out var row) || !int.TryParse(rowPart[(cIndex + 1)..], out var col)
+            || row is < 0 or > 2 || col is < 0 or > 2)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning PracticeHud invalid move slot id: {slotButtonId}");
+            return;
+        }
+
+        var positionIndex = row * 3 + col;
+        var panelId = HudPanelIdByModule(module);
+        var newClass = $"{HudMovePosClassPrefix}{row}c{col}";
+        var oldPosition = session.PanelPositions[(int)module]!.Value;
+        var oldClass = $"{HudMovePosClassPrefix}{oldPosition / 3}c{oldPosition % 3}";
+
+        // 目标位置被其他功能面板占用 → 交换：对方移到本面板原位置（位置互斥，面板永不重叠）
+        foreach (var other in new[] { PracticeHudModule.Strafe, PracticeHudModule.Shot, PracticeHudModule.Sync })
+        {
+            if (other == module || session.PanelPositions[(int)other] != positionIndex)
+                continue;
+
+            var otherPanelId = HudPanelIdByModule(other);
+            _hudManager.PushClass(session, otherPanelId, newClass, hasClass: false);
+            _hudManager.PushClass(session, otherPanelId, oldClass, hasClass: true);
+            session.PanelPositions[(int)other] = oldPosition;
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD panel {otherPanelId} swapped to {oldClass} slot={session.Slot}");
+            break;
+        }
+
+        // 本面板差量切换位置 class；差量缓存自动跳过未变化值（原地放置时无推送）
+        if (oldPosition != positionIndex)
+        {
+            _hudManager.PushClass(session, panelId, oldClass, hasClass: false);
+            _hudManager.PushClass(session, panelId, newClass, hasClass: true);
+        }
+        session.PanelPositions[(int)module] = positionIndex;
+
+        // 放置完成即退出编辑模式（不再播报通用退出提示，改用移动成功提示）
+        ExitHudMoveMode(player, session, notify: false);
+        player.PrintToChat(Localizer.ForPlayer(player, "hud.hudmove.moved",
+            Localizer.ForPlayer(player, HudPanelNameKey(module)),
+            Localizer.ForPlayer(player, $"hud.pos.r{row}c{col}")));
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD panel {panelId} moved to {newClass} slot={session.Slot}");
+    }
+
+    /// <summary>
+    /// 推送单个面板的当前位置 class（九宫格 pos-r{行}c{列}，共 1 个）。在显隐 class 之前调用，
+    /// 确保面板显示瞬间位置已就位；差量缓存自动跳过未变化值。
+    /// </summary>
+    private void PushPanelPositionClasses(PracticeHudSession session, PracticeHudModule module)
+    {
+        var position = session.PanelPositions[(int)module];
+        if (position == null)
+            return;
+
+        var panelId = HudPanelIdByModule(module);
+        _hudManager.PushClass(session, panelId, $"{HudMovePosClassPrefix}{position.Value / 3}c{position.Value % 3}", hasClass: true);
+    }
+
+    /// <summary>
+    /// 退出移动编辑模式：清除选中高亮、隐藏网格、收回鼠标指针（必须执行，防止玩家卡鼠标）。
+    /// </summary>
+    /// <param name="player">目标玩家控制器（调用方已持有，回调上下文中不可重新查找）。</param>
+    /// <param name="session">玩家会话。</param>
+    /// <param name="notify">true 时向玩家播报退出提示（放置完成路径由调用方另行提示）。</param>
+    private void ExitHudMoveMode(CCSPlayerController player, PracticeHudSession session, bool notify)
+    {
+        if (session.MoveSelectedModule.HasValue)
+            _hudManager.PushClass(session, HudPanelIdByModule(session.MoveSelectedModule.Value), HudMoveSelectedClass, hasClass: false);
+
+        _hudManager.PushClass(session, HudMoveGridPanelId, HudHiddenClass, hasClass: true);
+        _hudManager.SetInputCapture(session, enabled: false);
+
+        session.IsMoveEditMode = false;
+        session.MoveSelectedModule = null;
+
+        if (notify && player.IsValid)
+            player.PrintToChat(Localizer.ForPlayer(player, "hud.hudmove.cancel"));
+
+        Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} HUD move edit mode exited slot={session.Slot}");
+    }
+
+    /// <summary>模块对应的 HUD 面板 id（Recoil 无面板，返回空串）。</summary>
+    private static string HudPanelIdByModule(PracticeHudModule module) => module switch
+    {
+        PracticeHudModule.Strafe => HudStrafePanelId,
+        PracticeHudModule.Shot => HudShotPanelId,
+        PracticeHudModule.Sync => HudSyncPanelId,
+        _ => string.Empty,
+    };
+
+    /// <summary>
+    /// 面板 id 对应的模块（非功能面板返回 null）。面板内容按钮（*-select，与面板 id 无拼接关系）同样映射到所属模块。
+    /// </summary>
+    private static PracticeHudModule? HudModuleByPanelId(string panelId) => panelId switch
+    {
+        HudStrafePanelId or HudStrafeSelectId => PracticeHudModule.Strafe,
+        HudShotPanelId or HudShotSelectId => PracticeHudModule.Shot,
+        HudSyncPanelId or HudSyncSelectId => PracticeHudModule.Sync,
+        _ => null,
+    };
+
+    /// <summary>面板显示名 lang 键（标题与移动反馈共用）。</summary>
+    private static string HudPanelNameKey(PracticeHudModule module) => module switch
+    {
+        PracticeHudModule.Strafe => "hud.panel.strafe",
+        PracticeHudModule.Shot => "hud.panel.shot",
+        PracticeHudModule.Sync => "hud.panel.sync",
+        _ => "hud.panel.strafe",
+    };
 
     /// <summary>
     /// 获取或创建玩家会话；玩家 pawn 不可用（未进场）时返回 null。
@@ -274,6 +584,12 @@ public partial class PracLab
             }
 
             var buttons = player.Buttons;
+
+            // —— 移动编辑模式：Tab（记分板键）快速退出，收回鼠标恢复视角 ——
+            if (session.IsMoveEditMode && (buttons & HudMoveExitButton) != 0)
+            {
+                ExitHudMoveMode(player, session, notify: true);
+            }
 
             // —— 急停评估：四移动键边沿 ——
             if (session.IsModuleEnabled(PracticeHudModule.Strafe))
@@ -639,6 +955,11 @@ public partial class PracLab
     /// </summary>
     private void PushHudPanelVisibility(PracticeHudSession session)
     {
+        // 位置 class 先于显隐推送，确保面板显示瞬间位置已就位（差量缓存自动跳过未变化值）
+        PushPanelPositionClasses(session, PracticeHudModule.Strafe);
+        PushPanelPositionClasses(session, PracticeHudModule.Shot);
+        PushPanelPositionClasses(session, PracticeHudModule.Sync);
+
         _hudManager.PushClass(session, HudStrafePanelId, HudHiddenClass, !session.IsModuleEnabled(PracticeHudModule.Strafe));
         _hudManager.PushClass(session, HudShotPanelId, HudHiddenClass, !session.IsModuleEnabled(PracticeHudModule.Shot));
         _hudManager.PushClass(session, HudSyncPanelId, HudHiddenClass, !session.IsModuleEnabled(PracticeHudModule.Sync));
@@ -661,6 +982,10 @@ public partial class PracLab
             var engine = session.StrafeEngine;
             var last = engine.LastRecord;
             var stats = engine.GetStats();
+
+            // 标题按玩家语言推送（面板标题不再硬编码于 VXML）
+            _hudManager.PushDialogVariable(session, HudStrafePanelId, "strafe-title",
+                Localizer.ForPlayer(player, "hud.panel.strafe"));
 
             var label = last.HasValue ? Localizer.ForPlayer(player, StrafeLabelKey(last.Value)) : string.Empty;
             var diff = last.HasValue ? $"{last.Value.DiffTicks.ToString("+0;-0;0")} tick" : string.Empty;
@@ -694,6 +1019,9 @@ public partial class PracLab
             var last = engine.LastRecord;
             var stats = engine.GetStats();
 
+            _hudManager.PushDialogVariable(session, HudShotPanelId, "shot-title",
+                Localizer.ForPlayer(player, "hud.panel.shot"));
+
             var label = last.HasValue ? Localizer.ForPlayer(player, ShotLabelKey(last.Value.Label)) : string.Empty;
             var error = last.HasValue ? last.Value.SpeedRatio.ToString("0.00") : string.Empty;
             var statsText = Localizer.ForPlayer(player, "hud.shot.stats", stats.StableRatePercent.ToString("0.#"));
@@ -710,6 +1038,9 @@ public partial class PracLab
             var current = engine.CurrentSyncRate.ToString("0.#");
             var avg = engine.AverageSyncRate().ToString("0.#");
             var best = engine.BestSyncRate().ToString("0.#");
+
+            _hudManager.PushDialogVariable(session, HudSyncPanelId, "sync-title",
+                Localizer.ForPlayer(player, "hud.panel.sync"));
 
             _hudManager.PushDialogVariable(session, HudSyncPanelId, "sync-current", Localizer.ForPlayer(player, "hud.sync.current", current));
             _hudManager.PushDialogVariable(session, HudSyncPanelId, "sync-avg", Localizer.ForPlayer(player, "hud.sync.average", avg));

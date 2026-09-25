@@ -94,6 +94,7 @@ public partial class PracLab
             ("strafe", "help.cmd.strafe"),
             ("shot", "help.cmd.shot"),
             ("sync", "help.cmd.sync"),
+            ("hudmove", "help.cmd.hudmove"),
             ("hudreset", "help.cmd.hudreset"),
         ]),
         ("help.cat.trace", [

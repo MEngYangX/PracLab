@@ -157,6 +157,32 @@ internal sealed class CustomHudManager
     }
 
     /// <summary>
+    /// 对单个玩家开启/关闭 HUD 输入捕获（释放/收回鼠标指针，供 .hudmove 编辑模式点击交互）。
+    /// 实体或玩家无效时直接跳过。
+    /// </summary>
+    /// <param name="session">目标玩家会话。</param>
+    /// <param name="enabled">true = 释放鼠标给 HUD（可点击面板），false = 收回（恢复视角操作）。</param>
+    public void SetInputCapture(PracticeHudSession session, bool enabled)
+    {
+        var entity = _layoutEntity;
+        if (entity is not { IsValid: true })
+            return;
+
+        var player = Utilities.GetPlayerFromSlot(session.Slot);
+        if (player == null || !player.IsValid)
+            return;
+
+        try
+        {
+            CCSCustomHudLayoutExtensions.SetInputCaptureEnabled(entity, player, enabled);
+        }
+        catch (Exception ex)
+        {
+            Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Warning PracticeHud SetInputCapture failed slot={session.Slot} - {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// 对单个玩家差量设置面板 CSS class（状态未变化不调用原生函数）。
     /// 实体或玩家无效时直接跳过（不更新差量缓存，实体恢复后会全量重推）。
     /// </summary>

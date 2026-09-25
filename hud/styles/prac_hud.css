@@ -13,22 +13,19 @@
     visibility: collapse;
 }
 
-/* 根面板：铺满全屏、不拦截输入，子面板从左上角开始垂直堆叠 */
+/* 根面板：铺满全屏、不拦截输入；flow 默认 none，子面板自由定位（面板九宫格 + 网格层） */
 .PracHudRoot
 {
     width: 100%;
     height: 100%;
-    flow-children: down;
-    padding: 44px 0px 0px 44px;
 }
 
-/* 各模块面板：半透明深色圆角背景条 */
+/* 各模块面板：半透明深色圆角背景条（默认左上列，垂直三点由各面板默认 margin-top 决定） */
 .PracHudPanel
 {
     width: 300px;
     height: fit-children;
-    flow-children: down;
-    margin-bottom: 8px;
+    margin-left: 44px;
     padding: 8px 12px 10px 12px;
     background-color: #101418d9;
     border-radius: 8px;
@@ -37,7 +34,108 @@
     overflow: clip;
 }
 
-/* 面板标题（固定文案，写在 VXML 中） */
+/*
+ * 面板内容按钮（.hudmove 编辑模式的点击热区）：包裹全部文本行，恒显示——
+ * 输入捕获关闭时无鼠标指针不会误触，无需显隐切换。
+ */
+.PracHudSelectArea
+{
+    width: 100%;
+    height: fit-children;
+    flow-children: down;
+}
+
+/*
+ * 面板位置钩子（服务器初始即推送，无独立默认定位）：
+ *   位置 class pos-r{0..2}c{0..2} 九宫格，行方向控制纵向（上/中/下）、列方向控制横向（左/中/右）。
+ * 位置 class 由服务器差量切换，选择器带 #id 提升特异性。
+ */
+#strafe-panel.pos-r0c0, #shot-panel.pos-r0c0, #sync-panel.pos-r0c0
+{
+    vertical-align: top;
+    margin-top: 44px;
+    horizontal-align: left;
+    margin-left: 44px;
+}
+
+#strafe-panel.pos-r0c1, #shot-panel.pos-r0c1, #sync-panel.pos-r0c1
+{
+    vertical-align: top;
+    margin-top: 44px;
+    horizontal-align: center;
+    margin-left: 0px;
+}
+
+#strafe-panel.pos-r0c2, #shot-panel.pos-r0c2, #sync-panel.pos-r0c2
+{
+    vertical-align: top;
+    margin-top: 44px;
+    horizontal-align: right;
+    margin-left: 0px;
+    margin-right: 44px;
+}
+
+#strafe-panel.pos-r1c0, #shot-panel.pos-r1c0, #sync-panel.pos-r1c0
+{
+    vertical-align: center;
+    margin-top: 0px;
+    horizontal-align: left;
+    margin-left: 44px;
+}
+
+#strafe-panel.pos-r1c1, #shot-panel.pos-r1c1, #sync-panel.pos-r1c1
+{
+    vertical-align: center;
+    margin-top: 0px;
+    horizontal-align: center;
+    margin-left: 0px;
+}
+
+#strafe-panel.pos-r1c2, #shot-panel.pos-r1c2, #sync-panel.pos-r1c2
+{
+    vertical-align: center;
+    margin-top: 0px;
+    horizontal-align: right;
+    margin-left: 0px;
+    margin-right: 44px;
+}
+
+#strafe-panel.pos-r2c0, #shot-panel.pos-r2c0, #sync-panel.pos-r2c0
+{
+    vertical-align: bottom;
+    margin-top: 0px;
+    margin-bottom: 44px;
+    horizontal-align: left;
+    margin-left: 44px;
+}
+
+#strafe-panel.pos-r2c1, #shot-panel.pos-r2c1, #sync-panel.pos-r2c1
+{
+    vertical-align: bottom;
+    margin-top: 0px;
+    margin-bottom: 44px;
+    horizontal-align: center;
+    margin-left: 0px;
+}
+
+#strafe-panel.pos-r2c2, #shot-panel.pos-r2c2, #sync-panel.pos-r2c2
+{
+    vertical-align: bottom;
+    margin-top: 0px;
+    margin-bottom: 44px;
+    horizontal-align: right;
+    margin-left: 0px;
+    margin-right: 44px;
+}
+
+/* 移动编辑模式选中态：边框高亮（服务器叠加 move-selected class） */
+#strafe-panel.move-selected, #shot-panel.move-selected, #sync-panel.move-selected
+{
+    border: 1px solid #8fd3ffcc;
+    background-color: #16202bd9;
+}
+
+/* 面板标题（文案由服务器按玩家语言推送 dialog variable） */
 .PracHudTitle
 {
     width: 100%;
@@ -112,4 +210,30 @@
 .strafe-bad .PracHudVerdict
 {
     color: #ff5a5a;
+}
+
+/*
+ * 移动编辑模式 3×3 网格：铺满全屏，容器 hittest=false（XML 属性）不拦截输入，
+ * 仅格子 Button（hittest=true）可点击；极淡底色与虚线边框提示可点区域。
+ */
+.HudMoveGrid
+{
+    width: 100%;
+    height: 100%;
+    flow-children: down;
+}
+
+.HudMoveRow
+{
+    width: 100%;
+    height: 33.33%;
+    flow-children: right;
+}
+
+.HudMoveSlot
+{
+    width: 33.33%;
+    height: 100%;
+    background-color: #ffffff08;
+    border: 1px dashed #ffffff12;
 }
