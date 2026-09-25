@@ -94,13 +94,6 @@ PracLab/
     └── mkdocs.yml
 ```
 
-## Credits
-
-This project drew inspiration from the following open-source projects during development:
-
-- [CS2-Bot-Controller](https://github.com/XBribo/CS2-Bot-Controller) — Replay engine integrated from upstream, including bot control (`CCSBot::Update`/`Upkeep` hooks), movement recording and playback (`ProcessMovement`/`PlayerRunCommand`), weapon locking, purchase control, voice chat, `BotProfile`, and drop-weapon event playback modules.
-- [MatchZy](https://github.com/shobhit-pathak/MatchZy) — Reference for project structure, documentation organization, and CS2 plugin engineering practices.
-
 ## License
 
 See the repository root [LICENSE](../../LICENSE).
