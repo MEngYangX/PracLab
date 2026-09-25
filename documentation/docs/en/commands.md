@@ -170,6 +170,7 @@ PracLab intercepts global chat (`say`) and team chat (`say_team`) to recognize p
 | `.strafe`   | —     | Toggle counter-strafe assessment (HUD panel shows the timing verdict and stats) |
 | `.shot`     | —     | Toggle shot stability (HUD panel shows the speed error and stable rate)         |
 | `.sync`     | —     | Toggle air strafe sync (HUD panel shows the strafe sync rate)                   |
+| `.hudmove`  | —     | Move HUD panels (edit mode, see below)                                          |
 | `.hudreset` | —     | Clear all your HUD statistics                                                   |
 
 > **Usage**: all four commands require practice mode (`.prac`). The three modules are independent toggles — run the same command again to disable; each keeps its own state and none affects the others (no master toggle). Panels show while enabled and hide it when all are disabled.
@@ -181,6 +182,19 @@ PracLab intercepts global chat (`say`) and team chat (`say_team`) to recognize p
 > `.hudreset` clears statistics only; toggle states are kept.
 >
 > **The HUD panels require the client-side VPK resource**: without `prac_hud.vpk` installed, judgment and statistics still work server-side — you just don't see the panels (see the "Practice HUD resource" section in the [installation guide](installation.md)).
+
+#### Moving Panels (.hudmove)
+
+`.hudmove` enters the panel-move edit mode to place panels at any of the nine screen slots:
+
+1. Run `.hudmove`: the server releases your mouse cursor (you cannot turn the view or shoot meanwhile).
+2. Click the panel you want to move: it gets highlighted and a 3x3 transparent grid appears.
+3. Click the target slot in the grid: the panel instantly moves to the matching screen position (top left / top center / top right / ... / bottom right) and the edit mode exits automatically; **if the slot is taken by another panel, the two swap** (the other panel moves to this panel's previous slot), so panels never overlap.
+4. Ways to exit: after placing / pressing **Tab** / running `.hudmove` again — all of them take the cursor back and restore view control.
+
+> - Panel positions are a **personal preference and last only for the current session**: changing map or reconnecting restores the default layout (left column, top/middle/bottom).
+> - Disabling any panel while in the edit mode (e.g. `.shot`) exits the edit mode immediately.
+> - Clicking panels requires the client-side `prac_hud.vpk` (button interaction is provided by the VXML).
 
 #### Panel Readouts
 
