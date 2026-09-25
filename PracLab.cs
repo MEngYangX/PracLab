@@ -31,7 +31,7 @@ public partial class PracLab : BasePlugin
     private const string DryRunConfigPath = "PracLab/dryrun.cfg";
 
     /// <summary>
-    /// 插件配置文件相对路径（相对于 csgo/ 目录）。
+    /// 插件配置文件相对路径（相对于 mod 目录 csgo/，实际绝对路径经 ResolveModPath 解析）。
     /// </summary>
     private const string PluginConfigRelativePath = "cfg/PracLab/config.cfg";
 
@@ -553,6 +553,28 @@ public partial class PracLab : BasePlugin
         "praclab_nade_group_max_hits 3\n";
 
     /// <summary>
+    /// 解析 mod 目录内相对路径（cfg/PracLab/... 等）为绝对路径。
+    /// Server.GameDirectory 在 CSSharp 1.0.372+ 返回游戏根（…/game），需拼接 csgo；
+    /// 旧部署下可能返回 mod 目录（…/game/csgo），此时直接拼接。
+    /// 优先返回已存在的路径；均不存在时按 GD 下是否存在 csgo 子目录推断布局，
+    /// 避免在游戏根下错误创建 game/cfg/PracLab/ 遮蔽真实配置。
+    /// </summary>
+    /// <param name="relativePath">相对 mod 目录的路径（如 cfg/PracLab/config.cfg）。</param>
+    /// <returns>解析后的绝对路径；目标不存在时返回推断布局下的预期路径。</returns>
+    private static string ResolveModPath(string relativePath)
+    {
+        var withCsgo = Path.Combine(Server.GameDirectory, "csgo", relativePath);
+        var flat = Path.Combine(Server.GameDirectory, relativePath);
+
+        if (File.Exists(withCsgo) || Directory.Exists(withCsgo))
+            return withCsgo;
+        if (File.Exists(flat) || Directory.Exists(flat))
+            return flat;
+
+        return Directory.Exists(Path.Combine(Server.GameDirectory, "csgo")) ? withCsgo : flat;
+    }
+
+    /// <summary>
     /// 从 csgo/cfg/PracLab/config.cfg 加载插件配置（CS2 ConVar 文本格式）。
     /// 文件不存在时自动创建默认配置。每行格式：`convar_name value`，
     /// 以 `//` 开头的行为注释，空行被忽略。未知 convar 跳过，已知但值非法时回退默认值。
@@ -565,7 +587,7 @@ public partial class PracLab : BasePlugin
 
         try
         {
-            var configPath = Path.Combine(Server.GameDirectory, PluginConfigRelativePath);
+            var configPath = ResolveModPath(PluginConfigRelativePath);
 
             if (!File.Exists(configPath))
             {

@@ -443,14 +443,9 @@ public partial class PracLab
         try
         {
             // 与 PreloadReplayEngineDll 同理（GitHub issue #5）：GameDirectory 可能为
-            // mod 目录（…/game/csgo）或游戏根目录（…/game），优先使用已存在的目录，
-            // 均不存在时按 mod 目录布局创建，保证读写路径一致。
-            string[] candidates =
-            {
-                Path.Combine(Server.GameDirectory, RecordingsDirRelativePath),
-                Path.Combine(Server.GameDirectory, "csgo", RecordingsDirRelativePath),
-            };
-            _recordingsDirPath = Array.Find(candidates, Directory.Exists) ?? candidates[0];
+            // 游戏根目录（…/game）或 mod 目录（…/game/csgo），经 ResolveModPath 统一解析，
+            // csgo 布局优先，避免在游戏根下错误创建 game/cfg/PracLab/。
+            _recordingsDirPath = ResolveModPath(RecordingsDirRelativePath);
             Directory.CreateDirectory(_recordingsDirPath);
             Server.PrintToConsole($"[PracLab] {DateTime.Now:HH:mm:ss} Replay recordings dir: {_recordingsDirPath}");
         }

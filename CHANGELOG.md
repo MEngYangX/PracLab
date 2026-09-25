@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- **Config path resolution**: plugin paths were resolved against the game root, so `LoadConfig` auto-created a default (zh-CN) `config.cfg` under `game/cfg/PracLab/` on startup, shadowing the real `game/csgo/cfg/PracLab/` copy. `LoadConfig`, `hud.cfg` loading and the recordings dir now share one resolver that prefers the `csgo/` layout.
 - **ReplayEngine DLL preload path**: adapted to the CSSharp v1.0.372 `GameDirectory` path change with dual-path probing, [Issue #5](https://github.com/MEngYangX/PracLab/issues/5).
 
 ### Changed

@@ -65,15 +65,10 @@ public partial class PracLab
     {
         Server.PrintToConsole("[PracLab] InitPracticeHud: executing...");
 
-        // 加载 hud.cfg（路径双布局探测，与 LoadConfig/EnsureRecordingsDir 同理）
+        // 加载 hud.cfg（路径经 ResolveModPath 解析，csgo 布局优先，与 LoadConfig/EnsureRecordingsDir 同理）
         try
         {
-            string[] candidates =
-            {
-                Path.Combine(Server.GameDirectory, HudConfigRelativePath),
-                Path.Combine(Server.GameDirectory, "csgo", HudConfigRelativePath),
-            };
-            var configPath = Array.Find(candidates, File.Exists) ?? candidates[0];
+            var configPath = ResolveModPath(HudConfigRelativePath);
             _hudConfig.Load(configPath);
         }
         catch (Exception ex)
